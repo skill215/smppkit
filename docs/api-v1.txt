@@ -1,0 +1,1288 @@
+Release 1.0 candidate API snapshot (not a release announcement)
+Generated with go1.26.4 go doc -all; package/field comments included.
+Public package scope: smpp, codec, pdu, tlv, textcodec, message.
+
+package smpp // import "github.com/skill215/smppkit"
+
+Package smpp implements general-purpose SMPP endpoints. A Session owns one
+connection generation; reconnecting requires a new session and never replays
+requests. Submission acceptance is separate from final message delivery.
+
+VARIABLES
+
+var (
+	// ErrClosed is the terminal cause of an explicit local close.
+	ErrClosed = errors.New("smpp: session closed")
+	// ErrState rejects operations outside the current role, state or TLV policy,
+	// and transaction submissions incompatible with automatic buffered ACKs.
+	ErrState = errors.New("smpp: operation invalid for session state or role")
+	// ErrOverloaded reports exhausted session admission or response capacity.
+	ErrOverloaded = errors.New("smpp: session capacity exceeded")
+	// ErrResponse indicates a command incompatible with its request.
+	ErrResponse = errors.New("smpp: mismatched response command")
+	// ErrResponded means the Inbound response handle has already been claimed.
+	ErrResponded = errors.New("smpp: request already responded")
+)
+
+FUNCTIONS
+
+func AdmitMessage(ctx context.Context, receiver *message.Receiver, in *Inbound, namespace string) error
+    AdmitMessage admits and responds to one messaging request. ACK success
+    means bounded memory admission only. The complete-message consumer runs
+    separately through Receiver.Receive; its result cannot retract these ACKs.
+    Explicit transaction submissions (mode 2) return ErrState before admission
+    or response, leaving the handle available for application Respond. Memory
+    alone cannot establish their delivery outcome. Use Receive/Respond for that
+    mode. For mode 0, the caller must configure a non-transaction peer default.
+    Delivery requests from the MC are not subject to this submission-mode
+    restriction.
+
+
+TYPES
+
+type BindDecision struct {
+	Status   pdu.Status
+	SystemID string
+}
+    BindDecision selects the bind response. Status OK accepts; other statuses
+    reject and close the transport after the response. SystemID identifies the
+    SMSC.
+
+type BindInfo struct {
+	Version    pdu.Version
+	Role       Role
+	Fields     pdu.BindFields
+	RemoteAddr net.Addr
+}
+    BindInfo is the authenticated peer candidate, not yet an admitted Session.
+    Fields contains credentials; applications should avoid logging it wholesale.
+
+type ClientConfig struct {
+	Codec   *codec.Codec
+	Session Config
+	Bind    pdu.Body    // *BindTransmitter, *BindReceiver, or *BindTransceiver
+	TLS     *tls.Config // nil for plain TCP; configuration is cloned
+}
+    ClientConfig fixes transport security, the protocol profile and bind
+    identity. Bind.InterfaceVersion must match Codec; no version fallback is
+    attempted.
+
+type Config struct {
+	Window            int           // 16 outbound requests, including queued writes
+	InboundLimit      int           // 32 outstanding requests and queued responses
+	NotificationLimit int           // 32 queued inbound notifications and 32 concurrent outbound Notify calls
+	RequestTimeout    time.Duration // 30 seconds, includes Request/Notify admission
+	InboundTimeout    time.Duration // 30 seconds, closes unanswered sessions
+	ReadTimeout       time.Duration // 2 minutes, includes partial frame acquisition
+	WriteTimeout      time.Duration // 10 seconds per complete frame
+}
+    Config bounds one connection generation. Zero values use the documented
+    defaults. An inbound request consumer must respond before InboundTimeout;
+    notifications use a separate bounded queue and have no ACK timer.
+
+type Inbound struct {
+	PDU pdu.PDU
+
+	// Has unexported fields.
+}
+    Inbound is bound to its originating session. Respond succeeds at most once.
+    PDU is owned by this handle; applications must not mutate it concurrently.
+    Response correlation always uses the original request identity, even if the
+    application edits its owned PDU.
+
+func (in *Inbound) Respond(ctx context.Context, status pdu.Status, body pdu.Body) error
+    Respond validates a response before claiming the handle. Local validation
+    or an already-cancelled context leaves it available for correction.
+    After the claim, even a transport failure consumes the handle: blindly
+    retrying an ACK could duplicate a response whose final peer-visible outcome
+    is unknown. Cancellation after queue admission closes the originating
+    Session. data_sm_resp fields are checked against the original request's
+    direction/mode, independently of edits to PDU. Contextual validation does
+    not claim the handle.
+
+type Outcome uint8
+    Outcome describes protocol observation, not independently verified
+    delivery. A transaction response can report the peer's delivery outcome;
+    interpretation depends on the original request mode and remains the
+    application's responsibility.
+
+const (
+	NotAttempted     Outcome = iota // planned segment never passed to Request
+	NotWritten                      // no frame bytes written; local validation may have failed
+	PartlyWritten                   // some frame bytes written; delivery/acceptance is unknown
+	Written                         // fully written, no correlated response: result is uncertain
+	ResponseReceived                // inspect Response.Status and request-mode semantics
+)
+type PeerError struct {
+	Command pdu.CommandID
+	Status  pdu.Status
+}
+    PeerError reports protocol rejection. Request's Result retains the complete
+    correlated response; PeerError itself contains only its command and status.
+
+func (e *PeerError) Error() string
+
+type Result struct {
+	Sequence     uint32
+	Outcome      Outcome
+	BytesWritten int
+	Response     pdu.PDU
+}
+    Result remains meaningful when Request returns an error. Sequence is zero
+    before sequence allocation; Response is populated only for ResponseReceived.
+    BytesWritten counts the complete SMPP frame, including its 16-byte header.
+    For submit_multi, Response.Status and SubmitMultiResp.Unsuccessful describe
+    separate levels of acceptance; an OK header does not imply an empty list.
+
+type Role uint8
+    Role describes the ESME bind role, even on the server side of a Session.
+
+const (
+	Transmitter Role = iota + 1
+	Receiver
+	Transceiver
+)
+type SegmentResult struct {
+	Number    int
+	Result    Result
+	MessageID string
+	Err       error
+}
+    SegmentResult preserves one planned part, including parts never attempted.
+    Number is one-based; MessageID is the peer's opaque acceptance identifier.
+    Err is set only for an attempted Request that failed. NotAttempted parts
+    have zero sequence/byte counts and nil Err; the enclosing SendText error
+    explains why scheduling stopped. If preparation fails, there is no segment
+    plan.
+
+type SendResult struct {
+	ID, Encoding string
+	Mode         message.Mode
+	Segments     []SegmentResult
+}
+    SendResult identifies one local send attempt. Segments stay in planned
+    order even on partial failure; success is submission acceptance, not final
+    delivery.
+
+type Server struct {
+	// Has unexported fields.
+}
+    Server authenticates connections and creates Sessions; it does not implement
+    an SMSC message store, routing policy or final-delivery tracking.
+
+func NewServer(cfg ServerConfig) (*Server, error)
+    NewServer validates configuration without opening a listener or goroutines.
+
+func (srv *Server) Accept(ctx context.Context, conn net.Conn) (*Session, error)
+    Accept takes ownership of conn, authenticates under the bind deadline,
+    sends the response, and returns a bound session. TLS can be supplied by
+    tls.Listener. Authenticate must return on context cancellation; no detached
+    callback runs. Direct Accept callers must bound concurrency themselves;
+    MaxConnections is enforced by Serve. The returned Session outlives the bind
+    context.
+
+func (srv *Server) Outbind(ctx context.Context, conn net.Conn, version pdu.Version, body *pdu.Outbind) (*Session, error)
+    Outbind takes ownership of an already connected MC->ESME transport,
+    sends outbind, then authenticates the peer's bind_receiver using Accept's
+    admission path. Version must select a configured 3.4/5.0 profile; outbind
+    has no version advertisement, so the peer must be configured consistently.
+    RX is the supported outbind flow. The application owns dialing/listening
+    and TLS role selection. One BindTimeout covers writing, reading and
+    authentication. Failure closes the connection and is never retried;
+    the outbind may already have reached the peer. Like direct Accept, callers
+    must bound concurrent handshakes themselves.
+
+func (srv *Server) Serve(ctx context.Context, ln net.Listener, handle func(context.Context, *Session)) error
+    Serve accepts bounded concurrent connections. handle owns each bound session
+    for its duration and must honor ctx. Cancelling ctx closes listener and all
+    accepted connections; Serve joins handlers before returning.
+
+type ServerConfig struct {
+	Profiles       []*codec.Codec // one per allowed version; defensively copied
+	Session        Config
+	BindTimeout    time.Duration // default 10 seconds
+	MaxConnections int           // default 128, includes unbound connections
+	// Authenticate is required; it must honor ctx. Credentials are never logged.
+	Authenticate func(context.Context, BindInfo) (BindDecision, error)
+}
+    ServerConfig configures bounded bind admission. Profiles and Session
+    defaults are frozen by NewServer; Authenticate can run concurrently for
+    multiple peers.
+
+type Session struct {
+	// Has unexported fields.
+}
+    Session owns exactly one reader and writer. mu protects state, sequence,
+    and independent inbound/outbound maps. No callbacks or I/O execute
+    under mu. Inputs may be reused when Request/Notify returns. Receive and
+    ReceiveNotification each have an independent single consumer. Other exported
+    methods may be called concurrently. Do not mutate an input while a call uses
+    it. Construct with NewSession, Dial or Server admission; a zero Session is
+    not usable. Close then Wait joins the runtime, not application goroutines
+    which may still be using returned values.
+
+func Dial(ctx context.Context, address string, cfg ClientConfig) (*Session, error)
+    Dial connects and binds. It never reconnects or retries requests. On success
+    the caller owns the Session and should Close then Wait. Any transport opened
+    by Dial is closed if connection setup or bind fails.
+
+func NewSession(conn net.Conn, c *codec.Codec, cfg Config) (*Session, error)
+    NewSession starts an unbound ESME on an existing connection (including TLS).
+    Call Bind before messaging. For MC-initiated connections, receive/validate
+    outbind through ReceiveNotification first, then bind as receiver. Failure to
+    construct a Session leaves ownership of conn with the caller.
+
+func (s *Session) Bind(ctx context.Context, b pdu.Body) (Result, error)
+    Bind establishes the ESME role. The codec fixes the effective version;
+    neither missing advertisements nor unknown version bytes trigger a fallback.
+
+func (s *Session) Close() error
+    Close aborts immediately. Wait joins the three runtime goroutines.
+
+func (s *Session) Codec() *codec.Codec
+    Codec returns the immutable profile selected for this connection.
+
+func (s *Session) Done() <-chan struct{}
+    Done closes when shutdown begins. Use Wait to join all runtime goroutines.
+
+func (s *Session) Err() error
+    Err returns the first terminal cause, or nil before shutdown.
+
+func (s *Session) Notify(ctx context.Context, body pdu.Body) (Result, error)
+    Notify sends alert_notification from a bound MC to an RX/TRX ESME. It uses
+    the sole Session writer and sequence space, but no request window or pending
+    response. For pre-bind outbind, use Server.Outbind instead. Other bodies are
+    rejected. Success means Written, never peer acceptance or final delivery.
+    Admission is bounded separately by NotificationLimit and RequestTimeout.
+    Cancelling a queued write sends nothing; cancelling an active write closes
+    the transport to expose its final byte count. No notification is retried.
+
+func (s *Session) Receive(ctx context.Context) (*Inbound, error)
+    Receive waits for the next application request; control traffic is handled
+    internally. Use one consumer per Session and respond before InboundTimeout.
+    Cancelling this wait does not close the Session or discard queued requests.
+    Close discards inputs that have not been received; an already returned
+    handle remains owned by the caller but cannot respond on a retired
+    connection.
+
+func (s *Session) ReceiveNotification(ctx context.Context) (pdu.PDU, error)
+    ReceiveNotification returns an owned alert_notification or pre-bind outbind.
+    Use one notification consumer independently of Receive/RunReceiver.
+    Never ACK these packets: there is no response handle, inbound reservation or
+    ACK timer. Cancelling this wait leaves the session and queued notifications
+    intact. An outbind contains credentials: validate them before Bind with
+    BindReceiver; on refusal Close the session. No automatic bind or credential
+    logging occurs.
+
+func (s *Session) Request(ctx context.Context, body pdu.Body) (Result, error)
+    Request returns a result even on cancellation or transport failure.
+    No request is retried. Cancellation during an active write closes the
+    connection to make its final byte count observable; other pending requests
+    may become uncertain. This also applies if a response arrives before Write
+    returns. An already correlated response wins the request outcome (nil or
+    PeerError), even when cancellation must retire the transport to join that
+    write. Unbind additionally requires our ACK of a concurrent peer Unbind to
+    finish. A successful submit_multi response can still contain Unsuccessful
+    SMEs; inspect that list even when Request returns nil error. An ordinary
+    submission ACK is not final delivery. For explicit transaction mode,
+    interpret the peer's reported outcome using that request's semantics;
+    no delivery tracking is added. An admitted Unbind retires the connection on
+    completion or failure. If both peers initiate unbind, success waits for our
+    response and the peer's ACK write.
+
+func (s *Session) RunReceiver(ctx context.Context, receiver *message.Receiver, namespace string) error
+    RunReceiver is the sole inbound consumer until it returns. It admits single
+    parts and multipart messages, replies per segment, and sweeps expired groups
+    every second. Consume completed messages with Receiver.Receive and events
+    with Receiver.Events. On exit it closes the session; errors never discard
+    already queued messages. Use AdmitMessage directly for a mixed-command
+    dispatcher. The one-second expiry ticker is checked between admissions;
+    a blocked ACK write can delay the sweep until that write finishes or its
+    deadline expires. An unsupported transaction submission returns ErrState
+    and closes the Session without admission or ACK; use Receive/Respond to
+    implement transaction mode.
+
+func (s *Session) SendText(ctx context.Context, msg TextMessage, policy message.Policy, references ...*message.References) (SendResult, error)
+    SendText validates the entire message and every segment before the first
+    write. policy must describe the peer's encoding/concatenation capabilities.
+    Optional references overrides the session-scoped allocator, e.g. to share
+    a sending domain across binds. At most one may be supplied; it is used only
+    for multipart plans and must then be non-nil with the plan's reference
+    width. Segments execute sequentially through Request's existing window;
+    failure stops scheduling and retains every segment result. Neither a
+    positive response nor this method's success implies final delivery.
+
+func (s *Session) Shutdown(ctx context.Context) error
+    Shutdown attempts unbind and then closes even if the exchange fails. Call
+    Wait separately when all connection goroutines must have stopped. It does
+    not drain application requests; finish that work before initiating shutdown.
+
+func (s *Session) State() State
+    State returns a synchronized snapshot, not a reservation for a later call.
+
+func (s *Session) TLVEnabled() bool
+    TLVEnabled reports negotiated optional-parameter support. A missing bind
+    advertisement never silently enables TLVs, even with a 3.4/5.0 codec.
+
+func (s *Session) Wait()
+    Wait joins the reader, writer and expiry loop; it does not initiate
+    shutdown.
+
+type State uint8
+    State is a snapshot of one connection generation; Closed is terminal.
+
+const (
+	Connected State = iota // transport open, no successful bind yet
+	Binding                // local bind queued or awaiting its response
+	Bound                  // messaging allowed according to the negotiated role
+	Unbinding              // reject new business requests while unbind finishes
+	Closed                 // transport retired; create a new Session to reconnect
+)
+type TextMessage = message.Text
+    TextMessage is the transport-independent logical text input.
+
+
+package codec // import "github.com/skill215/smppkit/codec"
+
+Package codec implements bounded, version-specific SMPP encoding independent of
+transport or session ownership. Codecs are immutable and safe to share.
+
+VARIABLES
+
+var (
+	ErrUnsupported = errors.New("smpp: unsupported standard command or version")
+	ErrValidation  = errors.New("smpp: protocol validation failed")
+)
+
+FUNCTIONS
+
+func ReadBind(r io.Reader, maxFrame int) (pdu.PDU, pdu.Version, error)
+    ReadBind is the bounded server bootstrap. It accepts only bind requests and
+    exact version bytes 0x33, 0x34, 0x50; no compatibility alias is inferred.
+    Profiles are selected by the server after this operation, before any
+    response.
+
+
+TYPES
+
+type Codec struct {
+	// Has unexported fields.
+}
+    Codec is an immutable wire profile, safe to share between sessions and
+    standalone simulators. It owns no transport, sequencing or bind state.
+
+func New(cfg Config) (*Codec, error)
+    New validates and copies registration metadata. Callback implementations
+    remain shared and must satisfy their concurrency and input-ownership
+    contracts.
+
+func (c *Codec) Append(dst []byte, p pdu.PDU) ([]byte, error)
+    Append returns dst at its original length on error. Bytes before that length
+    are untouched. Encoding never mutates the PDU or writes an invalid prefix.
+
+func (c *Codec) Decode(src []byte) (pdu.PDU, error)
+    Decode requires exactly one complete frame. Returned payloads are owned.
+    Standard byte fields may share one owned body allocation, but each field's
+    capacity ends at its length: appending cannot overwrite a sibling field.
+
+func (c *Codec) MaxFrame() int
+    MaxFrame includes the 16-byte SMPP header and bounds both encoding and
+    reading.
+
+func (c *Codec) Read(r io.Reader) (pdu.PDU, error)
+    Read rejects invalid lengths after four bytes, before acquiring a body. The
+    caller owns partial-frame deadlines (Session applies a finite read timeout).
+
+func (c *Codec) ResponseCommand(id pdu.CommandID) (pdu.CommandID, bool)
+    ResponseCommand returns the expected response only for implemented
+    operations.
+
+func (c *Codec) ValidateDataDirection(body pdu.Body, direction DataDirection) error
+    ValidateDataDirection adds contextual checks for DataSM/DataSMResp to an
+    ordinary Append or Decode. Call it in addition to normal encoding/decoding:
+    it does not replace framing, width, value, dependency or customer
+    validation. Without this explicit context, Codec continues to accept the
+    direction union. Omitted data_sm_resp is supported; other bodies, nil and
+    unknown directions are rejected. Unknown/customer tags have no inferred
+    direction restriction. For a response with original-request mode context,
+    use ValidateDataResponse. This method is read-only, concurrency safe and
+    never invokes user callbacks.
+
+func (c *Codec) ValidateDataResponse(response pdu.PDU, requestESMClass byte, direction DataDirection) error
+    ValidateDataResponse supplements ordinary Append/Decode with the
+    original data_sm request's ESM class and direction. It includes
+    ValidateDataDirection. Save requestESMClass before handing an owned request
+    to application code. This does not validate framing, sequence correlation,
+    field widths, or customer definitions; callers must still use Append/Decode.
+    No user callbacks run here. A zero mode means an unknown MC default, not
+    necessarily store-and-forward. Delivery requests do not reveal the original
+    submission's messaging mode.
+
+func (c *Codec) Version() pdu.Version
+    Version returns the fixed wire profile, not a negotiated session capability.
+
+type CommandCodec interface {
+	DecodeBody([]byte) (pdu.Body, error)
+	AppendBody([]byte, pdu.Body) ([]byte, error)
+}
+    CommandCodec is trusted extension code. It must be concurrency safe, return
+    owned data and never retain/mutate input. AppendBody must not change dst
+    on failure. The enclosing Codec checks command identity and frame limits.
+    Calls are synchronous and may run on Session's reader. Bound their work and
+    allocation; never wait for traffic from that Session inside an extension.
+
+type CommandDefinition struct {
+	Request, Response           pdu.CommandID
+	Versions                    []pdu.Version
+	RequestCodec, ResponseCodec CommandCodec
+}
+    CommandDefinition registers a request/response pair. Both codecs are
+    required; commands are allowed in bound sessions, in either direction.
+
+type Config struct {
+	Version pdu.Version
+	// MaxFrame defaults to 64 KiB and is capped at 16 MiB.
+	MaxFrame int
+	Commands []CommandDefinition
+	TLVs     []TLVDefinition
+}
+    Config selects one wire version and optional trusted extension definitions.
+    Version is required; an omitted or unknown version is never guessed.
+
+type DataDirection uint8
+    DataDirection describes the original data_sm request, including when
+    checking its data_sm_resp. A response travels in the opposite transport
+    direction.
+
+const (
+	DataSubmission DataDirection = iota + 1 // ESME -> MC request; MC -> ESME response
+	DataDelivery                            // MC -> ESME request; ESME -> MC response
+)
+type FieldError = wire.Error
+    FieldError provides safe field/offset diagnostics without exposing values.
+
+type TLVDefinition struct {
+	Tag                  uint16
+	MinLength, MaxLength int
+	Commands             []pdu.CommandID
+	Versions             []pdu.Version
+	Repeatable           bool
+	// Validate runs after declared bounds, version, command and cardinality checks.
+	// It must be concurrency safe and must not retain or mutate its input.
+	// It runs synchronously, including on Session's reader; return promptly.
+	Validate func([]byte) error
+}
+    TLVDefinition constrains a customer tag (0x1400..0x3fff) for this Codec
+    only. Standard/reserved definitions cannot be replaced. Unknown tags remain
+    raw.
+
+
+package pdu // import "github.com/skill215/smppkit/pdu"
+
+Package pdu defines concrete SMPP command bodies. Payloads are raw bytes;
+encoding never changes caller data or interprets message IDs as numbers.
+
+TYPES
+
+type Address struct {
+	TON, NPI uint8
+	Value    string
+}
+    Address retains numeric TON/NPI and the ASCII SMPP address string.
+    Codec checks their version-specific representation; it does not resolve or
+    validate carrier routing. Value is not BCD and may contain alphanumeric
+    sender IDs.
+
+type AlertNotification struct {
+	Source, ESME Address
+	Optional     tlv.Fields
+}
+    AlertNotification reports subscriber availability on an RX/TRX session.
+    It has no response/ACK and does not report final message delivery.
+
+func (*AlertNotification) CommandID() CommandID
+
+type BindFields struct {
+	SystemID, Password, SystemType string
+	InterfaceVersion               Version
+	AddrTON, AddrNPI               uint8
+	AddressRange                   string
+}
+    BindFields contains the ESME identity and requested interface version.
+    Password is sensitive; avoid logging the entire struct.
+
+type BindReceiver struct{ BindFields }
+
+func (*BindReceiver) CommandID() CommandID
+
+type BindReceiverResp struct{ BindResponseFields }
+
+func (*BindReceiverResp) CommandID() CommandID
+
+type BindResponseFields struct {
+	SystemID string
+	Optional tlv.Fields
+}
+
+type BindTransceiver struct{ BindFields }
+
+func (*BindTransceiver) CommandID() CommandID
+
+type BindTransceiverResp struct{ BindResponseFields }
+
+func (*BindTransceiverResp) CommandID() CommandID
+
+type BindTransmitter struct{ BindFields }
+
+func (*BindTransmitter) CommandID() CommandID
+
+type BindTransmitterResp struct{ BindResponseFields }
+
+func (*BindTransmitterResp) CommandID() CommandID
+
+type Body interface{ CommandID() CommandID }
+    Body supplies command identity; known standard commands require concrete
+    structs. Use a registered CommandCodec for private command bodies.
+
+type CancelSM struct {
+	ServiceType, MessageID string
+	Source, Destination    Address
+}
+
+func (*CancelSM) CommandID() CommandID
+
+type CancelSMResp struct{ Optional tlv.Fields }
+    CancelSMResp carries optional TLVs only in SMPP 5.0 (e.g. congestion_state).
+
+func (*CancelSMResp) CommandID() CommandID
+
+type CommandID uint32
+    CommandID identifies a request or response on the wire.
+
+const AlertNotificationID CommandID = 0x102
+const BindReceiverID CommandID = 0x1
+const BindReceiverRespID CommandID = BindReceiverID | ResponseBit
+const BindTransceiverID CommandID = 0x9
+const BindTransceiverRespID CommandID = BindTransceiverID | ResponseBit
+const BindTransmitterID CommandID = 0x2
+const BindTransmitterRespID CommandID = BindTransmitterID | ResponseBit
+const BroadcastSMID CommandID = 0x111
+const BroadcastSMRespID CommandID = BroadcastSMID | ResponseBit
+const CancelBroadcastSMID CommandID = 0x113
+const CancelBroadcastSMRespID CommandID = CancelBroadcastSMID | ResponseBit
+const CancelSMID CommandID = 0x8
+const CancelSMRespID CommandID = CancelSMID | ResponseBit
+const DataSMID CommandID = 0x103
+const DataSMRespID CommandID = DataSMID | ResponseBit
+const DeliverSMID CommandID = 0x5
+const DeliverSMRespID CommandID = DeliverSMID | ResponseBit
+const EnquireLinkID CommandID = 0x15
+const EnquireLinkRespID CommandID = EnquireLinkID | ResponseBit
+const GenericNACKID CommandID = ResponseBit
+const OutbindID CommandID = 0xb
+const QueryBroadcastSMID CommandID = 0x112
+const QueryBroadcastSMRespID CommandID = QueryBroadcastSMID | ResponseBit
+const QuerySMID CommandID = 0x3
+const QuerySMRespID CommandID = QuerySMID | ResponseBit
+const ReplaceSMID CommandID = 0x7
+const ReplaceSMRespID CommandID = ReplaceSMID | ResponseBit
+const ResponseBit CommandID = 0x80000000
+const SubmitMultiID CommandID = 0x21
+const SubmitMultiRespID CommandID = SubmitMultiID | ResponseBit
+const SubmitSMID CommandID = 0x4
+const SubmitSMRespID CommandID = SubmitSMID | ResponseBit
+const UnbindID CommandID = 0x6
+const UnbindRespID CommandID = UnbindID | ResponseBit
+func (c CommandID) IsResponse() bool
+
+type DataSM struct {
+	ServiceType                              string
+	Source, Destination                      Address
+	ESMClass, RegisteredDelivery, DataCoding uint8
+	Optional                                 tlv.Fields
+}
+    DataSM is shared by ESME submission and MC delivery. Standalone Codec
+    handles their union; use Codec.ValidateDataDirection to add explicit request
+    context. Session automatically enforces the direction at both receiving and
+    sending.
+
+func (*DataSM) CommandID() CommandID
+
+type DataSMResp struct{ MessageResponseFields }
+    DataSMResp uses the original request's direction and ESM class for
+    contextual validation (Codec.ValidateDataResponse; automatic in Session).
+    Unlike deliver_sm_resp, its MessageID is not forced empty for delivery.
+    Explicit transaction mode reports a synchronous peer delivery outcome;
+    an ordinary acceptance response must not be interpreted as final handset
+    delivery.
+
+func (*DataSMResp) CommandID() CommandID
+
+type DeliverSM struct{ SMFields }
+
+func (*DeliverSM) CommandID() CommandID
+
+type DeliverSMResp struct{ MessageResponseFields }
+    DeliverSMResp requires an empty MessageID in 3.4/5.0. 3.3 reuses the
+    submission response shape and can retain its peer ID.
+
+func (*DeliverSMResp) CommandID() CommandID
+
+type DestinationKind uint8
+    DestinationKind is submit_multi's dest_flag. The discriminator is explicit:
+    an empty SME address is not confused with an empty distribution-list name.
+
+const (
+	SMEAddress       DestinationKind = 1
+	DistributionList DestinationKind = 2
+)
+type EnquireLink struct{}
+
+func (*EnquireLink) CommandID() CommandID
+
+type EnquireLinkResp struct{ Optional tlv.Fields }
+    EnquireLinkResp carries optional TLVs only in SMPP 5.0 (e.g.
+    congestion_state).
+
+func (*EnquireLinkResp) CommandID() CommandID
+
+type GenericNACK struct{ Optional tlv.Fields }
+    GenericNACK carries optional TLVs only in SMPP 5.0 (e.g. congestion_state).
+
+func (*GenericNACK) CommandID() CommandID
+
+type MessageResponseFields struct {
+	MessageID string
+	Optional  tlv.Fields
+}
+    MessageResponseFields carries an opaque peer ID; never parse it as an
+    integer or assume a successful response is a final delivery receipt.
+
+type MultiDestination struct {
+	Kind     DestinationKind
+	Address  Address
+	ListName string
+}
+    MultiDestination contains exactly the arm selected by Kind. Codec rejects
+    populated fields in the other arm rather than silently dropping them.
+
+type Omitted struct{ ID CommandID }
+    Omitted represents an absent body of a negative response, distinct from an
+    empty C-octet field. Legality depends on command, status, and version.
+
+func (b *Omitted) CommandID() CommandID
+
+type Opaque struct {
+	ID   CommandID
+	Data []byte
+}
+    Opaque is only for unregistered private commands. Known standard commands
+    cannot bypass their typed validation using Opaque.
+
+func (b *Opaque) CommandID() CommandID
+
+type Outbind struct{ SystemID, Password string }
+    Outbind is an MC's pre-bind invitation, not a request with an SMPP response.
+    Credentials belong to the MC; applications must validate them before binding
+    and avoid logging this body. The PDU contains no interface version.
+
+func (*Outbind) CommandID() CommandID
+
+type PDU struct {
+	Sequence uint32
+	Status   Status
+	Body     Body
+}
+    PDU is one frame without a caller-controlled length. Codec calculates
+    length; Session assigns outbound request sequences and preserves response
+    correlation.
+
+type QuerySM struct {
+	MessageID string
+	Source    Address
+}
+
+func (*QuerySM) CommandID() CommandID
+
+type QuerySMResp struct {
+	MessageID, FinalDate    string
+	MessageState, ErrorCode uint8
+	Optional                tlv.Fields // 5.0 response TLVs only
+}
+    QuerySMResp reports a peer state, distinct from successful submission.
+    FinalDate is empty or absolute; 3.3/3.4 also accept their specified
+    12-digit local response date. An OK 3.4/5.0 response must contain a defined
+    MessageState. Negative responses may contain zero placeholders or use
+    Omitted where permitted.
+
+func (*QuerySMResp) CommandID() CommandID
+
+type ReplaceSM struct {
+	MessageID                            string
+	Source                               Address
+	ScheduleDeliveryTime, ValidityPeriod string
+	RegisteredDelivery, DefaultMessageID uint8
+	ShortMessage                         []byte
+}
+
+func (*ReplaceSM) CommandID() CommandID
+
+type ReplaceSMResp struct{ Optional tlv.Fields }
+    ReplaceSMResp carries optional TLVs only in SMPP 5.0 (e.g.
+    congestion_state).
+
+func (*ReplaceSMResp) CommandID() CommandID
+
+type SMFields struct {
+	ServiceType                                                        string
+	Source, Destination                                                Address
+	ESMClass, ProtocolID, PriorityFlag                                 uint8
+	ScheduleDeliveryTime, ValidityPeriod                               string
+	RegisteredDelivery, ReplaceIfPresent, DataCoding, DefaultMessageID uint8
+	ShortMessage                                                       []byte
+	Optional                                                           tlv.Fields
+}
+    SMFields is the shared mandatory/optional shape of submit_sm and deliver_sm.
+    ShortMessage is already encoded data; DataCoding does not trigger
+    conversion. ShortMessage and message_payload are mutually exclusive.
+    ScheduleDeliveryTime and ValidityPeriod are empty or SMPP time strings,
+    not Go timestamps. 3.3 accepts absolute times; 3.4/5.0 also allow relative
+    offsets. deliver_sm reserves schedule/validity/replacement/default ID
+    in 3.4; 5.0 permits them for forwarding to another message centre.
+    The application owns that routing context. Codec never normalizes times or
+    decodes ShortMessage.
+
+func (b SMFields) Clone() SMFields
+    Clone deep-copies payload and TLVs, preserving nil versus empty slices.
+
+type Status uint32
+    Status is command_status. Requests use OK; response status is peer
+    acceptance, not a final SMS delivery state. Unknown peer status values
+    remain representable.
+
+const (
+	OK                       Status = 0
+	InvalidMessageLength     Status = 1
+	InvalidCommandLength     Status = 2
+	InvalidCommandID         Status = 3
+	InvalidBindState         Status = 4
+	SystemError              Status = 8
+	BindFailed               Status = 13
+	Throttled                Status = 0x58
+	InvalidOptionalParameter Status = 0xc4
+)
+type SubmitMulti struct {
+	ServiceType                                                        string
+	Source                                                             Address
+	Destinations                                                       []MultiDestination
+	ESMClass, ProtocolID, PriorityFlag                                 uint8
+	ScheduleDeliveryTime, ValidityPeriod                               string
+	RegisteredDelivery, ReplaceIfPresent, DataCoding, DefaultMessageID uint8
+	ShortMessage                                                       []byte
+	Optional                                                           tlv.Fields
+}
+    SubmitMulti submits the same encoded content to a list of SME addresses
+    and/or named distribution lists. Counts are derived from Destinations.
+    This operation is distinct from concatenation: it neither segments text
+    nor expands lists. The explicit fields avoid inheriting an unused single
+    Destination from SMFields.
+
+func (b SubmitMulti) Clone() SubmitMulti
+    Clone deep-copies all mutable data, including destination and TLV slices.
+
+func (*SubmitMulti) CommandID() CommandID
+
+type SubmitMultiResp struct {
+	MessageID    string
+	Unsuccessful []UnsuccessfulSME
+	Optional     tlv.Fields
+}
+    SubmitMultiResp can have command_status OK while Unsuccessful is nonempty.
+    Always inspect both the PDU status and this list. Absence from the failure
+    list means submission acceptance only; distribution-list membership is peer
+    owned. Optional is supported in 5.0 only. An omitted negative body uses
+    Omitted.
+
+func (b SubmitMultiResp) Clone() SubmitMultiResp
+    Clone deep-copies the per-SME failure list and optional parameter values.
+
+func (*SubmitMultiResp) CommandID() CommandID
+
+type SubmitSM struct{ SMFields }
+
+func (*SubmitSM) CommandID() CommandID
+
+type SubmitSMResp struct{ MessageResponseFields }
+
+func (*SubmitSMResp) CommandID() CommandID
+
+type Unbind struct{}
+
+func (*Unbind) CommandID() CommandID
+
+type UnbindResp struct{ Optional tlv.Fields }
+    UnbindResp carries optional TLVs only in SMPP 5.0 (e.g. congestion_state).
+
+func (*UnbindResp) CommandID() CommandID
+
+type UnsuccessfulSME struct {
+	Address Address
+	Status  Status
+}
+    UnsuccessfulSME retains a destination and its individual submission status.
+    Status is opaque: the library does not infer retryability or final delivery.
+
+type Version uint8
+    Version is the exact interface_version octet, not a decimal version number.
+
+const (
+	V33 Version = 0x33
+	V34 Version = 0x34
+	V50 Version = 0x50
+)
+func (v Version) Valid() bool
+
+
+package tlv // import "github.com/skill215/smppkit/tlv"
+
+Package tlv represents owned, ordered SMPP optional parameters. Unknown tags and
+duplicate values survive structural decoding. Codec profiles separately validate
+the semantics of known fields.
+
+CONSTANTS
+
+const (
+	DestAddrSubunit          uint16 = 0x0005
+	DestNetworkType          uint16 = 0x0006
+	DestBearerType           uint16 = 0x0007
+	DestTelematicsID         uint16 = 0x0008
+	SourceAddrSubunit        uint16 = 0x000d
+	SourceNetworkType        uint16 = 0x000e
+	SourceBearerType         uint16 = 0x000f
+	SourceTelematicsID       uint16 = 0x0010
+	QOSTimeToLive            uint16 = 0x0017
+	PayloadType              uint16 = 0x0019
+	AdditionalStatusInfoText uint16 = 0x001d
+	ReceiptedMessageID       uint16 = 0x001e
+	MSMsgWaitFacilities      uint16 = 0x0030
+	PrivacyIndicator         uint16 = 0x0201
+	SourceSubaddress         uint16 = 0x0202
+	DestSubaddress           uint16 = 0x0203
+	UserMessageReference     uint16 = 0x0204
+	UserResponseCode         uint16 = 0x0205
+	SourcePort               uint16 = 0x020a
+	DestinationPort          uint16 = 0x020b
+	SARMsgRefNum             uint16 = 0x020c
+	LanguageIndicator        uint16 = 0x020d
+	SARTotalSegments         uint16 = 0x020e
+	SARSegmentSeqnum         uint16 = 0x020f
+	SCInterfaceVersion       uint16 = 0x0210
+	CallbackNumPresInd       uint16 = 0x0302
+	CallbackNumATag          uint16 = 0x0303
+	NumberOfMessages         uint16 = 0x0304
+	CallbackNum              uint16 = 0x0381
+	DPFResult                uint16 = 0x0420
+	SetDPF                   uint16 = 0x0421
+	MSAvailabilityStatus     uint16 = 0x0422
+	NetworkErrorCode         uint16 = 0x0423
+	MessagePayload           uint16 = 0x0424
+	DeliveryFailureReason    uint16 = 0x0425
+	MoreMessagesToSend       uint16 = 0x0426
+	MessageState             uint16 = 0x0427
+	CongestionState          uint16 = 0x0428
+	BillingIdentification    uint16 = 0x060b
+	SourceNetworkID          uint16 = 0x060d
+	DestNetworkID            uint16 = 0x060e
+	SourceNodeID             uint16 = 0x060f
+	DestNodeID               uint16 = 0x0610
+	DestAddrNPResolution     uint16 = 0x0611
+	DestAddrNPInformation    uint16 = 0x0612
+	DestAddrNPCountry        uint16 = 0x0613
+	USSDServiceOp            uint16 = 0x0501
+	DisplayTime              uint16 = 0x1201
+	SMSSignal                uint16 = 0x1203
+	MSValidity               uint16 = 0x1204
+	AlertOnMessageDelivery   uint16 = 0x130c
+	ITSReplyType             uint16 = 0x1380
+	ITSSessionInfo           uint16 = 0x1383
+)
+    Standard SMS TLV tags. Values remain ordered raw bytes in Fields.
+
+
+TYPES
+
+type Field struct {
+	Tag   uint16
+	Value []byte
+}
+    Field stores a tag and raw value without a caller-controlled wire length.
+    A Field literal borrows its Value slice; Clone/Append provide owned copies.
+
+func Uint16(tag uint16, v uint16) Field
+    Uint16 constructs a two-octet unsigned value in SMPP network byte order.
+
+func (f Field) Uint16() (uint16, error)
+    Uint16 decodes only exact two-octet values, without interpreting the tag.
+
+type Fields []Field
+    Fields preserves wire order and duplicates. It is intentionally a slice,
+    not a map: unknown repeated parameters must survive a codec round trip.
+    Literals and ordinary slice copies borrow values. Mutation needs external
+    synchronization; use Clone to give another owner independent values.
+
+func (f Fields) All(tag uint16) [][]byte
+    All returns matching values in wire order. Values borrow the original
+    slices.
+
+func (f *Fields) Append(tag uint16, value []byte)
+    Append adds an owned copy without normalizing order or duplicates.
+
+func (f Fields) Clone() Fields
+    Clone deep-copies each value, preserving nil versus empty slices.
+
+func (f *Fields) DeleteAll(tag uint16)
+    DeleteAll removes every occurrence while retaining other tags' order.
+    Values of the remaining fields are reused, not cloned.
+
+func (f Fields) First(tag uint16) ([]byte, bool)
+    First returns a borrowed value. Use Clone when retaining mutable input.
+
+func (f *Fields) ReplaceFirst(tag uint16, value []byte) bool
+    ReplaceFirst copies value into the first matching position and preserves all
+    other occurrences. It returns false without adding a field when absent.
+
+
+package textcodec // import "github.com/skill215/smppkit/textcodec"
+
+Package textcodec implements strict text conversion. GSM7 represents unpacked
+septets, never guessed packed bytes. UCS2 rejects supplementary characters;
+UTF16BE is an explicit compatibility encoding with the same DCS value.
+
+VARIABLES
+
+var ErrEncoding = errors.New("smpp: unrepresentable or invalid text")
+
+FUNCTIONS
+
+func Validate(e Encoded) error
+    Validate checks boundary offsets, not alphabet membership or DCS semantics.
+    It borrows e without mutation; the custom encoder still owns text
+    correctness.
+
+
+TYPES
+
+type Alphabet uint8
+    Alphabet selects a built-in strict converter. The zero value is invalid.
+
+const (
+	GSM7 Alphabet = iota + 1
+	Latin1
+	UCS2
+	UTF16BE
+)
+func (a Alphabet) DataCoding() uint8
+    DataCoding returns this encoding's SMPP 3.4/5.0 DCS assignment. Latin1's
+    value 3 is not a Latin-1 mapping in SMPP 3.3's GSM DCS; message.Prepare
+    rejects that built-in combination. UCS2 and UTF16BE both use 8, so the
+    receiver must choose its interpretation explicitly.
+
+func (a Alphabet) Decode(b []byte) (string, error)
+    Decode rejects malformed escapes, odd two-byte data and invalid surrogates;
+    it never guesses a different encoding or returns a partially decoded string.
+
+func (a Alphabet) Encode(s string) (Encoded, error)
+    Encode converts valid UTF-8 without replacement characters or partial output
+    on failure. Boundaries include complete GSM escapes and UTF-16 surrogate
+    pairs.
+
+func (a Alphabet) Name() string
+    Name is a diagnostic encoding label, not a value sent on the wire.
+
+func (a Alphabet) UnitBits() int
+    UnitBits distinguishes unpacked septets from octets for radio budgeting.
+
+type Encoded struct {
+	Bytes      []byte
+	Boundaries []int
+}
+    Encoded records safe end offsets for indivisible characters. Boundaries are
+    strictly increasing and end at len(Bytes), or are empty for empty input.
+
+type Encoding interface {
+	Name() string
+	DataCoding() uint8
+	UnitBits() int
+	Encode(string) (Encoded, error)
+	Decode([]byte) (string, error)
+}
+    Encoding implementations must be concurrency safe and return owned storage.
+    Decode must not mutate or retain its input. Callbacks are synchronous
+    trusted code; callers must bound their work and allocation, including on
+    errors. UnitBits is 7 for unpacked GSM septets, 8 for octet encodings.
+    Every output byte consumes one unit; Boundaries must preserve multi-unit
+    characters. DataCoding is an explicit peer/profile mapping, not version
+    negotiation. Custom implementations used by message.Prepare must choose a
+    DCS appropriate to that version; the planner can infer compatibility only
+    for built-ins.
+
+
+package message // import "github.com/skill215/smppkit/message"
+
+Package message prepares text messages and assembles received segments without
+owning a transport. Submission acceptance and delivery receipts are distinct.
+
+VARIABLES
+
+var (
+	ErrCapacity = errors.New("smpp: message resource capacity exceeded")
+	ErrMetadata = errors.New("smpp: invalid or conflicting message metadata")
+	ErrConflict = errors.New("smpp: conflicting segment")
+)
+
+TYPES
+
+type AckPolicy uint8
+    AckPolicy states what admission promises before an SMPP success response.
+
+const AckOnBuffered AckPolicy = 1
+    AckOnBuffered acknowledges bounded memory admission. It cannot survive
+    a process crash; the caller must send an SMPP response only after Admit
+    succeeds.
+
+type Admission struct {
+	Duplicate, Complete bool
+	ID                  string
+}
+    Admission describes one segment's bounded memory acceptance. Complete
+    means a new logical message was queued by this admission; duplicates do not
+    requeue. Neither Complete nor Duplicate implies application consumption or
+    durability.
+
+type Concatenation struct {
+	Mode          Mode
+	Reference     uint16
+	Total, Number uint8
+}
+    Concatenation records wire identity and one-based segment numbering.
+    Total is a declared count, not a guarantee all parts will arrive.
+
+type Event struct {
+	Kind                string
+	Namespace, ID       string
+	Source, Destination pdu.Address
+	Missing             []uint8
+}
+    Event reports an expired group; no payload or credential values are
+    included.
+
+type InformationElement struct {
+	ID   uint8
+	Data []byte
+}
+    InformationElement is an additional UDH element without IE length or UDHL.
+    Prepare supplies lengths, rejects caller-supplied concatenation elements and
+    validates application ports; other element contents remain opaque.
+
+type Message struct {
+	ID, Namespace       string
+	Source, Destination pdu.Address
+	DataCoding          uint8
+	Payload             []byte
+	Text                string
+	Decoded             bool
+	DecodeError         error
+	Segments            []Segment
+	Receipt             bool
+	// Has unexported fields.
+}
+    Message owns its assembled payload and per-segment provenance after Receive.
+    DecodeError does not discard raw content or undo previously sent segment
+    ACKs. ID is local; it is not a peer message ID or proof of final delivery.
+
+type Mode uint8
+    Mode chooses how message boundaries are represented to the peer.
+
+const (
+	UDH16   Mode = iota + 1 // 16-bit concatenation reference in user-data headers
+	UDH8                    // smaller reference space, one fewer header octet
+	SAR                     // segmentation metadata in TLVs, no encoded concatenation UDH
+	Payload                 // one message_payload request; peer owns any further segmentation
+)
+type Plan struct {
+	// Has unexported fields.
+}
+    Plan is immutable. Preview and Materialize return owned copies. It contains
+    no leased reference; each execution must reserve a new one.
+
+func Prepare(version pdu.Version, msg Text, policy Policy) (*Plan, error)
+    Prepare encodes all text before segmenting at safe character boundaries.
+    It performs no I/O or reference reservation. Codec-specific field/TLV
+    rules must still be checked on Materialize output before transmission.
+    The selected built-in Latin1 encoding is rejected for 3.3, including after
+    fallback: its DCS=3 assignment belongs to 3.4/5.0, not the GSM DCS used by
+    3.3. Fallback handles text encoding errors, not an incompatible protocol
+    policy.
+
+func (p *Plan) Count() int
+    Count is the number of requests; an empty message still produces one.
+
+func (p *Plan) DataCoding() uint8
+    DataCoding reports the frozen DCS used by Materialize.
+
+func (p *Plan) Encoding() string
+    Encoding reports the selected encoding name, including any fallback.
+
+func (p *Plan) Materialize(ref uint16) ([]pdu.SMFields, error)
+    Materialize returns independent per-segment fields using ref for all parts.
+    It does not reserve ref or record a send. Reusing a Plan for another message
+    requires a fresh reference lease when Multipart is true.
+
+func (p *Plan) Mode() Mode
+    Mode reports the chosen policy, even when the text fits one segment.
+
+func (p *Plan) Multipart() bool
+    Multipart reports whether Materialize will add concatenation metadata.
+
+func (p *Plan) Preview() [][]byte
+    Preview returns owned encoded chunks without UDH or optional parameters.
+    Use Materialize for complete per-segment fields and final Codec validation.
+
+func (p *Plan) ReferenceBits() int
+    ReferenceBits is the allocator width needed when Multipart is true.
+
+type Policy struct {
+	Encoding        textcodec.Encoding
+	Fallback        textcodec.Encoding // nil rejects unrepresentable text
+	Mode            Mode
+	PayloadOctets   int // default 140, 1..140
+	AdditionalUDH   []InformationElement
+	MaxInputBytes   int // default 64 KiB
+	MaxEncodedBytes int // default 256 KiB
+	MaxSegments     int // default 255
+}
+    Policy is explicit peer policy. PayloadOctets describes radio user data;
+    GSM7 is sent as unpacked septets. Packed septets are not supported here.
+    SAR conservatively budgets a 16-bit concatenation UDH at the SMSC and,
+    when port TLVs are supplied, a 16-bit application-port element.
+    It emits only TLVs; the peer must support that mapping to radio user data.
+    Custom encoders must satisfy textcodec.Encoding's unit/boundary contract.
+    Their DCS mapping must also match the selected protocol version and peer.
+
+func GSMText() Policy
+    GSMText is an explicit unpacked GSM default-alphabet policy with UCS-2
+    fallback, 16-bit UDH, and 140-octet radio budget. Peers must support it.
+
+type ReceiveConfig struct {
+	AckPolicy         AckPolicy     // must be AckOnBuffered; persistence belongs to the application
+	MaxGroups         int           // incomplete groups, default 1024
+	MaxBytes          int           // retained segment and assembled-payload charges, default 8 MiB
+	MaxMessageBytes   int           // segment-storage charges per message, default 128 KiB
+	MaxSegments       int           // declared concatenation total, default 255
+	QueueSize         int           // completed messages waiting for Receive, default 32
+	MaxTombstones     int           // retained completed-message signatures, default 1024
+	EventLimit        int           // expiry events waiting for Events, default 128
+	Lifetime          time.Duration // from first segment admission, default 5 minutes
+	TombstoneLifetime time.Duration // from completion, default 5 minutes
+	// DCS interpretation is explicit. Nil retains binary content without decoding.
+	Encodings map[uint8]textcodec.Encoding
+}
+    ReceiveConfig bounds collecting and completed messages. Zero numeric limits
+    use defaults; AckPolicy must always be explicit. Byte charges are accounting
+    estimates, not a process heap ceiling, and exclude data handed to the
+    caller.
+
+type Receiver struct {
+	// Has unexported fields.
+}
+    Receiver is a bounded, concurrency-safe memory store. Admit atomically
+    commits segment and completion queue admission. Receive transfers ownership
+    out of its resource budget. Expire must be called periodically; event
+    pressure retains state and returns ErrCapacity instead of silently dropping
+    evidence. Conflicts/capacity/malformed inputs are returned synchronously by
+    Admit.
+
+func NewReceiver(cfg ReceiveConfig) (*Receiver, error)
+    NewReceiver starts no goroutines. Its owner must call Expire and drain
+    Events; the smpp Session.RunReceiver adapter supplies the periodic expiry
+    sweep. The encoding map is copied; Encoding implementations remain shared
+    trusted objects. Receive invokes Decode outside the receiver lock after
+    transferring the message out of the budget, so consumers must bound their
+    own retained data.
+
+func (r *Receiver) Admit(namespace string, fields pdu.SMFields, now time.Time) (Admission, error)
+    Admit requires an explicit namespace, normally one session generation.
+    Share a namespace and Receiver across binds only when their tenant scope
+    permits it.
+
+func (r *Receiver) Events() []Event
+    Events transfers all currently recorded events to the caller.
+
+func (r *Receiver) Expire(now time.Time) error
+    Expire records bounded expiry events before releasing incomplete groups. The
+    deadline is fixed by first admission; duplicate traffic cannot extend it.
+
+func (r *Receiver) Receive(ctx context.Context) (Message, error)
+    Receive transfers the next complete message and releases its store charges.
+    Optional text decoding runs outside the store lock; decoder failure
+    is retained in Message.DecodeError. An available queued message takes
+    precedence over ctx.
+
+func (r *Receiver) Stats() Stats
+    Stats reports current bounded-store occupancy under the receiver lock.
+
+type References struct {
+	// Has unexported fields.
+}
+    References reserves concatenation references until a first-allocation based
+    retention deadline. Share one allocator across sessions in the same sending
+    identity/domain if collisions across those connections must be prevented.
+    At most MaxLeases live values exist; exhaustion never silently reuses one.
+
+func NewReferences(bits, maxLeases int, retention time.Duration) (*References, error)
+    NewReferences creates a concurrent allocator for an 8- or 16-bit reference
+    space. Retention must cover the peer's expected reassembly/retransmission
+    time.
+
+func (r *References) Bits() int
+    Bits returns the immutable reference width.
+
+func (r *References) Reserve(now time.Time) (uint16, error)
+    Reserve expires old leases and reserves a free value without blocking.
+    Zero is a valid reference. There is deliberately no early release:
+    a submission timeout or even a positive response does not prove peer
+    reassembly has ended. Callers supplying time must use a consistent clock for
+    this allocator.
+
+type Segment struct {
+	Fields  pdu.SMFields // owned per-segment provenance, including ordered TLVs
+	Payload []byte       // user data with UDH removed
+	Concat  *Concatenation
+	UDH     []byte // non-concatenation elements, in original order
+	Ports   []byte // identity bytes: UDH port IE, or ordered port TLV tag/value pairs
+	Receipt bool
+}
+    Segment owns both original fields and extracted metadata. Receipt payloads
+    remain raw and bypass concatenation; no receipt dialect is inferred.
+
+func ParseSegment(fields pdu.SMFields) (Segment, error)
+    ParseSegment classifies receipts before concatenation, rejects incomplete
+    SAR, mixed UDH/SAR and malformed UDH, and retains unknown UDH elements and
+    TLVs. It copies the input, but is not a versioned SMPP validator. Standalone
+    callers must use Codec for command/field/TLV validation before admission.
+
+type Stats struct{ Groups, BufferedBytes, Queued, Tombstones, Events int }
+    Stats is a synchronized accounting snapshot, not a reservation of capacity.
+
+type Text struct {
+	Source, Destination pdu.Address
+	Text                string
+	ServiceType         string
+	RegisteredDelivery  uint8
+	Optional            tlv.Fields
+}
+    Text is a logical message before encoding and segmentation. Optional
+    values are cloned into each segment; generated SAR/payload tags must not be
+    supplied.
+
+

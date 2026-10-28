@@ -1,0 +1,137 @@
+R2 local contract validation, 2026-10-28, Go 1.26.4 linux/amd64
+GOCACHE=/tmp/smppkit-go-build GOMODCACHE=/tmp/smppkit-go-mod GOTOOLCHAIN=local
+Module minimum: go 1.26.0. No new dependencies.
+HEAD (initial repository, not tested implementation identity): 161875d266d8eed7a0be5906d60e0adff86fcc8e
+Source identity: r2-source.sha256; working tree remains uncommitted.
+
+$ go build ./... (exit 0)
+
+$ go vet ./... (exit 0)
+
+$ go test -race -count=1 -timeout=90s ./... (exit 0)
+ok  	github.com/skill215/smppkit	2.056s
+ok  	github.com/skill215/smppkit/codec	1.345s
+ok  	github.com/skill215/smppkit/examples/client	1.021s
+?   	github.com/skill215/smppkit/examples/codec	[no test files]
+?   	github.com/skill215/smppkit/examples/custom-tlv	[no test files]
+?   	github.com/skill215/smppkit/examples/data-direction	[no test files]
+?   	github.com/skill215/smppkit/examples/data-transaction	[no test files]
+?   	github.com/skill215/smppkit/examples/multipart	[no test files]
+?   	github.com/skill215/smppkit/examples/notifications	[no test files]
+?   	github.com/skill215/smppkit/examples/private-command	[no test files]
+?   	github.com/skill215/smppkit/examples/server	[no test files]
+?   	github.com/skill215/smppkit/examples/submit-multi	[no test files]
+ok  	github.com/skill215/smppkit/internal/wire	1.020s
+ok  	github.com/skill215/smppkit/message	1.107s
+?   	github.com/skill215/smppkit/pdu	[no test files]
+ok  	github.com/skill215/smppkit/textcodec	1.019s
+ok  	github.com/skill215/smppkit/tlv	1.018s
+
+$ nine new test functions, -race -count=20 -timeout=90s (exit 0)
+ok  	github.com/skill215/smppkit	1.199s
+ok  	github.com/skill215/smppkit/codec	1.020s [no tests to run]
+ok  	github.com/skill215/smppkit/examples/client	1.058s
+?   	github.com/skill215/smppkit/examples/codec	[no test files]
+?   	github.com/skill215/smppkit/examples/custom-tlv	[no test files]
+?   	github.com/skill215/smppkit/examples/data-direction	[no test files]
+?   	github.com/skill215/smppkit/examples/data-transaction	[no test files]
+?   	github.com/skill215/smppkit/examples/multipart	[no test files]
+?   	github.com/skill215/smppkit/examples/notifications	[no test files]
+?   	github.com/skill215/smppkit/examples/private-command	[no test files]
+?   	github.com/skill215/smppkit/examples/server	[no test files]
+?   	github.com/skill215/smppkit/examples/submit-multi	[no test files]
+ok  	github.com/skill215/smppkit/internal/wire	1.019s [no tests to run]
+ok  	github.com/skill215/smppkit/message	1.205s
+?   	github.com/skill215/smppkit/pdu	[no test files]
+ok  	github.com/skill215/smppkit/textcodec	1.019s [no tests to run]
+ok  	github.com/skill215/smppkit/tlv	1.030s
+
+$ go test -race . -run=^Test(MultipartPreservesPartialResults|ReviewInvalidTextRequestDoesNotConsumeReference)$ -count=20 -timeout=60s (exit 0)
+ok  	github.com/skill215/smppkit	1.052s
+
+$ FuzzCharsets
+$ go test ./textcodec -run=^$ -fuzz=^FuzzCharsets$ -fuzztime=10000x -parallel=2 -timeout=60s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/35 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 35/35 completed, now fuzzing with 2 workers
+fuzz: elapsed: 0s, execs: 10000 (31475/sec), new interesting: 1 (total: 36)
+PASS
+ok  	github.com/skill215/smppkit/textcodec	0.324s
+exit=0
+
+$ FuzzDecode
+$ go test ./codec -run=^$ -fuzz=^FuzzDecode$ -fuzztime=10000x -parallel=2 -timeout=60s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/218 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 218/218 completed, now fuzzing with 2 workers
+fuzz: elapsed: 0s, execs: 10000 (22578/sec), new interesting: 0 (total: 218)
+PASS
+ok  	github.com/skill215/smppkit/codec	0.459s
+exit=0
+
+$ FuzzPrepareVersionEncoding
+$ go test ./message -run=^$ -fuzz=^FuzzPrepareVersionEncoding$ -fuzztime=10000x -parallel=2 -timeout=60s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/328 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 328/328 completed, now fuzzing with 2 workers
+fuzz: elapsed: 0s, execs: 10000 (22303/sec), new interesting: 0 (total: 328)
+PASS
+ok  	github.com/skill215/smppkit/message	0.460s
+exit=0
+
+$ FuzzUDH
+$ go test ./message -run=^$ -fuzz=^FuzzUDH$ -fuzztime=10000x -parallel=2 -timeout=60s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/21 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 21/21 completed, now fuzzing with 2 workers
+fuzz: elapsed: 0s, execs: 10000 (28421/sec), new interesting: 0 (total: 21)
+PASS
+ok  	github.com/skill215/smppkit/message	0.358s
+exit=0
+
+$ eight self-contained examples and rebuilt loopback binaries
+$ go run -race ./examples/codec
+0000001080000015000000000000002a
+exit=0
+$ go run -race ./examples/multipart
+encoding=GSM7-unpacked segments=3 reference_bits=16
+segment=1 encoded_units=152
+segment=2 encoded_units=151
+segment=3 encoded_units=57
+exit=0
+$ go run -race ./examples/custom-tlv
+encoded 49 octets
+exit=0
+$ go run -race ./examples/private-command
+000000110001020000000000000000012a
+exit=0
+$ go run -race ./examples/data-direction
+delivery receipt accepted
+same receipt rejected as submission
+response=0000001180000103000000000000000700
+exit=0
+$ go run -race ./examples/data-transaction
+transaction response validated: status=0x000000fe
+same TLVs rejected for explicit store-and-forward
+exit=0
+$ go run -race ./examples/notifications
+availability notification for 12345; sequence=2; no ACK
+exit=0
+$ go run -race ./examples/submit-multi
+message_id=demo:1 unsuccessful=1
+destination=10002 status=0x00000058
+exit=0
+$ go build -race -o /tmp/smppkit-examples-check/client ./examples/client
+exit=0
+$ go build -race -o /tmp/smppkit-examples-check/server ./examples/server
+exit=0
+
+$ expected FAIL: idle-only expiry overlay negative control
+2026/10/28 12:53:26 Received delivery: segments=1 bytes=4 receipt=false text=""
+--- FAIL: TestReadDeliveriesSweepsBeforeBusyReceive (0.00s)
+    main_test.go:81: busy receive skipped expiry/event drain {1 264 0 0 0}
+FAIL
+FAIL	github.com/skill215/smppkit/examples/client	0.006s
+FAIL
+
+All four bounded fuzz targets exited 0; no timeout in this run.
+TLV reconciliation: all 53 numeric tags, widths, version command masks and repeatability match docs/tlv-support.md.
+Overlay negative control exited 1 as expected; source tree was not reverted.
+gofmt -l . returned no paths. git diff --check passed. Updated documentation local file links verified. /doc/ remains ignored and untracked.
+No benchmark, long soak, remote CI, Go 1.27, legacy or external interop rerun.

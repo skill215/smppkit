@@ -1,0 +1,256 @@
+Date: 2026-10-28 Asia/Shanghai
+Toolchain: go1.26.4 linux/amd64; GOTOOLCHAIN=local
+No race instrumentation; GOMAXPROCS=1 via -cpu=1; no CPU affinity.
+Command: go test . ./codec ./message ./textcodec -run=^$ -bench=Benchmark(Codec(Encode|Decode|Copy|Read|TLVs|Reject)|TextCodec|MessagePlan|Receiver(Reassemble|Duplicate)|Session(Request|SendText))$ -benchmem -benchtime=200ms -count=3 -cpu=1
+
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkSessionRequest/EnquireLink         	   24033	     10206 ns/op	    1664 B/op	      30 allocs/op
+BenchmarkSessionRequest/EnquireLink         	   19783	     11721 ns/op	    1664 B/op	      30 allocs/op
+BenchmarkSessionRequest/EnquireLink         	   26241	      8996 ns/op	    1664 B/op	      30 allocs/op
+BenchmarkSessionRequest/SubmitSM140         	   14742	     15371 ns/op	    2864 B/op	      44 allocs/op
+BenchmarkSessionRequest/SubmitSM140         	   17676	     12755 ns/op	    2864 B/op	      44 allocs/op
+BenchmarkSessionRequest/SubmitSM140         	   19069	     12651 ns/op	    2864 B/op	      44 allocs/op
+BenchmarkSessionSendText/GSM7Single         	   10000	     21554 ns/op	    5608 B/op	      59 allocs/op
+BenchmarkSessionSendText/GSM7Single         	   10000	     24984 ns/op	    5608 B/op	      59 allocs/op
+BenchmarkSessionSendText/GSM7Single         	   10000	     23110 ns/op	    5608 B/op	      59 allocs/op
+BenchmarkSessionSendText/UCS2FallbackSingle 	   10083	     23876 ns/op	    6008 B/op	      63 allocs/op
+BenchmarkSessionSendText/UCS2FallbackSingle 	    7176	     45572 ns/op	    6008 B/op	      63 allocs/op
+BenchmarkSessionSendText/UCS2FallbackSingle 	   10000	     29889 ns/op	    6008 B/op	      63 allocs/op
+PASS
+ok  	github.com/skill215/smppkit	2.990s
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit/codec
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkCodecEncode/SubmitSM/V33/140/NewBuffer         	  348709	       691.1 ns/op	 274.91 MB/s	       190.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V33/140/NewBuffer         	  293319	       721.2 ns/op	 263.46 MB/s	       190.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V33/140/NewBuffer         	  261267	       959.8 ns/op	 197.97 MB/s	       190.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V33/140/ReuseBuffer       	  445102	       530.2 ns/op	 358.37 MB/s	       190.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V33/140/ReuseBuffer       	  469586	       500.0 ns/op	 379.98 MB/s	       190.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V33/140/ReuseBuffer       	  521458	       578.8 ns/op	 328.26 MB/s	       190.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V34/140/NewBuffer         	  262171	       784.7 ns/op	 242.12 MB/s	       190.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V34/140/NewBuffer         	  446496	       722.8 ns/op	 262.88 MB/s	       190.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V34/140/NewBuffer         	  269246	       747.6 ns/op	 254.15 MB/s	       190.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V34/140/ReuseBuffer       	  490276	       474.9 ns/op	 400.05 MB/s	       190.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V34/140/ReuseBuffer       	  726068	       487.8 ns/op	 389.49 MB/s	       190.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V34/140/ReuseBuffer       	  673018	       447.8 ns/op	 424.26 MB/s	       190.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/140/NewBuffer         	  514262	       455.4 ns/op	 417.25 MB/s	       190.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/140/NewBuffer         	  687195	       397.1 ns/op	 478.43 MB/s	       190.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/140/NewBuffer         	  632785	       395.4 ns/op	 480.54 MB/s	       190.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/140/ReuseBuffer       	  547903	       405.3 ns/op	 468.77 MB/s	       190.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/140/ReuseBuffer       	  869976	       353.1 ns/op	 538.02 MB/s	       190.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/140/ReuseBuffer       	  837553	       335.6 ns/op	 566.14 MB/s	       190.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/255/NewBuffer         	  589479	       433.8 ns/op	 703.06 MB/s	       305.0 wire-B/op	     752 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/255/NewBuffer         	  483684	       596.9 ns/op	 510.99 MB/s	       305.0 wire-B/op	     752 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/255/NewBuffer         	  449332	       697.4 ns/op	 437.31 MB/s	       305.0 wire-B/op	     752 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/255/ReuseBuffer       	  574081	       493.6 ns/op	 617.88 MB/s	       305.0 wire-B/op	     432 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/255/ReuseBuffer       	  542220	       452.1 ns/op	 674.58 MB/s	       305.0 wire-B/op	     432 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/255/ReuseBuffer       	  611959	       472.1 ns/op	 646.07 MB/s	       305.0 wire-B/op	     432 B/op	       4 allocs/op
+BenchmarkCodecEncode/DataSM/V50/140/NewBuffer           	  299882	       677.2 ns/op	 276.12 MB/s	       187.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/DataSM/V50/140/NewBuffer           	  456824	       642.1 ns/op	 291.21 MB/s	       187.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/DataSM/V50/140/NewBuffer           	  442642	       779.0 ns/op	 240.05 MB/s	       187.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/DataSM/V50/140/ReuseBuffer         	  397014	       555.4 ns/op	 336.72 MB/s	       187.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/DataSM/V50/140/ReuseBuffer         	  521936	       579.6 ns/op	 322.66 MB/s	       187.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/DataSM/V50/140/ReuseBuffer         	  531657	       501.8 ns/op	 372.69 MB/s	       187.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/DataSM/V50/4096/NewBuffer          	  146012	      1521 ns/op	2723.02 MB/s	      4143 wire-B/op	    9840 B/op	       5 allocs/op
+BenchmarkCodecEncode/DataSM/V50/4096/NewBuffer          	  161282	      1796 ns/op	2307.20 MB/s	      4143 wire-B/op	    9840 B/op	       5 allocs/op
+BenchmarkCodecEncode/DataSM/V50/4096/NewBuffer          	  159799	      1549 ns/op	2675.16 MB/s	      4143 wire-B/op	    9840 B/op	       5 allocs/op
+BenchmarkCodecEncode/DataSM/V50/4096/ReuseBuffer        	  217318	      1094 ns/op	3788.34 MB/s	      4143 wire-B/op	    4976 B/op	       4 allocs/op
+BenchmarkCodecEncode/DataSM/V50/4096/ReuseBuffer        	  226004	      1034 ns/op	4007.30 MB/s	      4143 wire-B/op	    4976 B/op	       4 allocs/op
+BenchmarkCodecEncode/DataSM/V50/4096/ReuseBuffer        	  243458	      1156 ns/op	3584.93 MB/s	      4143 wire-B/op	    4976 B/op	       4 allocs/op
+BenchmarkCodecEncode/DataSM/V50/65535/NewBuffer         	   15145	     14831 ns/op	4421.91 MB/s	     65582 wire-B/op	  147568 B/op	       5 allocs/op
+BenchmarkCodecEncode/DataSM/V50/65535/NewBuffer         	   16095	     14774 ns/op	4439.11 MB/s	     65582 wire-B/op	  147568 B/op	       5 allocs/op
+BenchmarkCodecEncode/DataSM/V50/65535/NewBuffer         	   17006	     14857 ns/op	4414.11 MB/s	     65582 wire-B/op	  147568 B/op	       5 allocs/op
+BenchmarkCodecEncode/DataSM/V50/65535/ReuseBuffer       	   24032	     13271 ns/op	4941.92 MB/s	     65582 wire-B/op	   73840 B/op	       4 allocs/op
+BenchmarkCodecEncode/DataSM/V50/65535/ReuseBuffer       	   25321	      9659 ns/op	6789.54 MB/s	     65582 wire-B/op	   73840 B/op	       4 allocs/op
+BenchmarkCodecEncode/DataSM/V50/65535/ReuseBuffer       	   23761	     10324 ns/op	6352.46 MB/s	     65582 wire-B/op	   73840 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/2/NewBuffer        	  430177	       558.2 ns/op	 370.80 MB/s	       207.0 wire-B/op	     704 B/op	       6 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/2/NewBuffer        	  437014	       551.4 ns/op	 375.44 MB/s	       207.0 wire-B/op	     704 B/op	       6 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/2/NewBuffer        	  489721	       538.2 ns/op	 384.58 MB/s	       207.0 wire-B/op	     704 B/op	       6 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/2/ReuseBuffer      	  649536	       412.5 ns/op	 501.86 MB/s	       207.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/2/ReuseBuffer      	  657974	       409.3 ns/op	 505.71 MB/s	       207.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/2/ReuseBuffer      	  652459	       430.0 ns/op	 481.40 MB/s	       207.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/255/NewBuffer      	   19087	     12655 ns/op	 316.23 MB/s	      4002 wire-B/op	   12272 B/op	      10 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/255/NewBuffer      	   18454	     17164 ns/op	 233.16 MB/s	      4002 wire-B/op	   12272 B/op	      10 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/255/NewBuffer      	   17661	     13392 ns/op	 298.83 MB/s	      4002 wire-B/op	   12272 B/op	      10 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/255/ReuseBuffer    	   22322	     10598 ns/op	 377.60 MB/s	      4002 wire-B/op	    8176 B/op	       9 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/255/ReuseBuffer    	   23634	     10263 ns/op	 389.93 MB/s	      4002 wire-B/op	    8176 B/op	       9 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/255/ReuseBuffer    	   21740	     10613 ns/op	 377.09 MB/s	      4002 wire-B/op	    8176 B/op	       9 allocs/op
+BenchmarkCodecDecode/SubmitSM/V33/140                   	  547795	       435.2 ns/op	 436.61 MB/s	       190.0 wire-B/op	     440 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V33/140                   	  407746	       521.7 ns/op	 364.19 MB/s	       190.0 wire-B/op	     440 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V33/140                   	  557589	       453.9 ns/op	 418.59 MB/s	       190.0 wire-B/op	     440 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V34/140                   	  540614	       454.0 ns/op	 418.52 MB/s	       190.0 wire-B/op	     440 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V34/140                   	  562537	       434.0 ns/op	 437.81 MB/s	       190.0 wire-B/op	     440 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V34/140                   	  576805	       446.8 ns/op	 425.20 MB/s	       190.0 wire-B/op	     440 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V50/140                   	  434170	       483.0 ns/op	 393.41 MB/s	       190.0 wire-B/op	     440 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V50/140                   	  511904	       478.1 ns/op	 397.37 MB/s	       190.0 wire-B/op	     440 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V50/140                   	  518811	       501.9 ns/op	 378.58 MB/s	       190.0 wire-B/op	     440 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V50/255                   	  475719	       504.8 ns/op	 604.23 MB/s	       305.0 wire-B/op	     584 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V50/255                   	  524094	       510.5 ns/op	 597.41 MB/s	       305.0 wire-B/op	     584 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V50/255                   	  538612	       462.5 ns/op	 659.40 MB/s	       305.0 wire-B/op	     584 B/op	       8 allocs/op
+BenchmarkCodecDecode/DataSM/V50/140                     	  371580	       685.4 ns/op	 272.82 MB/s	       187.0 wire-B/op	     408 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/140                     	  391420	       595.5 ns/op	 314.03 MB/s	       187.0 wire-B/op	     408 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/140                     	  451112	       567.9 ns/op	 329.26 MB/s	       187.0 wire-B/op	     408 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/4096                    	  214573	       980.9 ns/op	4223.59 MB/s	      4143 wire-B/op	    5096 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/4096                    	  251410	      1040 ns/op	3983.83 MB/s	      4143 wire-B/op	    5096 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/4096                    	  261532	       980.3 ns/op	4226.35 MB/s	      4143 wire-B/op	    5096 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/65535                   	   41562	      6005 ns/op	10920.91 MB/s	     65582 wire-B/op	   73960 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/65535                   	   41162	      5865 ns/op	11182.20 MB/s	     65582 wire-B/op	   73960 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/65535                   	   39262	      6213 ns/op	10555.50 MB/s	     65582 wire-B/op	   73960 B/op	       9 allocs/op
+BenchmarkCodecDecode/SubmitMulti/V50/2                  	  296781	       726.0 ns/op	 285.14 MB/s	       207.0 wire-B/op	     664 B/op	      13 allocs/op
+BenchmarkCodecDecode/SubmitMulti/V50/2                  	  382818	       702.7 ns/op	 294.58 MB/s	       207.0 wire-B/op	     664 B/op	      13 allocs/op
+BenchmarkCodecDecode/SubmitMulti/V50/2                  	  378156	       777.0 ns/op	 266.40 MB/s	       207.0 wire-B/op	     664 B/op	      13 allocs/op
+BenchmarkCodecDecode/SubmitMulti/V50/255                	    6607	     41782 ns/op	  95.78 MB/s	      4002 wire-B/op	   52696 B/op	     779 allocs/op
+BenchmarkCodecDecode/SubmitMulti/V50/255                	    6620	     53423 ns/op	  74.91 MB/s	      4002 wire-B/op	   52696 B/op	     779 allocs/op
+BenchmarkCodecDecode/SubmitMulti/V50/255                	    5786	     41947 ns/op	  95.41 MB/s	      4002 wire-B/op	   52696 B/op	     779 allocs/op
+BenchmarkCodecCopy/187/NewBuffer                        	 5180683	        47.73 ns/op	3917.50 MB/s	     192 B/op	       1 allocs/op
+BenchmarkCodecCopy/187/NewBuffer                        	 5121950	        47.68 ns/op	3922.22 MB/s	     192 B/op	       1 allocs/op
+BenchmarkCodecCopy/187/NewBuffer                        	 5247061	        46.56 ns/op	4016.11 MB/s	     192 B/op	       1 allocs/op
+BenchmarkCodecCopy/187/ReuseBuffer                      	42861068	         5.865 ns/op	31883.10 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCodecCopy/187/ReuseBuffer                      	40609143	         5.860 ns/op	31909.78 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCodecCopy/187/ReuseBuffer                      	41533125	         5.707 ns/op	32764.59 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCodecCopy/4143/NewBuffer                       	  528350	       500.2 ns/op	8282.91 MB/s	    4864 B/op	       1 allocs/op
+BenchmarkCodecCopy/4143/NewBuffer                       	  518112	       519.7 ns/op	7971.84 MB/s	    4864 B/op	       1 allocs/op
+BenchmarkCodecCopy/4143/NewBuffer                       	  607921	       474.4 ns/op	8733.59 MB/s	    4864 B/op	       1 allocs/op
+BenchmarkCodecCopy/4143/ReuseBuffer                     	 5232387	        40.50 ns/op	102297.93 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCodecCopy/4143/ReuseBuffer                     	 6364453	        36.86 ns/op	112385.58 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCodecCopy/4143/ReuseBuffer                     	 6623233	        37.08 ns/op	111743.23 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCodecCopy/65582/NewBuffer                      	   38660	      6112 ns/op	10730.20 MB/s	   73728 B/op	       1 allocs/op
+BenchmarkCodecCopy/65582/NewBuffer                      	   39426	      6049 ns/op	10841.72 MB/s	   73728 B/op	       1 allocs/op
+BenchmarkCodecCopy/65582/NewBuffer                      	   41262	      6314 ns/op	10387.39 MB/s	   73728 B/op	       1 allocs/op
+BenchmarkCodecCopy/65582/ReuseBuffer                    	  206301	      1167 ns/op	56204.86 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCodecCopy/65582/ReuseBuffer                    	  185826	      1151 ns/op	56968.27 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCodecCopy/65582/ReuseBuffer                    	  213520	      1384 ns/op	47390.44 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCodecRead/SubmitSM/V33/140                     	  464922	       518.8 ns/op	 366.22 MB/s	     640 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V33/140                     	  495070	       497.6 ns/op	 381.87 MB/s	     640 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V33/140                     	  506454	       565.9 ns/op	 335.78 MB/s	     640 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V34/140                     	  478689	       557.2 ns/op	 341.02 MB/s	     640 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V34/140                     	  447662	       506.7 ns/op	 374.95 MB/s	     640 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V34/140                     	  503554	       505.8 ns/op	 375.64 MB/s	     640 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V50/140                     	  478798	       503.6 ns/op	 377.31 MB/s	     640 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V50/140                     	  513207	       509.6 ns/op	 372.82 MB/s	     640 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V50/140                     	  434847	       502.1 ns/op	 378.43 MB/s	     640 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V50/255                     	  432829	       529.7 ns/op	 575.84 MB/s	     912 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V50/255                     	  479815	       529.9 ns/op	 575.60 MB/s	     912 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V50/255                     	  429073	       532.4 ns/op	 572.89 MB/s	     912 B/op	      10 allocs/op
+BenchmarkCodecRead/DataSM/V50/140                       	  370544	       659.9 ns/op	 283.39 MB/s	     608 B/op	      11 allocs/op
+BenchmarkCodecRead/DataSM/V50/140                       	  373647	       649.1 ns/op	 288.11 MB/s	     608 B/op	      11 allocs/op
+BenchmarkCodecRead/DataSM/V50/140                       	  337941	       655.2 ns/op	 285.40 MB/s	     608 B/op	      11 allocs/op
+BenchmarkCodecRead/DataSM/V50/4096                      	  160038	      1474 ns/op	2810.70 MB/s	    9968 B/op	      11 allocs/op
+BenchmarkCodecRead/DataSM/V50/4096                      	  163909	      1473 ns/op	2812.18 MB/s	    9968 B/op	      11 allocs/op
+BenchmarkCodecRead/DataSM/V50/4096                      	  168276	      1518 ns/op	2729.93 MB/s	    9968 B/op	      11 allocs/op
+BenchmarkCodecRead/DataSM/V50/65535                     	   19633	     12182 ns/op	5383.36 MB/s	  147696 B/op	      11 allocs/op
+BenchmarkCodecRead/DataSM/V50/65535                     	   20557	     11754 ns/op	5579.71 MB/s	  147696 B/op	      11 allocs/op
+BenchmarkCodecRead/DataSM/V50/65535                     	   19622	     16695 ns/op	3928.30 MB/s	  147696 B/op	      11 allocs/op
+BenchmarkCodecRead/SubmitMulti/V50/2                    	  303956	       770.3 ns/op	 268.72 MB/s	     880 B/op	      15 allocs/op
+BenchmarkCodecRead/SubmitMulti/V50/2                    	  319020	       780.2 ns/op	 265.30 MB/s	     880 B/op	      15 allocs/op
+BenchmarkCodecRead/SubmitMulti/V50/2                    	  267943	       789.0 ns/op	 262.36 MB/s	     880 B/op	      15 allocs/op
+BenchmarkCodecRead/SubmitMulti/V50/255                  	    6226	     38501 ns/op	 103.95 MB/s	   56800 B/op	     781 allocs/op
+BenchmarkCodecRead/SubmitMulti/V50/255                  	    6580	     42210 ns/op	  94.81 MB/s	   56800 B/op	     781 allocs/op
+BenchmarkCodecRead/SubmitMulti/V50/255                  	    6232	     36813 ns/op	 108.71 MB/s	   56800 B/op	     781 allocs/op
+BenchmarkCodecTLVs/0/EncodeReuse                        	  939655	       241.6 ns/op	 157.32 MB/s	     112 B/op	       3 allocs/op
+BenchmarkCodecTLVs/0/EncodeReuse                        	 1000000	       246.2 ns/op	 154.36 MB/s	     112 B/op	       3 allocs/op
+BenchmarkCodecTLVs/0/EncodeReuse                        	  879900	       258.2 ns/op	 147.20 MB/s	     112 B/op	       3 allocs/op
+BenchmarkCodecTLVs/0/Decode                             	  839666	       335.2 ns/op	 113.37 MB/s	     264 B/op	       6 allocs/op
+BenchmarkCodecTLVs/0/Decode                             	  813457	       327.6 ns/op	 115.98 MB/s	     264 B/op	       6 allocs/op
+BenchmarkCodecTLVs/0/Decode                             	  864532	       353.5 ns/op	 107.50 MB/s	     264 B/op	       6 allocs/op
+BenchmarkCodecTLVs/8/EncodeReuse                        	  190485	      1069 ns/op	 125.38 MB/s	     496 B/op	       5 allocs/op
+BenchmarkCodecTLVs/8/EncodeReuse                        	  241322	      1035 ns/op	 129.47 MB/s	     496 B/op	       5 allocs/op
+BenchmarkCodecTLVs/8/EncodeReuse                        	  236814	      1038 ns/op	 129.13 MB/s	     496 B/op	       5 allocs/op
+BenchmarkCodecTLVs/8/Decode                             	  206932	      1253 ns/op	 106.92 MB/s	     848 B/op	      10 allocs/op
+BenchmarkCodecTLVs/8/Decode                             	  180675	      1264 ns/op	 105.98 MB/s	     848 B/op	      10 allocs/op
+BenchmarkCodecTLVs/8/Decode                             	  157448	      1539 ns/op	  87.05 MB/s	     848 B/op	      10 allocs/op
+BenchmarkCodecTLVs/64/EncodeReuse                       	   21009	     10697 ns/op	  75.35 MB/s	    6488 B/op	      16 allocs/op
+BenchmarkCodecTLVs/64/EncodeReuse                       	   23666	      9988 ns/op	  80.70 MB/s	    6488 B/op	      16 allocs/op
+BenchmarkCodecTLVs/64/EncodeReuse                       	   24933	      9702 ns/op	  83.08 MB/s	    6488 B/op	      16 allocs/op
+BenchmarkCodecTLVs/64/Decode                            	   22662	     10471 ns/op	  76.97 MB/s	   10040 B/op	      22 allocs/op
+BenchmarkCodecTLVs/64/Decode                            	   24162	     10344 ns/op	  77.92 MB/s	   10040 B/op	      22 allocs/op
+BenchmarkCodecTLVs/64/Decode                            	   21703	     10726 ns/op	  75.14 MB/s	   10040 B/op	      22 allocs/op
+BenchmarkCodecReject/ShortHeader                        	 1516748	       159.6 ns/op	      80 B/op	       2 allocs/op
+BenchmarkCodecReject/ShortHeader                        	 1494117	       160.8 ns/op	      80 B/op	       2 allocs/op
+BenchmarkCodecReject/ShortHeader                        	 1499635	       161.6 ns/op	      80 B/op	       2 allocs/op
+BenchmarkCodecReject/TruncatedTLV                       	 1000000	       267.0 ns/op	     240 B/op	       7 allocs/op
+BenchmarkCodecReject/TruncatedTLV                       	 1000000	       281.2 ns/op	     240 B/op	       7 allocs/op
+BenchmarkCodecReject/TruncatedTLV                       	 1000000	       266.0 ns/op	     240 B/op	       7 allocs/op
+PASS
+ok  	github.com/skill215/smppkit/codec	37.994s
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit/message
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkMessagePlan/UDH8/Prepare         	   22200	     10678 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH8/Prepare         	   22993	     10484 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH8/Prepare         	   22603	     10689 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH8/Materialize     	  356988	       687.3 ns/op	         5.000 segments/op	    1664 B/op	      16 allocs/op
+BenchmarkMessagePlan/UDH8/Materialize     	  422830	       592.3 ns/op	         5.000 segments/op	    1664 B/op	      16 allocs/op
+BenchmarkMessagePlan/UDH8/Materialize     	  406470	       607.6 ns/op	         5.000 segments/op	    1664 B/op	      16 allocs/op
+BenchmarkMessagePlan/UDH16/Prepare        	   22326	     10781 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH16/Prepare        	   22216	     10769 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH16/Prepare        	   20728	     11145 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH16/Materialize    	  404832	       604.4 ns/op	         5.000 segments/op	    1664 B/op	      16 allocs/op
+BenchmarkMessagePlan/UDH16/Materialize    	  291938	       703.0 ns/op	         5.000 segments/op	    1664 B/op	      16 allocs/op
+BenchmarkMessagePlan/UDH16/Materialize    	  430622	       582.6 ns/op	         5.000 segments/op	    1664 B/op	      16 allocs/op
+BenchmarkMessagePlan/SAR/Prepare          	   23005	     10570 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/SAR/Prepare          	   22504	     10589 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/SAR/Prepare          	   22054	     10778 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/SAR/Materialize      	  298250	       806.6 ns/op	         5.000 segments/op	    2068 B/op	      26 allocs/op
+BenchmarkMessagePlan/SAR/Materialize      	  292742	       816.0 ns/op	         5.000 segments/op	    2068 B/op	      26 allocs/op
+BenchmarkMessagePlan/SAR/Materialize      	  291079	       804.8 ns/op	         5.000 segments/op	    2068 B/op	      26 allocs/op
+BenchmarkReceiverReassemble/UDH16/Reversefalse         	   18984	     13056 ns/op	         5.000 segments/op	   13232 B/op	      79 allocs/op
+BenchmarkReceiverReassemble/UDH16/Reversefalse         	   18127	     13691 ns/op	         5.000 segments/op	   13232 B/op	      79 allocs/op
+BenchmarkReceiverReassemble/UDH16/Reversefalse         	   19078	     12488 ns/op	         5.000 segments/op	   13232 B/op	      79 allocs/op
+BenchmarkReceiverReassemble/UDH16/Reversetrue          	   19230	     12400 ns/op	         5.000 segments/op	   13232 B/op	      79 allocs/op
+BenchmarkReceiverReassemble/UDH16/Reversetrue          	   18631	     13650 ns/op	         5.000 segments/op	   13232 B/op	      79 allocs/op
+BenchmarkReceiverReassemble/UDH16/Reversetrue          	   18478	     13050 ns/op	         5.000 segments/op	   13232 B/op	      79 allocs/op
+BenchmarkReceiverReassemble/SAR/Reversefalse           	   17402	     13836 ns/op	         5.000 segments/op	   13168 B/op	     109 allocs/op
+BenchmarkReceiverReassemble/SAR/Reversefalse           	   17881	     13672 ns/op	         5.000 segments/op	   13168 B/op	     109 allocs/op
+BenchmarkReceiverReassemble/SAR/Reversefalse           	   17148	     14003 ns/op	         5.000 segments/op	   13168 B/op	     109 allocs/op
+BenchmarkReceiverReassemble/SAR/Reversetrue            	   16596	     14364 ns/op	         5.000 segments/op	   13168 B/op	     109 allocs/op
+BenchmarkReceiverReassemble/SAR/Reversetrue            	   16174	     14709 ns/op	         5.000 segments/op	   13168 B/op	     109 allocs/op
+BenchmarkReceiverReassemble/SAR/Reversetrue            	   16243	     14525 ns/op	         5.000 segments/op	   13168 B/op	     109 allocs/op
+BenchmarkReceiverDuplicate                             	  381386	       669.5 ns/op	     672 B/op	      11 allocs/op
+BenchmarkReceiverDuplicate                             	  348943	       656.2 ns/op	     672 B/op	      11 allocs/op
+BenchmarkReceiverDuplicate                             	  367416	       652.3 ns/op	     672 B/op	      11 allocs/op
+PASS
+ok  	github.com/skill215/smppkit/message	7.957s
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit/textcodec
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkTextCodec/GSM7/Basic160/Encode  	   84524	      2713 ns/op	  58.97 MB/s	    1440 B/op	       2 allocs/op
+BenchmarkTextCodec/GSM7/Basic160/Encode  	   79166	      2717 ns/op	  58.89 MB/s	    1440 B/op	       2 allocs/op
+BenchmarkTextCodec/GSM7/Basic160/Encode  	   91381	      2663 ns/op	  60.08 MB/s	    1440 B/op	       2 allocs/op
+BenchmarkTextCodec/GSM7/Basic160/Decode  	  221379	      1010 ns/op	 158.49 MB/s	     816 B/op	       2 allocs/op
+BenchmarkTextCodec/GSM7/Basic160/Decode  	  250158	      1009 ns/op	 158.58 MB/s	     816 B/op	       2 allocs/op
+BenchmarkTextCodec/GSM7/Basic160/Decode  	  254382	       996.9 ns/op	 160.49 MB/s	     816 B/op	       2 allocs/op
+BenchmarkTextCodec/GSM7/Extension80/Encode         	  148753	      1456 ns/op	  54.96 MB/s	     880 B/op	       3 allocs/op
+BenchmarkTextCodec/GSM7/Extension80/Encode         	  170728	      1431 ns/op	  55.90 MB/s	     880 B/op	       3 allocs/op
+BenchmarkTextCodec/GSM7/Extension80/Encode         	  167358	      1427 ns/op	  56.06 MB/s	     880 B/op	       3 allocs/op
+BenchmarkTextCodec/GSM7/Extension80/Decode         	  182461	      1299 ns/op	 123.18 MB/s	     736 B/op	       2 allocs/op
+BenchmarkTextCodec/GSM7/Extension80/Decode         	  166526	      1318 ns/op	 121.38 MB/s	     736 B/op	       2 allocs/op
+BenchmarkTextCodec/GSM7/Extension80/Decode         	  172226	      1432 ns/op	 111.69 MB/s	     736 B/op	       2 allocs/op
+BenchmarkTextCodec/Latin1/140/Encode               	  171831	      1294 ns/op	 216.46 MB/s	    1440 B/op	       2 allocs/op
+BenchmarkTextCodec/Latin1/140/Encode               	  198055	      1265 ns/op	 221.41 MB/s	    1440 B/op	       2 allocs/op
+BenchmarkTextCodec/Latin1/140/Encode               	  193029	      1241 ns/op	 225.55 MB/s	    1440 B/op	       2 allocs/op
+BenchmarkTextCodec/Latin1/140/Decode               	  292410	       830.1 ns/op	 168.65 MB/s	     864 B/op	       2 allocs/op
+BenchmarkTextCodec/Latin1/140/Decode               	  262948	       876.4 ns/op	 159.75 MB/s	     864 B/op	       2 allocs/op
+BenchmarkTextCodec/Latin1/140/Decode               	  288336	       883.4 ns/op	 158.49 MB/s	     864 B/op	       2 allocs/op
+BenchmarkTextCodec/UCS2/70/Encode                  	  247488	       871.7 ns/op	 240.91 MB/s	     800 B/op	       2 allocs/op
+BenchmarkTextCodec/UCS2/70/Encode                  	  261255	       950.8 ns/op	 220.86 MB/s	     800 B/op	       2 allocs/op
+BenchmarkTextCodec/UCS2/70/Encode                  	  308725	       825.6 ns/op	 254.38 MB/s	     800 B/op	       2 allocs/op
+BenchmarkTextCodec/UCS2/70/Decode                  	  370123	       747.8 ns/op	 187.22 MB/s	     800 B/op	       2 allocs/op
+BenchmarkTextCodec/UCS2/70/Decode                  	  345820	       715.7 ns/op	 195.61 MB/s	     800 B/op	       2 allocs/op
+BenchmarkTextCodec/UCS2/70/Decode                  	  367785	       667.7 ns/op	 209.68 MB/s	     800 B/op	       2 allocs/op
+BenchmarkTextCodec/UTF16BE/35/Encode               	  416347	       580.0 ns/op	 241.39 MB/s	     432 B/op	       2 allocs/op
+BenchmarkTextCodec/UTF16BE/35/Encode               	  397162	       565.5 ns/op	 247.55 MB/s	     432 B/op	       2 allocs/op
+BenchmarkTextCodec/UTF16BE/35/Encode               	  437311	       556.6 ns/op	 251.55 MB/s	     432 B/op	       2 allocs/op
+BenchmarkTextCodec/UTF16BE/35/Decode               	  533830	       453.8 ns/op	 308.48 MB/s	     720 B/op	       2 allocs/op
+BenchmarkTextCodec/UTF16BE/35/Decode               	  522844	       466.2 ns/op	 300.31 MB/s	     720 B/op	       2 allocs/op
+BenchmarkTextCodec/UTF16BE/35/Decode               	  554342	       422.4 ns/op	 331.44 MB/s	     720 B/op	       2 allocs/op
+PASS
+ok  	github.com/skill215/smppkit/textcodec	7.202s
+
+Exit: 0

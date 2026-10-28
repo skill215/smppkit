@@ -1,0 +1,449 @@
+RV20/RV21 corrections, 2026-10-28; Go 1.26.4 linux/amd64.
+GOCACHE=/tmp/smppkit-go-build GOMODCACHE=/tmp/smppkit-go-mod GOTOOLCHAIN=local
+Summary (not verbatim terminal output): go build ./... and go vet ./... returned 0 on final code.
+Full race needs local TCP/TLS listener permission; no external services used.
+
+Final full race: go test -race -count=1 -timeout=90s ./...
+ok  	github.com/skill215/smppkit	2.156s
+ok  	github.com/skill215/smppkit/codec	1.354s
+?   	github.com/skill215/smppkit/examples/client	[no test files]
+?   	github.com/skill215/smppkit/examples/codec	[no test files]
+?   	github.com/skill215/smppkit/examples/custom-tlv	[no test files]
+?   	github.com/skill215/smppkit/examples/data-direction	[no test files]
+?   	github.com/skill215/smppkit/examples/data-transaction	[no test files]
+?   	github.com/skill215/smppkit/examples/multipart	[no test files]
+?   	github.com/skill215/smppkit/examples/notifications	[no test files]
+?   	github.com/skill215/smppkit/examples/private-command	[no test files]
+?   	github.com/skill215/smppkit/examples/server	[no test files]
+?   	github.com/skill215/smppkit/examples/submit-multi	[no test files]
+ok  	github.com/skill215/smppkit/internal/wire	1.029s
+ok  	github.com/skill215/smppkit/message	1.105s
+?   	github.com/skill215/smppkit/pdu	[no test files]
+ok  	github.com/skill215/smppkit/textcodec	1.023s
+?   	github.com/skill215/smppkit/tlv	[no test files]
+
+New regressions plus original data_sm snapshot: -race -count=20 (PASS)
+ok  	github.com/skill215/smppkit	2.058s
+ok  	github.com/skill215/smppkit/codec	1.265s
+
+Strengthened in-range ownership control: -race -count=20 (PASS)
+ok  	github.com/skill215/smppkit/codec	1.054s
+
+Counterfactual overlay: removed capacity bound and ACK guard; -race -run ^TestRV2[01] -count=1 (expected FAIL)
+--- FAIL: TestRV21BufferedACKPolicy (0.02s)
+    --- FAIL: TestRV21BufferedACKPolicy/34/submit/esm=02 (0.00s)
+        messaging_ack_regression_test.go:114: want ErrState, got <nil>
+    --- FAIL: TestRV21BufferedACKPolicy/34/submit/esm=12 (0.00s)
+        messaging_ack_regression_test.go:114: want ErrState, got <nil>
+    --- FAIL: TestRV21BufferedACKPolicy/34/data/esm=02 (0.00s)
+        messaging_ack_regression_test.go:114: want ErrState, got <nil>
+    --- FAIL: TestRV21BufferedACKPolicy/34/data/esm=12 (0.00s)
+        messaging_ack_regression_test.go:114: want ErrState, got <nil>
+    --- FAIL: TestRV21BufferedACKPolicy/50/submit/esm=02 (0.00s)
+        messaging_ack_regression_test.go:114: want ErrState, got <nil>
+    --- FAIL: TestRV21BufferedACKPolicy/50/submit/esm=12 (0.00s)
+        messaging_ack_regression_test.go:114: want ErrState, got <nil>
+    --- FAIL: TestRV21BufferedACKPolicy/50/data/esm=02 (0.00s)
+        messaging_ack_regression_test.go:114: want ErrState, got <nil>
+    --- FAIL: TestRV21BufferedACKPolicy/50/data/esm=12 (0.00s)
+        messaging_ack_regression_test.go:114: want ErrState, got <nil>
+--- FAIL: TestRV21OriginalTransactionSurvivesEdits (0.00s)
+    --- FAIL: TestRV21OriginalTransactionSurvivesEdits/00000103 (0.00s)
+        messaging_ack_regression_test.go:154: got smpp: mismatched response command
+    --- FAIL: TestRV21OriginalTransactionSurvivesEdits/00000004 (0.00s)
+        messaging_ack_regression_test.go:154: got smpp: mismatched response command
+--- FAIL: TestRV21RunReceiverClosesWithoutACK (0.00s)
+    messaging_ack_regression_test.go:174: unexpected ACK bytes: n=1 err=<nil>
+FAIL
+FAIL	github.com/skill215/smppkit	0.037s
+--- FAIL: TestRV20DecodedFieldIsolation (0.00s)
+    --- FAIL: TestRV20DecodedFieldIsolation/34/adjacent-TLVs/Read=false (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+    --- FAIL: TestRV20DecodedFieldIsolation/34/adjacent-TLVs/Read=true (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+    --- FAIL: TestRV20DecodedFieldIsolation/34/empty-TLV/Read=false (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+    --- FAIL: TestRV20DecodedFieldIsolation/34/empty-TLV/Read=true (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+    --- FAIL: TestRV20DecodedFieldIsolation/34/short-message/Read=false (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+    --- FAIL: TestRV20DecodedFieldIsolation/34/short-message/Read=true (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+    --- FAIL: TestRV20DecodedFieldIsolation/34/empty-short-message/Read=false (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+    --- FAIL: TestRV20DecodedFieldIsolation/34/empty-short-message/Read=true (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+    --- FAIL: TestRV20DecodedFieldIsolation/50/adjacent-TLVs/Read=false (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+    --- FAIL: TestRV20DecodedFieldIsolation/50/adjacent-TLVs/Read=true (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+    --- FAIL: TestRV20DecodedFieldIsolation/50/empty-TLV/Read=false (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+    --- FAIL: TestRV20DecodedFieldIsolation/50/empty-TLV/Read=true (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+    --- FAIL: TestRV20DecodedFieldIsolation/50/short-message/Read=false (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+    --- FAIL: TestRV20DecodedFieldIsolation/50/short-message/Read=true (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+    --- FAIL: TestRV20DecodedFieldIsolation/50/empty-short-message/Read=false (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+    --- FAIL: TestRV20DecodedFieldIsolation/50/empty-short-message/Read=true (0.00s)
+        ownership_regression_test.go:92: append field 0 changed field 1: 22 -> 05
+FAIL
+FAIL	github.com/skill215/smppkit/codec	0.017s
+FAIL
+
+All 11 targets, timed fuzz campaign (max 2 concurrent targets, each 2 workers)
+$ go test ./codec -run=^$ -fuzz=^FuzzDecode$ -fuzztime=30s -parallel=2 -timeout=90s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/152 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 152/152 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 91489 (30492/sec), new interesting: 13 (total: 165)
+fuzz: elapsed: 6s, execs: 186100 (31534/sec), new interesting: 20 (total: 172)
+fuzz: elapsed: 9s, execs: 280151 (31352/sec), new interesting: 29 (total: 181)
+fuzz: elapsed: 12s, execs: 372157 (30663/sec), new interesting: 46 (total: 198)
+fuzz: elapsed: 15s, execs: 460653 (29505/sec), new interesting: 47 (total: 199)
+fuzz: elapsed: 18s, execs: 547531 (28960/sec), new interesting: 49 (total: 201)
+fuzz: elapsed: 21s, execs: 640309 (30920/sec), new interesting: 55 (total: 207)
+fuzz: elapsed: 24s, execs: 732224 (30638/sec), new interesting: 61 (total: 213)
+fuzz: elapsed: 27s, execs: 831419 (33070/sec), new interesting: 64 (total: 216)
+fuzz: elapsed: 30s, execs: 928194 (32263/sec), new interesting: 66 (total: 218)
+fuzz: elapsed: 30s, execs: 928194 (0/sec), new interesting: 66 (total: 218)
+PASS
+ok  	github.com/skill215/smppkit/codec	30.122s
+exit=0
+
+$ go test ./codec -run=^$ -fuzz=^FuzzEncodeSM$ -fuzztime=30s -parallel=2 -timeout=90s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/11 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 11/11 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 84495 (28162/sec), new interesting: 1 (total: 12)
+fuzz: elapsed: 6s, execs: 174608 (30040/sec), new interesting: 1 (total: 12)
+fuzz: elapsed: 9s, execs: 262953 (29439/sec), new interesting: 1 (total: 12)
+fuzz: elapsed: 12s, execs: 344710 (27253/sec), new interesting: 1 (total: 12)
+fuzz: elapsed: 15s, execs: 426496 (27271/sec), new interesting: 1 (total: 12)
+fuzz: elapsed: 18s, execs: 507297 (26925/sec), new interesting: 1 (total: 12)
+fuzz: elapsed: 21s, execs: 593430 (28718/sec), new interesting: 1 (total: 12)
+fuzz: elapsed: 24s, execs: 675749 (27435/sec), new interesting: 1 (total: 12)
+fuzz: elapsed: 27s, execs: 767571 (30610/sec), new interesting: 1 (total: 12)
+fuzz: elapsed: 30s, execs: 858241 (30224/sec), new interesting: 1 (total: 12)
+fuzz: elapsed: 30s, execs: 858241 (0/sec), new interesting: 1 (total: 12)
+PASS
+ok  	github.com/skill215/smppkit/codec	30.081s
+exit=0
+
+$ go test ./codec -run=^$ -fuzz=^FuzzSubmitMulti$ -fuzztime=30s -parallel=2 -timeout=90s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/36 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 36/36 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 41626 (13874/sec), new interesting: 3 (total: 39)
+fuzz: elapsed: 6s, execs: 113516 (23962/sec), new interesting: 5 (total: 41)
+fuzz: elapsed: 9s, execs: 190809 (25767/sec), new interesting: 6 (total: 42)
+fuzz: elapsed: 12s, execs: 243722 (17639/sec), new interesting: 6 (total: 42)
+fuzz: elapsed: 15s, execs: 293076 (16449/sec), new interesting: 6 (total: 42)
+fuzz: elapsed: 18s, execs: 337941 (14953/sec), new interesting: 6 (total: 42)
+fuzz: elapsed: 21s, execs: 388332 (16797/sec), new interesting: 6 (total: 42)
+fuzz: elapsed: 24s, execs: 439674 (17119/sec), new interesting: 6 (total: 42)
+fuzz: elapsed: 27s, execs: 487675 (15999/sec), new interesting: 6 (total: 42)
+fuzz: elapsed: 30s, execs: 537769 (16697/sec), new interesting: 6 (total: 42)
+fuzz: elapsed: 30s, execs: 537769 (0/sec), new interesting: 6 (total: 42)
+PASS
+ok  	github.com/skill215/smppkit/codec	30.075s
+exit=0
+
+$ go test ./codec -run=^$ -fuzz=^FuzzStandardTLVSection$ -fuzztime=30s -parallel=2 -timeout=90s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/102 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 102/102 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 83515 (27833/sec), new interesting: 8 (total: 110)
+fuzz: elapsed: 6s, execs: 178354 (31618/sec), new interesting: 12 (total: 114)
+fuzz: elapsed: 9s, execs: 249460 (23701/sec), new interesting: 18 (total: 120)
+fuzz: elapsed: 12s, execs: 294531 (15020/sec), new interesting: 20 (total: 122)
+fuzz: elapsed: 15s, execs: 339323 (14931/sec), new interesting: 22 (total: 124)
+fuzz: elapsed: 18s, execs: 378216 (12965/sec), new interesting: 23 (total: 125)
+fuzz: elapsed: 21s, execs: 421208 (14329/sec), new interesting: 24 (total: 126)
+fuzz: elapsed: 24s, execs: 469957 (16255/sec), new interesting: 24 (total: 126)
+fuzz: elapsed: 27s, execs: 509840 (13291/sec), new interesting: 25 (total: 127)
+fuzz: elapsed: 30s, execs: 553860 (14677/sec), new interesting: 26 (total: 128)
+fuzz: elapsed: 31s, execs: 553860 (0/sec), new interesting: 26 (total: 128)
+PASS
+ok  	github.com/skill215/smppkit/codec	31.025s
+exit=0
+
+$ go test ./codec -run=^$ -fuzz=^FuzzSemanticTimes$ -fuzztime=30s -parallel=2 -timeout=90s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/29 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 29/29 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 87419 (29131/sec), new interesting: 19 (total: 48)
+fuzz: elapsed: 6s, execs: 184168 (32255/sec), new interesting: 19 (total: 48)
+fuzz: elapsed: 9s, execs: 274282 (30034/sec), new interesting: 20 (total: 49)
+fuzz: elapsed: 12s, execs: 363623 (29778/sec), new interesting: 23 (total: 52)
+fuzz: elapsed: 15s, execs: 456522 (30969/sec), new interesting: 25 (total: 54)
+fuzz: elapsed: 18s, execs: 538319 (27268/sec), new interesting: 28 (total: 57)
+fuzz: elapsed: 21s, execs: 625149 (28939/sec), new interesting: 31 (total: 60)
+fuzz: elapsed: 24s, execs: 721674 (32181/sec), new interesting: 33 (total: 62)
+fuzz: elapsed: 27s, execs: 819857 (32727/sec), new interesting: 33 (total: 62)
+fuzz: elapsed: 30s, execs: 909670 (29942/sec), new interesting: 33 (total: 62)
+fuzz: elapsed: 30s, execs: 909670 (0/sec), new interesting: 33 (total: 62)
+PASS
+ok  	github.com/skill215/smppkit/codec	30.085s
+exit=0
+
+$ go test ./codec -run=^$ -fuzz=^FuzzDataDirection$ -fuzztime=30s -parallel=2 -timeout=90s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/9 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 9/9 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 100172 (33389/sec), new interesting: 39 (total: 48)
+fuzz: elapsed: 6s, execs: 206714 (35503/sec), new interesting: 62 (total: 71)
+fuzz: elapsed: 9s, execs: 305336 (32875/sec), new interesting: 75 (total: 84)
+fuzz: elapsed: 12s, execs: 408915 (34527/sec), new interesting: 95 (total: 104)
+fuzz: elapsed: 15s, execs: 505399 (32159/sec), new interesting: 98 (total: 107)
+fuzz: elapsed: 18s, execs: 604475 (33027/sec), new interesting: 107 (total: 116)
+fuzz: elapsed: 21s, execs: 698511 (31353/sec), new interesting: 107 (total: 116)
+fuzz: elapsed: 24s, execs: 804684 (35393/sec), new interesting: 114 (total: 123)
+fuzz: elapsed: 27s, execs: 903750 (33014/sec), new interesting: 115 (total: 124)
+fuzz: elapsed: 30s, execs: 1011553 (35940/sec), new interesting: 118 (total: 127)
+fuzz: elapsed: 30s, execs: 1011553 (0/sec), new interesting: 118 (total: 127)
+PASS
+ok  	github.com/skill215/smppkit/codec	30.098s
+exit=0
+
+$ go test ./codec -run=^$ -fuzz=^FuzzDataResponse$ -fuzztime=30s -parallel=2 -timeout=90s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/13 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 13/13 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 99426 (33132/sec), new interesting: 40 (total: 53)
+fuzz: elapsed: 6s, execs: 199776 (33460/sec), new interesting: 50 (total: 63)
+fuzz: elapsed: 9s, execs: 299384 (33196/sec), new interesting: 61 (total: 74)
+fuzz: elapsed: 12s, execs: 394615 (31744/sec), new interesting: 70 (total: 83)
+fuzz: elapsed: 15s, execs: 488659 (31348/sec), new interesting: 72 (total: 85)
+fuzz: elapsed: 18s, execs: 579144 (30165/sec), new interesting: 76 (total: 89)
+fuzz: elapsed: 21s, execs: 678695 (33177/sec), new interesting: 91 (total: 104)
+fuzz: elapsed: 24s, execs: 770304 (30542/sec), new interesting: 93 (total: 106)
+fuzz: elapsed: 27s, execs: 851526 (27072/sec), new interesting: 98 (total: 111)
+fuzz: elapsed: 30s, execs: 947657 (32045/sec), new interesting: 100 (total: 113)
+fuzz: elapsed: 30s, execs: 947657 (0/sec), new interesting: 100 (total: 113)
+PASS
+ok  	github.com/skill215/smppkit/codec	30.031s
+exit=0
+
+$ go test ./message -run=^$ -fuzz=^FuzzUDH$ -fuzztime=30s -parallel=2 -timeout=90s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/20 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 20/20 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 94472 (31480/sec), new interesting: 0 (total: 20)
+fuzz: elapsed: 6s, execs: 193052 (32863/sec), new interesting: 0 (total: 20)
+fuzz: elapsed: 9s, execs: 294353 (33767/sec), new interesting: 1 (total: 21)
+fuzz: elapsed: 12s, execs: 396222 (33954/sec), new interesting: 1 (total: 21)
+fuzz: elapsed: 15s, execs: 487810 (30531/sec), new interesting: 1 (total: 21)
+fuzz: elapsed: 18s, execs: 584576 (32260/sec), new interesting: 1 (total: 21)
+fuzz: elapsed: 21s, execs: 692191 (35865/sec), new interesting: 1 (total: 21)
+fuzz: elapsed: 24s, execs: 780544 (29450/sec), new interesting: 1 (total: 21)
+fuzz: elapsed: 27s, execs: 870759 (30075/sec), new interesting: 1 (total: 21)
+fuzz: elapsed: 30s, execs: 978062 (35773/sec), new interesting: 1 (total: 21)
+fuzz: elapsed: 30s, execs: 978062 (0/sec), new interesting: 1 (total: 21)
+PASS
+ok  	github.com/skill215/smppkit/message	30.125s
+exit=0
+
+$ go test ./message -run=^$ -fuzz=^FuzzAdditionalUDH$ -fuzztime=30s -parallel=2 -timeout=90s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/6 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 6/6 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 96766 (32248/sec), new interesting: 1 (total: 7)
+fuzz: elapsed: 6s, execs: 194956 (32730/sec), new interesting: 1 (total: 7)
+fuzz: elapsed: 9s, execs: 277008 (27351/sec), new interesting: 1 (total: 7)
+fuzz: elapsed: 12s, execs: 392704 (38569/sec), new interesting: 2 (total: 8)
+fuzz: elapsed: 15s, execs: 466680 (24653/sec), new interesting: 2 (total: 8)
+fuzz: elapsed: 18s, execs: 559871 (31072/sec), new interesting: 2 (total: 8)
+fuzz: elapsed: 21s, execs: 653526 (31209/sec), new interesting: 2 (total: 8)
+fuzz: elapsed: 24s, execs: 751932 (32803/sec), new interesting: 2 (total: 8)
+fuzz: elapsed: 27s, execs: 849098 (32392/sec), new interesting: 2 (total: 8)
+fuzz: elapsed: 30s, execs: 936614 (29172/sec), new interesting: 2 (total: 8)
+fuzz: elapsed: 30s, execs: 936614 (0/sec), new interesting: 2 (total: 8)
+PASS
+ok  	github.com/skill215/smppkit/message	30.052s
+exit=0
+
+$ go test ./message -run=^$ -fuzz=^FuzzPrepareVersionEncoding$ -fuzztime=30s -parallel=2 -timeout=90s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/328 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 328/328 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 73225 (24402/sec), new interesting: 0 (total: 328)
+fuzz: elapsed: 6s, execs: 73225 (0/sec), new interesting: 0 (total: 328)
+fuzz: elapsed: 9s, execs: 73225 (0/sec), new interesting: 0 (total: 328)
+fuzz: elapsed: 12s, execs: 73225 (0/sec), new interesting: 0 (total: 328)
+fuzz: elapsed: 15s, execs: 73225 (0/sec), new interesting: 0 (total: 328)
+fuzz: elapsed: 18s, execs: 73225 (0/sec), new interesting: 0 (total: 328)
+fuzz: elapsed: 21s, execs: 73225 (0/sec), new interesting: 0 (total: 328)
+fuzz: elapsed: 24s, execs: 73225 (0/sec), new interesting: 0 (total: 328)
+fuzz: elapsed: 27s, execs: 73225 (0/sec), new interesting: 0 (total: 328)
+fuzz: elapsed: 30s, execs: 73225 (0/sec), new interesting: 0 (total: 328)
+fuzz: elapsed: 31s, execs: 73225 (0/sec), new interesting: 0 (total: 328)
+PASS
+ok  	github.com/skill215/smppkit/message	31.032s
+exit=0
+
+$ go test ./textcodec -run=^$ -fuzz=^FuzzCharsets$ -fuzztime=30s -parallel=2 -timeout=90s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/32 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 32/32 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 2766 (922/sec), new interesting: 1 (total: 33)
+fuzz: elapsed: 6s, execs: 2766 (0/sec), new interesting: 1 (total: 33)
+fuzz: elapsed: 9s, execs: 2766 (0/sec), new interesting: 1 (total: 33)
+fuzz: elapsed: 12s, execs: 2766 (0/sec), new interesting: 1 (total: 33)
+fuzz: elapsed: 15s, execs: 2766 (0/sec), new interesting: 1 (total: 33)
+fuzz: elapsed: 18s, execs: 2766 (0/sec), new interesting: 1 (total: 33)
+fuzz: elapsed: 21s, execs: 2766 (0/sec), new interesting: 1 (total: 33)
+fuzz: elapsed: 24s, execs: 2766 (0/sec), new interesting: 1 (total: 33)
+fuzz: elapsed: 27s, execs: 2766 (0/sec), new interesting: 1 (total: 33)
+fuzz: elapsed: 30s, execs: 2766 (0/sec), new interesting: 1 (total: 33)
+fuzz: elapsed: 31s, execs: 2766 (0/sec), new interesting: 1 (total: 33)
+PASS
+ok  	github.com/skill215/smppkit/textcodec	31.022s
+exit=0
+
+All benchmark smoke cases: go test . ./codec ./message ./textcodec -run=^$ -bench=. -benchtime=1x -race -count=1 (PASS)
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkSessionRequest/EnquireLink-16         	       1	    218158 ns/op	    2120 B/op	      35 allocs/op
+BenchmarkSessionRequest/SubmitSM140-16         	       1	    297413 ns/op	    3576 B/op	      50 allocs/op
+BenchmarkSessionSendText/GSM7Single-16         	       1	    374073 ns/op	    5856 B/op	      63 allocs/op
+BenchmarkSessionSendText/UCS2FallbackSingle-16 	       1	    458440 ns/op	    9224 B/op	      74 allocs/op
+PASS
+ok  	github.com/skill215/smppkit	1.031s
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit/codec
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkCodecEncode/SubmitSM/V33/140/NewBuffer-16         	       1	     44196 ns/op	   4.30 MB/s	       190.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V33/140/ReuseBuffer-16       	       1	     23126 ns/op	   8.22 MB/s	       190.0 wire-B/op	     320 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V34/140/NewBuffer-16         	       1	     18767 ns/op	  10.12 MB/s	       190.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V34/140/ReuseBuffer-16       	       1	     19889 ns/op	   9.55 MB/s	       190.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/140/NewBuffer-16         	       1	     19137 ns/op	   9.93 MB/s	       190.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/140/ReuseBuffer-16       	       1	     18907 ns/op	  10.05 MB/s	       190.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/255/NewBuffer-16         	       1	     28856 ns/op	  10.57 MB/s	       305.0 wire-B/op	     752 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/255/ReuseBuffer-16       	       1	     33807 ns/op	   9.02 MB/s	       305.0 wire-B/op	     432 B/op	       4 allocs/op
+BenchmarkCodecEncode/DataSM/V50/140/NewBuffer-16           	       1	     25640 ns/op	   7.29 MB/s	       187.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/DataSM/V50/140/ReuseBuffer-16         	       1	     38465 ns/op	   4.86 MB/s	       187.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/DataSM/V50/4096/NewBuffer-16          	       1	     30009 ns/op	 138.06 MB/s	      4143 wire-B/op	    9840 B/op	       5 allocs/op
+BenchmarkCodecEncode/DataSM/V50/4096/ReuseBuffer-16        	       1	     28055 ns/op	 147.67 MB/s	      4143 wire-B/op	    4976 B/op	       4 allocs/op
+BenchmarkCodecEncode/DataSM/V50/65535/NewBuffer-16         	       1	    548576 ns/op	 119.55 MB/s	     65582 wire-B/op	  147568 B/op	       5 allocs/op
+BenchmarkCodecEncode/DataSM/V50/65535/ReuseBuffer-16       	       1	    511623 ns/op	 128.18 MB/s	     65582 wire-B/op	   73840 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/2/NewBuffer-16        	       1	     32814 ns/op	   6.31 MB/s	       207.0 wire-B/op	     704 B/op	       6 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/2/ReuseBuffer-16      	       1	     21823 ns/op	   9.49 MB/s	       207.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/255/NewBuffer-16      	       1	    252996 ns/op	  15.82 MB/s	      4002 wire-B/op	   12272 B/op	      10 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/255/ReuseBuffer-16    	       1	    254028 ns/op	  15.75 MB/s	      4002 wire-B/op	    8176 B/op	       9 allocs/op
+BenchmarkCodecDecode/SubmitSM/V33/140-16                   	       1	     12866 ns/op	  14.77 MB/s	       190.0 wire-B/op	     448 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V34/140-16                   	       1	     15931 ns/op	  11.93 MB/s	       190.0 wire-B/op	     448 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V50/140-16                   	       1	     16803 ns/op	  11.31 MB/s	       190.0 wire-B/op	     448 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V50/255-16                   	       1	     14909 ns/op	  20.46 MB/s	       305.0 wire-B/op	     592 B/op	       8 allocs/op
+BenchmarkCodecDecode/DataSM/V50/140-16                     	       1	      6944 ns/op	  26.93 MB/s	       187.0 wire-B/op	     416 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/4096-16                    	       1	     11642 ns/op	 355.87 MB/s	      4143 wire-B/op	    5104 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/65535-16                   	       1	    243047 ns/op	 269.83 MB/s	     65582 wire-B/op	   73968 B/op	       9 allocs/op
+BenchmarkCodecDecode/SubmitMulti/V50/2-16                  	       1	     11573 ns/op	  17.89 MB/s	       207.0 wire-B/op	     672 B/op	      13 allocs/op
+BenchmarkCodecDecode/SubmitMulti/V50/255-16                	       1	    253547 ns/op	  15.78 MB/s	      4002 wire-B/op	   52704 B/op	     779 allocs/op
+BenchmarkCodecCopy/187/NewBuffer-16                        	       1	      3677 ns/op	  50.86 MB/s	     192 B/op	       1 allocs/op
+BenchmarkCodecCopy/187/ReuseBuffer-16                      	       1	       881.0 ns/op	 212.26 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCodecCopy/4143/NewBuffer-16                       	       1	      2595 ns/op	1596.53 MB/s	    4864 B/op	       1 allocs/op
+BenchmarkCodecCopy/4143/ReuseBuffer-16                     	       1	      1603 ns/op	2584.53 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCodecCopy/65582/NewBuffer-16                      	       1	    234600 ns/op	 279.55 MB/s	   73728 B/op	       1 allocs/op
+BenchmarkCodecCopy/65582/ReuseBuffer-16                    	       1	    224400 ns/op	 292.25 MB/s	       0 B/op	       0 allocs/op
+BenchmarkSubmitCodec-16                                    	       1	     15721 ns/op	  11.00 MB/s	     400 B/op	       6 allocs/op
+BenchmarkSubmitMultiCodec/2-16                             	       1	     14668 ns/op	   5.32 MB/s	     656 B/op	      16 allocs/op
+BenchmarkSubmitMultiCodec/255-16                           	       1	    262295 ns/op	  12.84 MB/s	   52176 B/op	     782 allocs/op
+BenchmarkReviewRejectOversizedFrame-16                     	       1	     32875 ns/op	    2840 B/op	      11 allocs/op
+BenchmarkCodecRead/SubmitSM/V33/140-16                     	       1	     27214 ns/op	   6.98 MB/s	     656 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V34/140-16                     	       1	     11773 ns/op	  16.14 MB/s	     656 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V50/140-16                     	       1	     16683 ns/op	  11.39 MB/s	     656 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V50/255-16                     	       1	      7645 ns/op	  39.90 MB/s	     928 B/op	      10 allocs/op
+BenchmarkCodecRead/DataSM/V50/140-16                       	       1	     14168 ns/op	  13.20 MB/s	     624 B/op	      11 allocs/op
+BenchmarkCodecRead/DataSM/V50/4096-16                      	       1	     16732 ns/op	 247.61 MB/s	    9984 B/op	      11 allocs/op
+BenchmarkCodecRead/DataSM/V50/65535-16                     	       1	    498177 ns/op	 131.64 MB/s	  147712 B/op	      11 allocs/op
+BenchmarkCodecRead/SubmitMulti/V50/2-16                    	       1	     15200 ns/op	  13.62 MB/s	     896 B/op	      15 allocs/op
+BenchmarkCodecRead/SubmitMulti/V50/255-16                  	       1	    258437 ns/op	  15.49 MB/s	   56816 B/op	     781 allocs/op
+BenchmarkCodecTLVs/0/EncodeReuse-16                        	       1	     21863 ns/op	   1.74 MB/s	     112 B/op	       3 allocs/op
+BenchmarkCodecTLVs/0/Decode-16                             	       1	     35620 ns/op	   1.07 MB/s	     264 B/op	       6 allocs/op
+BenchmarkCodecTLVs/8/EncodeReuse-16                        	       1	     52613 ns/op	   2.55 MB/s	     496 B/op	       5 allocs/op
+BenchmarkCodecTLVs/8/Decode-16                             	       1	     52633 ns/op	   2.55 MB/s	     848 B/op	      10 allocs/op
+BenchmarkCodecTLVs/64/EncodeReuse-16                       	       1	     92862 ns/op	   8.68 MB/s	    6488 B/op	      16 allocs/op
+BenchmarkCodecTLVs/64/Decode-16                            	       1	    100748 ns/op	   8.00 MB/s	   10040 B/op	      22 allocs/op
+BenchmarkCodecReject/ShortHeader-16                        	       1	     39988 ns/op	    2712 B/op	       8 allocs/op
+BenchmarkCodecReject/TruncatedTLV-16                       	       1	     32624 ns/op	     240 B/op	       7 allocs/op
+PASS
+ok  	github.com/skill215/smppkit/codec	1.080s
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit/message
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkMessagePlan/UDH8/Prepare-16         	       1	    105276 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH8/Materialize-16     	       1	     15911 ns/op	         5.000 segments/op	    1744 B/op	      16 allocs/op
+BenchmarkMessagePlan/UDH16/Prepare-16        	       1	    115045 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH16/Materialize-16    	       1	     11282 ns/op	         5.000 segments/op	    1744 B/op	      16 allocs/op
+BenchmarkMessagePlan/SAR/Prepare-16          	       1	    151587 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/SAR/Materialize-16      	       1	      9409 ns/op	         5.000 segments/op	    2288 B/op	      26 allocs/op
+BenchmarkReceiverReassemble/UDH16/Reversefalse-16         	       1	    181546 ns/op	         5.000 segments/op	   13696 B/op	      82 allocs/op
+BenchmarkReceiverReassemble/UDH16/Reversetrue-16          	       1	    156887 ns/op	         5.000 segments/op	   13568 B/op	      80 allocs/op
+BenchmarkReceiverReassemble/SAR/Reversefalse-16           	       1	    161547 ns/op	         5.000 segments/op	   13824 B/op	     110 allocs/op
+BenchmarkReceiverReassemble/SAR/Reversetrue-16            	       1	    221514 ns/op	         5.000 segments/op	   13824 B/op	     110 allocs/op
+BenchmarkReceiverDuplicate-16                             	       1	     17694 ns/op	     736 B/op	      11 allocs/op
+BenchmarkPrepare-16                                       	       1	    213288 ns/op	    7864 B/op	      13 allocs/op
+PASS
+ok  	github.com/skill215/smppkit/message	1.035s
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit/textcodec
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkTextCodec/GSM7/Basic160/Encode-16  	       1	     24288 ns/op	   6.59 MB/s	    1440 B/op	       2 allocs/op
+BenchmarkTextCodec/GSM7/Basic160/Decode-16  	       1	     15109 ns/op	  10.59 MB/s	     816 B/op	       2 allocs/op
+BenchmarkTextCodec/GSM7/Extension80/Encode-16         	       1	     28095 ns/op	   2.85 MB/s	     880 B/op	       3 allocs/op
+BenchmarkTextCodec/GSM7/Extension80/Decode-16         	       1	     13125 ns/op	  12.19 MB/s	     736 B/op	       2 allocs/op
+BenchmarkTextCodec/Latin1/140/Encode-16               	       1	     17354 ns/op	  16.13 MB/s	    1440 B/op	       2 allocs/op
+BenchmarkTextCodec/Latin1/140/Decode-16               	       1	      6222 ns/op	  22.50 MB/s	     864 B/op	       2 allocs/op
+BenchmarkTextCodec/UCS2/70/Encode-16                  	       1	      7195 ns/op	  29.19 MB/s	     800 B/op	       2 allocs/op
+BenchmarkTextCodec/UCS2/70/Decode-16                  	       1	      8336 ns/op	  16.79 MB/s	     800 B/op	       2 allocs/op
+BenchmarkTextCodec/UTF16BE/35/Encode-16               	       1	      4730 ns/op	  29.60 MB/s	     432 B/op	       2 allocs/op
+BenchmarkTextCodec/UTF16BE/35/Decode-16               	       1	      5881 ns/op	  23.81 MB/s	     720 B/op	       2 allocs/op
+PASS
+ok  	github.com/skill215/smppkit/textcodec	1.029s
+
+Progress follow-ups: GODEBUG=fuzzdebug=1; -fuzztime=10000x -fuzzminimizetime=100x -parallel=2 -timeout=60s.
+
+fuzz-charsets-progress.txt (debug baseline/queue lines omitted)
+fuzz: elapsed: 0s, gathering baseline coverage: 0/33 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 33/33 completed, now fuzzing with 2 workers
+2026-10-28 12:23:35.214090687 DEBUG finished processing input corpus, entries: 33, initial coverage bits: 376
+2026-10-28 12:23:35.284274035 DEBUG input minimized, id: 5d6d06aa, original id: 5bf7b898, crasher: false, originally crasher: false, minimizing took: 5.532401ms
+2026-10-28 12:23:35.284320416 DEBUG worker reported interesting input that doesn't expand coverage, id: 5d6d06aa, parent: /tmp/smppkit-go-build/fuzz/github.com/skill215/smppkit/textcodec/FuzzCharsets/0d238064af2ed994, canMinimize: false
+2026-10-28 12:23:35.28881412 DEBUG input minimized, id: 7db1123c, original id: ba35dd54, crasher: false, originally crasher: false, minimizing took: 3.863297ms
+2026-10-28 12:23:35.288887384 DEBUG worker reported interesting input that doesn't expand coverage, id: 7db1123c, parent: /tmp/smppkit-go-build/fuzz/github.com/skill215/smppkit/textcodec/FuzzCharsets/25c22ecd20964f45, canMinimize: false
+2026-10-28 12:23:35.293499574 DEBUG input minimized, id: 519a040a, original id: ddeaa369, crasher: false, originally crasher: false, minimizing took: 4.06369ms
+2026-10-28 12:23:35.293544171 DEBUG worker reported interesting input that doesn't expand coverage, id: 519a040a, parent: /tmp/smppkit-go-build/fuzz/github.com/skill215/smppkit/textcodec/FuzzCharsets/28f36ef487f23e6c, canMinimize: false
+2026-10-28 12:23:35.29523367 DEBUG input minimized, id: f53b06fc, original id: 30ce2019, crasher: false, originally crasher: false, minimizing took: 4.774575ms
+2026-10-28 12:23:35.295300311 DEBUG worker reported interesting input that doesn't expand coverage, id: f53b06fc, parent: /tmp/smppkit-go-build/fuzz/github.com/skill215/smppkit/textcodec/FuzzCharsets/2f13b93b8058c1bb, canMinimize: false
+2026-10-28 12:23:35.29899662 DEBUG input minimized, id: 236e8221, original id: 50f8243d, crasher: false, originally crasher: false, minimizing took: 4.801587ms
+2026-10-28 12:23:35.299062059 DEBUG worker reported interesting input that doesn't expand coverage, id: 236e8221, parent: seed#0, canMinimize: false
+2026-10-28 12:23:35.31074886 DEBUG input minimized, id: 89112ff8, original id: dd7a9836, crasher: false, originally crasher: false, minimizing took: 3.9925ms
+2026-10-28 12:23:35.310816283 DEBUG worker reported interesting input that doesn't expand coverage, id: 89112ff8, parent: /tmp/smppkit-go-build/fuzz/github.com/skill215/smppkit/textcodec/FuzzCharsets/303da33e3ef2e6f4, canMinimize: false
+2026-10-28 12:23:35.367495455 DEBUG input minimized, id: 1183f2c7, original id: 1183f2c7, crasher: false, originally crasher: false, minimizing took: 4.807689ms
+2026-10-28 12:23:35.367643696 DEBUG new interesting input, id: 1183f2c7, parent: /tmp/smppkit-go-build/fuzz/github.com/skill215/smppkit/textcodec/FuzzCharsets/38a63a69a36c8e4c, gen: 1, new bits: 1, total bits: 377, size: 44, exec time: 0s
+2026-10-28 12:23:35.378047881 DEBUG input minimized, id: e13174d0, original id: f3e3b838, crasher: false, originally crasher: false, minimizing took: 5.320415ms
+2026-10-28 12:23:35.378083742 DEBUG worker reported interesting input that doesn't expand coverage, id: e13174d0, parent: /tmp/smppkit-go-build/fuzz/github.com/skill215/smppkit/textcodec/FuzzCharsets/321696ab1483d966, canMinimize: false
+2026-10-28 12:23:35.379333934 DEBUG input minimized, id: c5ecb1e4, original id: c84760f8, crasher: false, originally crasher: false, minimizing took: 669.233µs
+2026-10-28 12:23:35.379391567 DEBUG worker reported interesting input that doesn't expand coverage, id: c5ecb1e4, parent: /tmp/smppkit-go-build/fuzz/github.com/skill215/smppkit/textcodec/FuzzCharsets/448e844deb17d43a, canMinimize: false
+2026-10-28 12:23:35.451081149 DEBUG input minimized, id: 3cee096c, original id: 3cee096c, crasher: false, originally crasher: false, minimizing took: 5.409058ms
+2026-10-28 12:23:35.451256623 DEBUG new interesting input, id: 3cee096c, parent: /tmp/smppkit-go-build/fuzz/github.com/skill215/smppkit/textcodec/FuzzCharsets/456067ab85d5f443, gen: 1, new bits: 2, total bits: 379, size: 45, exec time: 0s
+2026-10-28 12:23:35.5387087 DEBUG input minimized, id: d3c8f9f4, original id: 255e093d, crasher: false, originally crasher: false, minimizing took: 2.464112ms
+2026-10-28 12:23:35.538742787 DEBUG worker reported interesting input that doesn't expand coverage, id: d3c8f9f4, parent: /tmp/smppkit-go-build/fuzz/github.com/skill215/smppkit/textcodec/FuzzCharsets/4d9b1e83fa1cd95d, canMinimize: false
+2026-10-28 12:23:35.542175269 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:209. stopping: false
+2026-10-28 12:23:35.544013926 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:232. stopping: true
+2026-10-28 12:23:35.544026039 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:209. stopping: true
+2026-10-28 12:23:35.54514839 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:232. stopping: true
+fuzz: elapsed: 0s, execs: 10000 (28816/sec), new interesting: 2 (total: 35)
+PASS
+ok  	github.com/skill215/smppkit/textcodec	0.362s
+
+fuzz-prepare-progress.txt (debug baseline/queue lines omitted)
+fuzz: elapsed: 0s, gathering baseline coverage: 0/328 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 328/328 completed, now fuzzing with 2 workers
+2026-10-28 12:23:35.981237708 DEBUG finished processing input corpus, entries: 328, initial coverage bits: 614
+2026-10-28 12:23:36.411284636 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:209. stopping: false
+2026-10-28 12:23:36.415665147 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:232. stopping: true
+2026-10-28 12:23:36.415701729 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:209. stopping: true
+2026-10-28 12:23:36.420913311 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:232. stopping: true
+fuzz: elapsed: 1s, execs: 10000 (17569/sec), new interesting: 0 (total: 328)
+PASS
+ok  	github.com/skill215/smppkit/message	0.583s
+
+Initial test development: empty-short-message fixture had one extra zero byte. Corrected before final successful tests, counterfactual overlay and fuzz runs; not a library failure.

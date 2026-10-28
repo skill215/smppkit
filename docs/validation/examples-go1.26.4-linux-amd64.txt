@@ -1,0 +1,104 @@
+Go 1.26.4, linux/amd64. Both example executables built with -race.
+Only loopback TCP; synthetic credentials/messages.
+client version=3.3 utf8_bytes=7 wait_delivery=False exit=0
+2026/10/28 11:23:32 Bound SMPP 3.3
+2026/10/28 11:23:32 part=1 outcome=4 sequence=2 bytes_written=53 message_id="fbc9e74a" error=<nil>
+2026/10/28 11:23:32 All segments accepted; final delivery remains unknown.
+2026/10/28 11:23:32 Unbound and closed.
+
+client version=3.4 utf8_bytes=7 wait_delivery=False exit=0
+2026/10/28 11:23:33 Bound SMPP 3.4
+2026/10/28 11:23:33 part=1 outcome=4 sequence=2 bytes_written=53 message_id="580b41a163ef7c3e30d0934eb295178c" error=<nil>
+2026/10/28 11:23:33 All segments accepted; final delivery remains unknown.
+2026/10/28 11:23:33 Unbound and closed.
+
+client version=5.0 utf8_bytes=7 wait_delivery=False exit=0
+2026/10/28 11:23:34 Bound SMPP 5.0
+2026/10/28 11:23:34 part=1 outcome=4 sequence=2 bytes_written=53 message_id="67b99093103f412580d3c05c43da598f" error=<nil>
+2026/10/28 11:23:34 All segments accepted; final delivery remains unknown.
+2026/10/28 11:23:34 Unbound and closed.
+
+client version=3.3 utf8_bytes=200 wait_delivery=False exit=1
+2026/10/28 11:23:35 Bound SMPP 3.3
+2026/10/28 11:23:35 submit (inspect segment outcomes; no retry): smpp: invalid or conflicting message metadata: 3.3 standard submit_sm does not define UDHI; use a peer-specific low-level policy
+
+client version=5.0 utf8_bytes=5 wait_delivery=False exit=1
+2026/10/28 11:23:35 dial/bind: smpp: command 0x00000009 rejected with status 0x0000000d
+
+client version=5.0 utf8_bytes=5 wait_delivery=True exit=1
+2026/10/28 11:23:35 Bound SMPP 5.0
+2026/10/28 11:23:35 part=1 outcome=4 sequence=2 bytes_written=50 message_id="27ccfe5f3f7b641b9022a53ce93b8735" error=<nil>
+2026/10/28 11:23:35 All segments accepted; final delivery remains unknown.
+2026/10/28 11:23:35 receive delivery: context deadline exceeded
+
+server exit=0
+2026/10/28 11:23:32 Listening on 127.0.0.1:42259 (echo=false)
+2026/10/28 11:23:32 Complete message: segments=1 bytes=8 receipt=false decoded=true
+2026/10/28 11:23:33 Complete message: segments=1 bytes=8 receipt=false decoded=true
+2026/10/28 11:23:34 Complete message: segments=1 bytes=8 receipt=false decoded=true
+2026/10/28 11:23:35 Session ended: EOF
+2026/10/28 11:23:35 Complete message: segments=1 bytes=5 receipt=false decoded=true
+2026/10/28 11:23:35 Session ended: EOF
+
+client version=3.4 utf8_bytes=560 wait_delivery=True exit=0
+2026/10/28 11:23:36 Bound SMPP 3.4
+2026/10/28 11:23:36 part=1 outcome=4 sequence=2 bytes_written=204 message_id="f05ccb25dc95f8f96c7ba7f22e3c8ca6" error=<nil>
+2026/10/28 11:23:36 part=2 outcome=4 sequence=3 bytes_written=204 message_id="8efbfd3f711b2aaf239fa3fe1d18469b" error=<nil>
+2026/10/28 11:23:36 part=3 outcome=4 sequence=4 bytes_written=204 message_id="f1d1a97a295d0dbce90838957ac0ee2a" error=<nil>
+2026/10/28 11:23:36 part=4 outcome=4 sequence=5 bytes_written=204 message_id="1b67663fd31383df512d84708c854683" error=<nil>
+2026/10/28 11:23:36 part=5 outcome=4 sequence=6 bytes_written=84 message_id="7819a4d0ec0e46da0898bcba05fad2d9" error=<nil>
+2026/10/28 11:23:36 All segments accepted; final delivery remains unknown.
+2026/10/28 11:23:36 Received delivery: segments=5 bytes=640 receipt=false text="Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^"
+2026/10/28 11:23:36 Unbound and closed.
+
+client version=3.4 utf8_bytes=540 wait_delivery=True exit=0
+2026/10/28 11:23:37 Bound SMPP 3.4
+2026/10/28 11:23:37 part=1 outcome=4 sequence=2 bytes_written=184 message_id="b2b3be40357afe9e006278cb72b5e7cd" error=<nil>
+2026/10/28 11:23:37 part=2 outcome=4 sequence=3 bytes_written=184 message_id="1015eb41acb43fc498a40098141e534a" error=<nil>
+2026/10/28 11:23:37 part=3 outcome=4 sequence=4 bytes_written=148 message_id="b13b5adeacd8d77b069b2599b0f9ce86" error=<nil>
+2026/10/28 11:23:37 All segments accepted; final delivery remains unknown.
+2026/10/28 11:23:37 Received delivery: segments=3 bytes=360 receipt=false text="中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中"
+2026/10/28 11:23:37 Unbound and closed.
+
+client version=5.0 utf8_bytes=560 wait_delivery=True exit=0
+2026/10/28 11:23:38 Bound SMPP 5.0
+2026/10/28 11:23:38 part=1 outcome=4 sequence=2 bytes_written=204 message_id="445d0ad73076d103abc8e39de2b89c15" error=<nil>
+2026/10/28 11:23:38 part=2 outcome=4 sequence=3 bytes_written=204 message_id="98d8df054897b697114db44a6e6e743b" error=<nil>
+2026/10/28 11:23:38 part=3 outcome=4 sequence=4 bytes_written=204 message_id="35161f514262384c69e4f47abd29d989" error=<nil>
+2026/10/28 11:23:38 part=4 outcome=4 sequence=5 bytes_written=204 message_id="e27008091fa6938d9a05db051436f7b9" error=<nil>
+2026/10/28 11:23:38 part=5 outcome=4 sequence=6 bytes_written=84 message_id="cc741876c7fead9db169d18c2b2e3ca9" error=<nil>
+2026/10/28 11:23:38 All segments accepted; final delivery remains unknown.
+2026/10/28 11:23:38 Received delivery: segments=5 bytes=640 receipt=false text="Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^"
+2026/10/28 11:23:38 Unbound and closed.
+
+client version=5.0 utf8_bytes=540 wait_delivery=True exit=0
+2026/10/28 11:23:40 Bound SMPP 5.0
+2026/10/28 11:23:40 part=1 outcome=4 sequence=2 bytes_written=184 message_id="d39c51f169348797bb41fc0843d09bfe" error=<nil>
+2026/10/28 11:23:40 part=2 outcome=4 sequence=3 bytes_written=184 message_id="55d86c99467e5be5096dee2eb4d38067" error=<nil>
+2026/10/28 11:23:40 part=3 outcome=4 sequence=4 bytes_written=148 message_id="8a16d2e77ff66066e96988d3ce2509e2" error=<nil>
+2026/10/28 11:23:40 All segments accepted; final delivery remains unknown.
+2026/10/28 11:23:40 Received delivery: segments=3 bytes=360 receipt=false text="中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中"
+2026/10/28 11:23:40 Unbound and closed.
+
+server exit=0
+2026/10/28 11:23:36 Listening on 127.0.0.1:32819 (echo=true)
+2026/10/28 11:23:36 Complete message: segments=5 bytes=640 receipt=false decoded=true
+2026/10/28 11:23:36 Echo part=1 outcome=4 error=<nil>
+2026/10/28 11:23:36 Echo part=2 outcome=4 error=<nil>
+2026/10/28 11:23:36 Echo part=3 outcome=4 error=<nil>
+2026/10/28 11:23:36 Echo part=4 outcome=4 error=<nil>
+2026/10/28 11:23:36 Echo part=5 outcome=4 error=<nil>
+2026/10/28 11:23:37 Complete message: segments=3 bytes=360 receipt=false decoded=true
+2026/10/28 11:23:37 Echo part=1 outcome=4 error=<nil>
+2026/10/28 11:23:37 Echo part=2 outcome=4 error=<nil>
+2026/10/28 11:23:37 Echo part=3 outcome=4 error=<nil>
+2026/10/28 11:23:38 Complete message: segments=5 bytes=640 receipt=false decoded=true
+2026/10/28 11:23:38 Echo part=1 outcome=4 error=<nil>
+2026/10/28 11:23:38 Echo part=2 outcome=4 error=<nil>
+2026/10/28 11:23:38 Echo part=3 outcome=4 error=<nil>
+2026/10/28 11:23:38 Echo part=4 outcome=4 error=<nil>
+2026/10/28 11:23:38 Echo part=5 outcome=4 error=<nil>
+2026/10/28 11:23:40 Complete message: segments=3 bytes=360 receipt=false decoded=true
+2026/10/28 11:23:40 Echo part=1 outcome=4 error=<nil>
+2026/10/28 11:23:40 Echo part=2 outcome=4 error=<nil>
+2026/10/28 11:23:40 Echo part=3 outcome=4 error=<nil>

@@ -1,0 +1,15 @@
+go: creating new go.mod: module smppkit-legacy-check
+go: to add module requirements and sums:
+	go mod tidy
+=== RUN   TestLegacySimulator
+    legacy_test.go:40: fresh simulator process:
+        === RUN   TestLegacySimulator
+            legacy_test.go:226: 3.4 TRX: UDH16 submit, UDH8 reversed/duplicate delivery and per-segment ACK, negative/uncertain results, enquire, unbind PASS; TLVs disabled
+        --- PASS: TestLegacySimulator (0.10s)
+        PASS
+--- PASS: TestLegacySimulator (1.11s)
+=== RUN   TestLegacyBindSequenceMismatch
+    legacy_test.go:252: legacy bind_resp sequence mismatch correctly remains uncorrelated and times out
+--- PASS: TestLegacyBindSequenceMismatch (0.08s)
+PASS
+ok  	smppkit-legacy-check	2.215s

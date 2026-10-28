@@ -1,0 +1,11 @@
+=== RUN   TestSoakLocalResources
+    session_soak_test.go:54: Go=go1.26.4 OS=linux arch=amd64 GOMAXPROCS=16; TCP pairs/batch=4 window=4 inbound=8 notifications=8; baseline {HeapAlloc:556392 HeapInuse:2015232 HeapObjects:1289 SessionLoops:0 FDs:7}
+    session_soak_test.go:63: elapsed=10.003s batches=847 connections=3388 submits/deliveries=216832 notifications=27104 controls=54208 snapshot={HeapAlloc:953992 HeapInuse:2301952 HeapObjects:2657 SessionLoops:0 FDs:7}
+    session_soak_test.go:63: elapsed=20.018s batches=1668 connections=6672 submits/deliveries=427008 notifications=53376 controls=106752 snapshot={HeapAlloc:967464 HeapInuse:2367488 HeapObjects:2723 SessionLoops:0 FDs:7}
+    session_soak_test.go:63: elapsed=30.026s batches=2392 connections=9568 submits/deliveries=612352 notifications=76544 controls=153088 snapshot={HeapAlloc:968864 HeapInuse:2400256 HeapObjects:2708 SessionLoops:0 FDs:7}
+    session_soak_test.go:63: elapsed=40.039s batches=3094 connections=12376 submits/deliveries=792064 notifications=99008 controls=198016 snapshot={HeapAlloc:985344 HeapInuse:2375680 HeapObjects:2788 SessionLoops:0 FDs:7}
+    session_soak_test.go:63: elapsed=50.049s batches=3702 connections=14808 submits/deliveries=947712 notifications=118464 controls=236928 snapshot={HeapAlloc:965568 HeapInuse:2359296 HeapObjects:2616 SessionLoops:0 FDs:7}
+    session_soak_test.go:80: completed 4198 batches / 16792 TCP connection pairs in 1m0.014s; final {HeapAlloc:960568 HeapInuse:2056192 HeapObjects:2582 SessionLoops:0 FDs:7}
+--- PASS: TestSoakLocalResources (60.04s)
+PASS
+ok  	github.com/skill215/smppkit	61.077s

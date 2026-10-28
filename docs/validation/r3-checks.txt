@@ -1,0 +1,67 @@
+R3 candidate checks, 2026-10-28. Local WSL2 linux/amd64; NOT remote GitHub CI.
+Go baseline remains 1.26.0. No runtime source changes.
+GOTOOLCHAIN=local; caches in /tmp; installed toolchains unchanged.
+Final source manifest r3-source.sha256 includes one new Codec test.
+
+final-go1.26.4-checks.txt
+$ /usr/local/go/bin/go version
+go version go1.26.4 linux/amd64
+exit=0
+$ /usr/local/go/bin/go build ./...
+exit=0
+$ /usr/local/go/bin/go vet ./...
+exit=0
+$ /usr/local/go/bin/go test -race -count=1 -timeout=90s ./...
+ok  	github.com/skill215/smppkit	2.242s
+ok  	github.com/skill215/smppkit/codec	1.642s
+ok  	github.com/skill215/smppkit/examples/client	1.032s
+?   	github.com/skill215/smppkit/examples/codec	[no test files]
+?   	github.com/skill215/smppkit/examples/custom-tlv	[no test files]
+?   	github.com/skill215/smppkit/examples/data-direction	[no test files]
+?   	github.com/skill215/smppkit/examples/data-transaction	[no test files]
+?   	github.com/skill215/smppkit/examples/multipart	[no test files]
+?   	github.com/skill215/smppkit/examples/notifications	[no test files]
+?   	github.com/skill215/smppkit/examples/private-command	[no test files]
+?   	github.com/skill215/smppkit/examples/server	[no test files]
+?   	github.com/skill215/smppkit/examples/submit-multi	[no test files]
+ok  	github.com/skill215/smppkit/internal/wire	1.024s
+ok  	github.com/skill215/smppkit/message	1.171s
+?   	github.com/skill215/smppkit/pdu	[no test files]
+ok  	github.com/skill215/smppkit/textcodec	1.033s
+ok  	github.com/skill215/smppkit/tlv	1.032s
+exit=0
+
+final-go1.27.2-checks.txt
+$ /home/skill/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.27.2.linux-amd64/bin/go version
+go version go1.27.2 linux/amd64
+exit=0
+$ /home/skill/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.27.2.linux-amd64/bin/go build ./...
+exit=0
+$ /home/skill/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.27.2.linux-amd64/bin/go vet ./...
+exit=0
+$ /home/skill/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.27.2.linux-amd64/bin/go test -race -count=1 -timeout=90s ./...
+ok  	github.com/skill215/smppkit	2.217s
+ok  	github.com/skill215/smppkit/codec	1.614s
+ok  	github.com/skill215/smppkit/examples/client	1.038s
+?   	github.com/skill215/smppkit/examples/codec	[no test files]
+?   	github.com/skill215/smppkit/examples/custom-tlv	[no test files]
+?   	github.com/skill215/smppkit/examples/data-direction	[no test files]
+?   	github.com/skill215/smppkit/examples/data-transaction	[no test files]
+?   	github.com/skill215/smppkit/examples/multipart	[no test files]
+?   	github.com/skill215/smppkit/examples/notifications	[no test files]
+?   	github.com/skill215/smppkit/examples/private-command	[no test files]
+?   	github.com/skill215/smppkit/examples/server	[no test files]
+?   	github.com/skill215/smppkit/examples/submit-multi	[no test files]
+ok  	github.com/skill215/smppkit/internal/wire	1.024s
+ok  	github.com/skill215/smppkit/message	1.166s
+?   	github.com/skill215/smppkit/pdu	[no test files]
+ok  	github.com/skill215/smppkit/textcodec	1.030s
+ok  	github.com/skill215/smppkit/tlv	1.030s
+exit=0
+
+nack-regression.txt
+ok  	github.com/skill215/smppkit/codec	1.048s
+
+NACK test command: go test -race ./codec -run=^TestIndependentGenericNACKProfiles$ -count=20 -timeout=60s
+
+Formatting checked with both installed Go 1.26.4 and cached Go 1.27.2 gofmt: no output. git diff --check passed. Final candidate source hashes verified unchanged. Updated documentation local file links resolve. /doc/ remains ignored.

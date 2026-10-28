@@ -1,0 +1,176 @@
+R1 evidence completion, 2026-10-28 Asia/Shanghai
+Go 1.26.4 linux/amd64; GOTOOLCHAIN=local
+Production source unchanged. Diagnostics/mutation overlays only under /tmp.
+
+=== fuzz-debug-1 ===
+Diagnostic log; omitted 318 DEBUG initial-input enumeration lines.
+COMMAND: go test ./message -run=^$ -fuzz=^FuzzPrepareVersionEncoding$ -fuzztime=5s -parallel=2
+ENV: GOTOOLCHAIN=local GODEBUG=fuzzdebug=1
+fuzz: elapsed: 0s, gathering baseline coverage: 0/318 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 318/318 completed, now fuzzing with 2 workers
+2026-10-28 10:46:48.369705227 DEBUG finished processing input corpus, entries: 318, initial coverage bits: 591
+2026-10-28 10:46:48.935571257 DEBUG queueing input for minimization, id: 7116f843, parent: seed#11, keepCoverage: true, crasher: false
+fuzz: elapsed: 3s, execs: 70861 (23616/sec), new interesting: 0 (total: 318)
+2026-10-28 10:46:51.368206997 DEBUG queueing input for minimization, id: eb070f7a, parent: seed#35, keepCoverage: true, crasher: false
+2026-10-28 10:46:53.276601992 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:228. stopping: false
+fuzz: elapsed: 6s, execs: 78256 (2465/sec), new interesting: 0 (total: 318)
+2026-10-28 10:46:54.282371073 DEBUG input minimized, id: eb070f7a, original id: eb070f7a, crasher: false, originally crasher: false, minimizing took: 0s
+2026-10-28 10:46:54.282517415 DEBUG input minimized, id: 7116f843, original id: 7116f843, crasher: false, originally crasher: false, minimizing took: 0s
+2026-10-28 10:46:54.282538572 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:232. stopping: true
+2026-10-28 10:46:54.282614866 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:232. stopping: true
+fuzz: elapsed: 6s, execs: 78256 (0/sec), new interesting: 0 (total: 318)
+PASS
+ok  	github.com/skill215/smppkit/message	6.019s
+
+EXIT: 0
+
+=== fuzz-debug-2 ===
+Diagnostic log; omitted 318 DEBUG initial-input enumeration lines.
+COMMAND: go test ./message -run=^$ -fuzz=^FuzzPrepareVersionEncoding$ -fuzztime=5s -parallel=2
+ENV: GOTOOLCHAIN=local GODEBUG=fuzzdebug=1
+fuzz: elapsed: 0s, gathering baseline coverage: 0/318 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 318/318 completed, now fuzzing with 2 workers
+2026-10-28 10:46:54.654805703 DEBUG finished processing input corpus, entries: 318, initial coverage bits: 591
+2026-10-28 10:46:54.855674094 DEBUG queueing input for minimization, id: 9edfe6cb, parent: seed#2, keepCoverage: true, crasher: false
+2026-10-28 10:46:56.697627171 DEBUG queueing input for minimization, id: db6785ef, parent: seed#23, keepCoverage: true, crasher: false
+fuzz: elapsed: 3s, execs: 71590 (23860/sec), new interesting: 0 (total: 318)
+2026-10-28 10:46:59.555153431 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:228. stopping: false
+fuzz: elapsed: 6s, execs: 71590 (0/sec), new interesting: 0 (total: 318)
+2026-10-28 10:47:00.561096646 DEBUG input minimized, id: db6785ef, original id: db6785ef, crasher: false, originally crasher: false, minimizing took: 0s
+2026-10-28 10:47:00.56122641 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:232. stopping: true
+2026-10-28 10:47:00.563882599 DEBUG input minimized, id: 9edfe6cb, original id: 9edfe6cb, crasher: false, originally crasher: false, minimizing took: 0s
+2026-10-28 10:47:00.5640206 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:232. stopping: true
+fuzz: elapsed: 6s, execs: 71590 (0/sec), new interesting: 0 (total: 318)
+PASS
+ok  	github.com/skill215/smppkit/message	6.020s
+
+EXIT: 0
+
+=== fuzz-debug-3 ===
+Diagnostic log; omitted 318 DEBUG initial-input enumeration lines.
+COMMAND: go test ./message -run=^$ -fuzz=^FuzzPrepareVersionEncoding$ -fuzztime=5s -parallel=2
+ENV: GOTOOLCHAIN=local GODEBUG=fuzzdebug=1
+fuzz: elapsed: 0s, gathering baseline coverage: 0/318 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 318/318 completed, now fuzzing with 2 workers
+2026-10-28 10:47:00.902101701 DEBUG finished processing input corpus, entries: 318, initial coverage bits: 591
+2026-10-28 10:47:02.592775571 DEBUG queueing input for minimization, id: 6eb07a6d, parent: seed#33, keepCoverage: true, crasher: false
+2026-10-28 10:47:03.16540289 DEBUG queueing input for minimization, id: bc116b6f, parent: seed#39, keepCoverage: true, crasher: false
+2026-10-28 10:47:03.552410316 DEBUG input minimized, id: 28b6e81e, original id: bc116b6f, crasher: false, originally crasher: false, minimizing took: 185.577054ms
+2026-10-28 10:47:03.552459162 DEBUG worker reported interesting input that doesn't expand coverage, id: 28b6e81e, parent: seed#39, canMinimize: false
+2026-10-28 10:47:03.567781565 DEBUG queueing input for minimization, id: e282b062, parent: seed#42, keepCoverage: true, crasher: false
+2026-10-28 10:47:03.78755038 DEBUG input minimized, id: 1a252d17, original id: 6eb07a6d, crasher: false, originally crasher: false, minimizing took: 1.194061176s
+2026-10-28 10:47:03.78759626 DEBUG worker reported interesting input that doesn't expand coverage, id: 1a252d17, parent: seed#33, canMinimize: false
+fuzz: elapsed: 3s, execs: 168856 (56279/sec), new interesting: 0 (total: 318)
+2026-10-28 10:47:04.030261008 DEBUG queueing input for minimization, id: ce9ed369, parent: seed#45, keepCoverage: true, crasher: false
+2026-10-28 10:47:04.238437639 DEBUG input minimized, id: ed32cf72, original id: e282b062, crasher: false, originally crasher: false, minimizing took: 669.556195ms
+2026-10-28 10:47:04.238622612 DEBUG new interesting input, id: ed32cf72, parent: seed#42, gen: 1, new bits: 2, total bits: 593, size: 183, exec time: 0s
+2026-10-28 10:47:04.919931592 DEBUG queueing input for minimization, id: ac413c2d, parent: seed#52, keepCoverage: true, crasher: false
+2026-10-28 10:47:04.964079732 DEBUG queueing input for minimization, id: c2b204cf, parent: seed#53, keepCoverage: true, crasher: false
+2026-10-28 10:47:05.190531447 DEBUG input minimized, id: ac9ac579, original id: ac413c2d, crasher: false, originally crasher: false, minimizing took: 24.91334ms
+2026-10-28 10:47:05.19057361 DEBUG worker reported interesting input that doesn't expand coverage, id: ac9ac579, parent: seed#52, canMinimize: false
+2026-10-28 10:47:05.338934959 DEBUG input minimized, id: f7071d7f, original id: c2b204cf, crasher: false, originally crasher: false, minimizing took: 147.850658ms
+2026-10-28 10:47:05.338998333 DEBUG worker reported interesting input that doesn't expand coverage, id: f7071d7f, parent: seed#53, canMinimize: false
+2026-10-28 10:47:05.820040316 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:228. stopping: false
+2026-10-28 10:47:05.846302426 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:232. stopping: true
+fuzz: elapsed: 6s, execs: 229468 (20198/sec), new interesting: 1 (total: 319)
+2026-10-28 10:47:06.830726333 DEBUG input minimized, id: ce9ed369, original id: ce9ed369, crasher: false, originally crasher: false, minimizing took: 0s
+2026-10-28 10:47:06.83104829 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:232. stopping: true
+fuzz: elapsed: 6s, execs: 229468 (0/sec), new interesting: 1 (total: 319)
+PASS
+ok  	github.com/skill215/smppkit/message	6.022s
+
+EXIT: 0
+
+=== fuzz-time-30s ===
+COMMAND: go test ./message -run=^$ -fuzz=^FuzzPrepareVersionEncoding$ -fuzztime=30s -parallel=2
+ENV: GOTOOLCHAIN=local; default GODEBUG
+fuzz: elapsed: 0s, gathering baseline coverage: 0/319 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 319/319 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 141594 (47182/sec), new interesting: 1 (total: 320)
+fuzz: elapsed: 6s, execs: 181712 (13375/sec), new interesting: 1 (total: 320)
+fuzz: elapsed: 9s, execs: 181712 (0/sec), new interesting: 1 (total: 320)
+fuzz: elapsed: 12s, execs: 181712 (0/sec), new interesting: 1 (total: 320)
+fuzz: elapsed: 15s, execs: 181712 (0/sec), new interesting: 1 (total: 320)
+fuzz: elapsed: 18s, execs: 377368 (65222/sec), new interesting: 2 (total: 321)
+fuzz: elapsed: 21s, execs: 450890 (24506/sec), new interesting: 3 (total: 322)
+fuzz: elapsed: 24s, execs: 530153 (26426/sec), new interesting: 5 (total: 324)
+fuzz: elapsed: 27s, execs: 581286 (17041/sec), new interesting: 7 (total: 326)
+fuzz: elapsed: 30s, execs: 649954 (22893/sec), new interesting: 9 (total: 328)
+fuzz: elapsed: 31s, execs: 649954 (0/sec), new interesting: 9 (total: 328)
+PASS
+ok  	github.com/skill215/smppkit/message	31.016s
+
+EXIT: 0
+
+=== fuzz-count-100000 ===
+COMMAND: go test ./message -run=^$ -fuzz=^FuzzPrepareVersionEncoding$ -fuzztime=100000x -parallel=2
+ENV: GOTOOLCHAIN=local; default GODEBUG
+fuzz: elapsed: 0s, gathering baseline coverage: 0/328 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 328/328 completed, now fuzzing with 2 workers
+fuzz: elapsed: 2s, execs: 100000 (40159/sec), new interesting: 0 (total: 328)
+PASS
+ok  	github.com/skill215/smppkit/message	2.501s
+
+EXIT: 0
+
+=== EXPECTED MUTATION FAILURE: overreject ===
+COMMAND: go test -overlay=/tmp/smppkit-r1-completion/overreject.json ./message -run=^FuzzPrepareVersionEncoding/seed#0$ -count=1
+--- FAIL: FuzzPrepareVersionEncoding (0.00s)
+    --- FAIL: FuzzPrepareVersionEncoding/seed#0 (0.00s)
+        r1_test.go:159: valid bounded input rejected: version=33 encoding=GSM7-unpacked bytes=0 err=smpp: invalid or conflicting message metadata
+FAIL
+FAIL	github.com/skill215/smppkit/message	0.008s
+FAIL
+EXIT: 1
+
+=== EXPECTED MUTATION FAILURE: primary-only ===
+COMMAND: go test -overlay=/tmp/smppkit-r1-completion/primary-only.json . -run=^TestR1V33Latin1SendPreflight$/^selected-fallback$ -count=1
+--- FAIL: TestR1V33Latin1SendPreflight (0.00s)
+    --- FAIL: TestR1V33Latin1SendPreflight/selected-fallback (0.00s)
+        session_r1_test.go:313: unexpected preflight: {ID:749143946098a87942544a18b9002d7c Encoding:ISO-8859-1 Mode:1 Segments:[{Number:1 Result:{Sequence:1 Outcome:1 BytesWritten:0 Response:{Sequence:0 Status:0 Body:<nil>}} MessageID: Err:unexpected transport write during preflight}]} unexpected transport write during preflight
+FAIL
+FAIL	github.com/skill215/smppkit	0.005s
+FAIL
+EXIT: 1
+
+=== Context propagation probe (observed in this pass) ===
+first mismatch: parent=context deadline exceeded worker=<nil>
+Go go1.26.4: 5 parent/worker error mismatches in 20000 trials
+The probe reproduces a possible coordinator cancellation window, not the exact
+historical fuzz failure. No installed Go source was patched.
+
+Probe source (standalone diagnostic, not a library test):
+package main
+
+import (
+ "context"
+ "fmt"
+ "runtime"
+ "time"
+)
+
+func main() {
+ runtime.GOMAXPROCS(2)
+ const trials = 20000
+ mismatches := 0
+ for range trials {
+  parent, cancelParent := context.WithTimeout(context.Background(), 5*time.Microsecond)
+  worker, cancelWorker := context.WithCancel(parent)
+  <-parent.Done()
+  // Same ordering as internal/fuzz: stop(parent.Err()) compares its argument
+  // against the worker child's Err before calling cancelWorkers.
+  parentErr := parent.Err()
+  workerErr := worker.Err()
+  if parentErr != workerErr {
+   mismatches++
+   if mismatches == 1 { fmt.Printf("first mismatch: parent=%v worker=%v\n", parentErr, workerErr) }
+  }
+  cancelWorker()
+  cancelParent()
+ }
+ fmt.Printf("Go %s: %d parent/worker error mismatches in %d trials\n", runtime.Version(), mismatches, trials)
+}
+
+Inspected installed toolchain source SHA-256:
+765f99f7cc0710b0117ffa183e432524f429c21496fcbad9b63fb9886fdbaac7  /usr/local/go/src/context/context.go
+d9de12569d5c18fb629c8e79a4d629eb2985b719e4fbfe30c3f3ce23fc44feb5  /usr/local/go/src/internal/fuzz/fuzz.go

@@ -1,0 +1,87 @@
+R3 diagnostic record, 2026-10-28. Temporary Go -overlay; no installed toolchain or library source changed.
+Decision preserved: capture child Err once, compare the same value, log a mismatch.
+--- Go1.26.4/internal/fuzz/fuzz.go
++++ temporary-logging-overlay.go
+@@ -126,7 +126,11 @@
+ 			}
+ 		}
+ 
+-		if err == fuzzCtx.Err() || isInterruptError(err) {
++		childErr := fuzzCtx.Err()
++		if err != nil && err == ctx.Err() && err != childErr {
++			c.debugLogf("R3 diagnostic: deadline suppression mismatch: incoming=%v parent=%v child=%v", err, ctx.Err(), childErr)
++		}
++		if err == childErr || isInterruptError(err) {
+ 			// Suppress cancellation errors and terminations due to SIGINT.
+ 			// The messages are not helpful since either the user triggered the error
+ 			// (with ^C) or another more helpful message will be printed (a crasher).
+go/src/internal/fuzz/fuzz.go sha256=d9de12569d5c18fb629c8e79a4d629eb2985b719e4fbfe30c3f3ce23fc44feb5
+go/src/context/context.go sha256=765f99f7cc0710b0117ffa183e432524f429c21496fcbad9b63fb9886fdbaac7
+toolchain@v0.0.1-go1.26.5.linux-amd64/src/internal/fuzz/fuzz.go sha256=d9de12569d5c18fb629c8e79a4d629eb2985b719e4fbfe30c3f3ce23fc44feb5
+toolchain@v0.0.1-go1.26.5.linux-amd64/src/context/context.go sha256=765f99f7cc0710b0117ffa183e432524f429c21496fcbad9b63fb9886fdbaac7
+toolchain@v0.0.1-go1.27.2.linux-amd64/src/internal/fuzz/fuzz.go sha256=db5a9c6f3b26220eb9fb1c144caf012a555c6adef785cb9d185426e508d9d2aa
+toolchain@v0.0.1-go1.27.2.linux-amd64/src/context/context.go sha256=971f00ffa375b79d3f65e6da33cca3a493cc3fce091c589233abfb4283e29b7d
+
+Diagnostic 1
+$ go test -overlay=/tmp/smppkit-r3/fuzz-diagnostic-overlay.json ./codec -run=^$ -fuzz=^FuzzSubmitMulti$ -fuzztime=5s -parallel=2 -timeout=60s
+exit=0
+
+Diagnostic 2
+$ go test -overlay=/tmp/smppkit-r3/fuzz-diagnostic-overlay.json ./codec -run=^$ -fuzz=^FuzzSubmitMulti$ -fuzztime=5s -parallel=2 -timeout=60s
+exit=0
+
+Diagnostic 3
+$ go test -overlay=/tmp/smppkit-r3/fuzz-diagnostic-overlay.json ./codec -run=^$ -fuzz=^FuzzSubmitMulti$ -fuzztime=5s -parallel=2 -timeout=60s
+exit=0
+
+Diagnostic 4
+$ go test -overlay=/tmp/smppkit-r3/fuzz-diagnostic-overlay.json ./codec -run=^$ -fuzz=^FuzzSubmitMulti$ -fuzztime=5s -parallel=2 -timeout=60s
+exit=0
+
+Diagnostic 5
+$ go test -overlay=/tmp/smppkit-r3/fuzz-diagnostic-overlay.json ./codec -run=^$ -fuzz=^FuzzSubmitMulti$ -fuzztime=5s -parallel=2 -timeout=60s
+exit=0
+
+Diagnostic 6
+$ go test -overlay=/tmp/smppkit-r3/fuzz-diagnostic-overlay.json ./codec -run=^$ -fuzz=^FuzzSubmitMulti$ -fuzztime=5s -parallel=2 -timeout=60s
+exit=0
+
+Diagnostic 7
+$ go test -overlay=/tmp/smppkit-r3/fuzz-diagnostic-overlay.json ./codec -run=^$ -fuzz=^FuzzSubmitMulti$ -fuzztime=5s -parallel=2 -timeout=60s
+exit=0
+
+Diagnostic 8
+$ go test -overlay=/tmp/smppkit-r3/fuzz-diagnostic-overlay.json ./codec -run=^$ -fuzz=^FuzzSubmitMulti$ -fuzztime=5s -parallel=2 -timeout=60s
+exit=0
+
+Diagnostic 9
+$ go test -overlay=/tmp/smppkit-r3/fuzz-diagnostic-overlay.json ./codec -run=^$ -fuzz=^FuzzSubmitMulti$ -fuzztime=5s -parallel=2 -timeout=60s
+exit=0
+
+Diagnostic 10
+$ go test -overlay=/tmp/smppkit-r3/fuzz-diagnostic-overlay.json ./codec -run=^$ -fuzz=^FuzzSubmitMulti$ -fuzztime=5s -parallel=2 -timeout=60s
+exit=1
+
+Failing diagnostic 10 tail. Preceding coverage-minimization logs omitted:
+2026-10-28 13:35:36.776280467 DEBUG input minimized, id: 164677ac, original id: 164677ac, crasher: false, originally crasher: false, minimizing took: 113.734µs
+fuzz: elapsed: 3s, execs: 36715 (12230/sec), new interesting: 0 (total: 43)
+2026-10-28 13:35:37.273761061 DEBUG queueing input for minimization, id: 6fb0184d, parent: /tmp/smppkit-go-build/fuzz/github.com/skill215/smppkit/codec/FuzzSubmitMulti/64e06756c6c7659a, keepCoverage: true, crasher: false
+2026-10-28 13:35:37.375244157 DEBUG input minimized, id: 6fb0184d, original id: 6fb0184d, crasher: false, originally crasher: false, minimizing took: 114.776µs
+2026-10-28 13:35:38.693308313 DEBUG queueing input for minimization, id: ddac9bd5, parent: /tmp/smppkit-go-build/fuzz/github.com/skill215/smppkit/codec/FuzzSubmitMulti/b2bbaae45936dd33, keepCoverage: true, crasher: false
+2026-10-28 13:35:38.695968797 DEBUG input minimized, id: ddac9bd5, original id: ddac9bd5, crasher: false, originally crasher: false, minimizing took: 171.528µs
+2026-10-28 13:35:39.105200007 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:232. stopping: false
+2026-10-28 13:35:39.105245898 DEBUG R3 diagnostic: deadline suppression mismatch: incoming=context deadline exceeded parent=context deadline exceeded child=<nil>
+2026-10-28 13:35:39.210894704 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:236. stopping: true
+2026-10-28 13:35:39.275993435 DEBUG input minimized, id: 39b5056c, original id: 39b5056c, crasher: false, originally crasher: false, minimizing took: 0s
+2026-10-28 13:35:39.276174743 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:236. stopping: true
+fuzz: elapsed: 5s, execs: 52188 (7133/sec), new interesting: 0 (total: 43)
+--- FAIL: FuzzSubmitMulti (5.18s)
+    context deadline exceeded
+FAIL
+exit status 1
+FAIL	github.com/skill215/smppkit/codec	5.185s
+exit=1
+
+Installed Go 1.27.2 source adds comparison with ctx.Err(), citing go.dev/issue/75804.
+Official issue checked: https://github.com/golang/go/issues/75804
+No full toolchain source or generated fuzz cache is redistributed.

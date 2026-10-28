@@ -1,0 +1,367 @@
+Final review, 2026-10-28. Go 1.26.4 linux/amd64.
+Production source unchanged; reviewed tree identified by final-review-source.sha256.
+Command environment: GOCACHE=/tmp/smppkit-go-build GOMODCACHE=/tmp/smppkit-go-mod GOTOOLCHAIN=local
+
+Checks observed in this review (summary, not verbatim terminal output):
+gofmt -l .: empty output
+git diff --check: exit 0
+go build ./...: exit 0
+go vet ./...: exit 0
+go test -race ./...: exit 0, all normal packages passed; optional soak was not enabled.
+Full race test required permission for loopback TCP/TLS; run completed successfully.
+go.mod retains go 1.26.0; doc/HANDOVER.md remains Git-ignored.
+
+
+Expected failing probes: go test -race -overlay=<overlay.json> -run ^TestFinalReview -v -count=1 . (exit 1)
+=== RUN   TestFinalReviewDecodedSliceIsolation
+=== RUN   TestFinalReviewDecodedSliceIsolation/34
+    final_review_probe_test.go:47: appending TLV[0] changed TLV[1]: 22 -> 05
+=== RUN   TestFinalReviewDecodedSliceIsolation/50
+    final_review_probe_test.go:47: appending TLV[0] changed TLV[1]: 22 -> 05
+--- FAIL: TestFinalReviewDecodedSliceIsolation (0.00s)
+    --- FAIL: TestFinalReviewDecodedSliceIsolation/34 (0.00s)
+    --- FAIL: TestFinalReviewDecodedSliceIsolation/50 (0.00s)
+=== RUN   TestFinalReviewBufferedTransactionACK
+=== RUN   TestFinalReviewBufferedTransactionACK/34/data_sm/mode2
+    final_review_probe_test.go:115: transaction acknowledged OK before any delivery/consumption; queue=1
+=== RUN   TestFinalReviewBufferedTransactionACK/34/data_sm/mode3
+=== RUN   TestFinalReviewBufferedTransactionACK/50/data_sm/mode2
+    final_review_probe_test.go:115: transaction acknowledged OK before any delivery/consumption; queue=1
+=== RUN   TestFinalReviewBufferedTransactionACK/50/data_sm/mode3
+=== RUN   TestFinalReviewBufferedTransactionACK/50/submit_sm/mode2
+    final_review_probe_test.go:115: transaction acknowledged OK before any delivery/consumption; queue=1
+=== RUN   TestFinalReviewBufferedTransactionACK/50/submit_sm/mode3
+--- FAIL: TestFinalReviewBufferedTransactionACK (0.00s)
+    --- FAIL: TestFinalReviewBufferedTransactionACK/34/data_sm/mode2 (0.00s)
+    --- PASS: TestFinalReviewBufferedTransactionACK/34/data_sm/mode3 (0.00s)
+    --- FAIL: TestFinalReviewBufferedTransactionACK/50/data_sm/mode2 (0.00s)
+    --- PASS: TestFinalReviewBufferedTransactionACK/50/data_sm/mode3 (0.00s)
+    --- FAIL: TestFinalReviewBufferedTransactionACK/50/submit_sm/mode2 (0.00s)
+    --- PASS: TestFinalReviewBufferedTransactionACK/50/submit_sm/mode3 (0.00s)
+FAIL
+FAIL	github.com/skill215/smppkit	0.020s
+FAIL
+
+All 11 fuzz targets, count budgets (not a timed R3 campaign)
+$ go test ./codec -run=^$ -fuzz=^FuzzDecode$ -fuzztime=10000x -parallel=2 -timeout=60s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/146 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 146/146 completed, now fuzzing with 2 workers
+fuzz: elapsed: 0s, execs: 10000 (45037/sec), new interesting: 2 (total: 148)
+PASS
+ok  	github.com/skill215/smppkit/codec	0.234s
+exit=0
+$ go test ./codec -run=^$ -fuzz=^FuzzEncodeSM$ -fuzztime=10000x -parallel=2 -timeout=60s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/2 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 2/2 completed, now fuzzing with 2 workers
+fuzz: elapsed: 0s, execs: 10000 (43504/sec), new interesting: 9 (total: 11)
+PASS
+ok  	github.com/skill215/smppkit/codec	0.235s
+exit=0
+$ go test ./codec -run=^$ -fuzz=^FuzzSubmitMulti$ -fuzztime=10000x -parallel=2 -timeout=60s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/2 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 2/2 completed, now fuzzing with 2 workers
+fuzz: elapsed: 1s, execs: 10000 (18621/sec), new interesting: 34 (total: 36)
+PASS
+ok  	github.com/skill215/smppkit/codec	0.542s
+exit=0
+$ go test ./codec -run=^$ -fuzz=^FuzzStandardTLVSection$ -fuzztime=10000x -parallel=2 -timeout=60s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/102 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 102/102 completed, now fuzzing with 2 workers
+fuzz: elapsed: 0s, execs: 10000 (41422/sec), new interesting: 0 (total: 102)
+PASS
+ok  	github.com/skill215/smppkit/codec	0.250s
+exit=0
+$ go test ./codec -run=^$ -fuzz=^FuzzSemanticTimes$ -fuzztime=10000x -parallel=2 -timeout=60s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/5 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 5/5 completed, now fuzzing with 2 workers
+fuzz: elapsed: 0s, execs: 10031 (38437/sec), new interesting: 24 (total: 29)
+PASS
+ok  	github.com/skill215/smppkit/codec	0.270s
+exit=0
+$ go test ./codec -run=^$ -fuzz=^FuzzDataDirection$ -fuzztime=10000x -parallel=2 -timeout=60s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/3 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 3/3 completed, now fuzzing with 2 workers
+fuzz: elapsed: 0s, execs: 10000 (50643/sec), new interesting: 6 (total: 9)
+PASS
+ok  	github.com/skill215/smppkit/codec	0.206s
+exit=0
+$ go test ./codec -run=^$ -fuzz=^FuzzDataResponse$ -fuzztime=10000x -parallel=2 -timeout=60s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/3 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 3/3 completed, now fuzzing with 2 workers
+fuzz: elapsed: 0s, execs: 10000 (56625/sec), new interesting: 10 (total: 13)
+PASS
+ok  	github.com/skill215/smppkit/codec	0.181s
+exit=0
+$ go test ./message -run=^$ -fuzz=^FuzzUDH$ -fuzztime=10000x -parallel=2 -timeout=60s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/20 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 20/20 completed, now fuzzing with 2 workers
+fuzz: elapsed: 0s, execs: 10000 (57492/sec), new interesting: 0 (total: 20)
+PASS
+ok  	github.com/skill215/smppkit/message	0.180s
+exit=0
+$ go test ./message -run=^$ -fuzz=^FuzzAdditionalUDH$ -fuzztime=10000x -parallel=2 -timeout=60s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/3 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 3/3 completed, now fuzzing with 2 workers
+fuzz: elapsed: 0s, execs: 10000 (59844/sec), new interesting: 3 (total: 6)
+PASS
+ok  	github.com/skill215/smppkit/message	0.171s
+exit=0
+$ go test ./message -run=^$ -fuzz=^FuzzPrepareVersionEncoding$ -fuzztime=10000x -parallel=2 -timeout=60s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/328 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 328/328 completed, now fuzzing with 2 workers
+fuzz: elapsed: 0s, execs: 10000 (37464/sec), new interesting: 0 (total: 328)
+PASS
+ok  	github.com/skill215/smppkit/message	0.281s
+exit=0
+$ go test ./textcodec -run=^$ -fuzz=^FuzzCharsets$ -fuzztime=10000x -parallel=2 -timeout=60s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/30 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 30/30 completed, now fuzzing with 2 workers
+fuzz: elapsed: 1s, execs: 10000 (13743/sec), new interesting: 2 (total: 32)
+PASS
+ok  	github.com/skill215/smppkit/textcodec	0.740s
+exit=0
+
+Benchmark smoke: go test . ./codec ./message ./textcodec -run=^$ -bench=. -benchtime=1x -benchmem -race -count=1 (exit 0; 80 cases; NOT a timing baseline)
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkSessionRequest/EnquireLink-16         	       1	    184003 ns/op	    2248 B/op	      36 allocs/op
+BenchmarkSessionRequest/SubmitSM140-16         	       1	    391681 ns/op	    3640 B/op	      49 allocs/op
+BenchmarkSessionSendText/GSM7Single-16         	       1	    221597 ns/op	    5808 B/op	      61 allocs/op
+BenchmarkSessionSendText/UCS2FallbackSingle-16 	       1	    248076 ns/op	    9480 B/op	      75 allocs/op
+PASS
+ok  	github.com/skill215/smppkit	1.025s
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit/codec
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkCodecEncode/SubmitSM/V33/140/NewBuffer-16         	       1	     53235 ns/op	   3.57 MB/s	       190.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V33/140/ReuseBuffer-16       	       1	     33867 ns/op	   5.61 MB/s	       190.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V34/140/NewBuffer-16         	       1	     14489 ns/op	  13.11 MB/s	       190.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V34/140/ReuseBuffer-16       	       1	     23616 ns/op	   8.05 MB/s	       190.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/140/NewBuffer-16         	       1	     47584 ns/op	   3.99 MB/s	       190.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/140/ReuseBuffer-16       	       1	     14138 ns/op	  13.44 MB/s	       190.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/255/NewBuffer-16         	       1	     23777 ns/op	  12.83 MB/s	       305.0 wire-B/op	     752 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitSM/V50/255/ReuseBuffer-16       	       1	     31712 ns/op	   9.62 MB/s	       305.0 wire-B/op	     432 B/op	       4 allocs/op
+BenchmarkCodecEncode/DataSM/V50/140/NewBuffer-16           	       1	     21262 ns/op	   8.80 MB/s	       187.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/DataSM/V50/140/ReuseBuffer-16         	       1	     37043 ns/op	   5.05 MB/s	       187.0 wire-B/op	     304 B/op	       4 allocs/op
+BenchmarkCodecEncode/DataSM/V50/4096/NewBuffer-16          	       1	     33917 ns/op	 122.15 MB/s	      4143 wire-B/op	    9840 B/op	       5 allocs/op
+BenchmarkCodecEncode/DataSM/V50/4096/ReuseBuffer-16        	       1	     29868 ns/op	 138.71 MB/s	      4143 wire-B/op	    4976 B/op	       4 allocs/op
+BenchmarkCodecEncode/DataSM/V50/65535/NewBuffer-16         	       1	    560223 ns/op	 117.06 MB/s	     65582 wire-B/op	  147568 B/op	       5 allocs/op
+BenchmarkCodecEncode/DataSM/V50/65535/ReuseBuffer-16       	       1	    418594 ns/op	 156.67 MB/s	     65582 wire-B/op	   73840 B/op	       4 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/2/NewBuffer-16        	       1	     18907 ns/op	  10.95 MB/s	       207.0 wire-B/op	     704 B/op	       6 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/2/ReuseBuffer-16      	       1	     28967 ns/op	   7.15 MB/s	       207.0 wire-B/op	     496 B/op	       5 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/255/NewBuffer-16      	       1	    235694 ns/op	  16.98 MB/s	      4002 wire-B/op	   12272 B/op	      10 allocs/op
+BenchmarkCodecEncode/SubmitMulti/V50/255/ReuseBuffer-16    	       1	    316513 ns/op	  12.64 MB/s	      4002 wire-B/op	    8176 B/op	       9 allocs/op
+BenchmarkCodecDecode/SubmitSM/V33/140-16                   	       1	      6954 ns/op	  27.32 MB/s	       190.0 wire-B/op	     448 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V34/140-16                   	       1	     15951 ns/op	  11.91 MB/s	       190.0 wire-B/op	     448 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V50/140-16                   	       1	     16633 ns/op	  11.42 MB/s	       190.0 wire-B/op	     448 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V50/255-16                   	       1	     17354 ns/op	  17.58 MB/s	       305.0 wire-B/op	     592 B/op	       8 allocs/op
+BenchmarkCodecDecode/DataSM/V50/140-16                     	       1	      8747 ns/op	  21.38 MB/s	       187.0 wire-B/op	     416 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/4096-16                    	       1	     19408 ns/op	 213.47 MB/s	      4143 wire-B/op	    5104 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/65535-16                   	       1	    224732 ns/op	 291.82 MB/s	     65582 wire-B/op	   73968 B/op	       9 allocs/op
+BenchmarkCodecDecode/SubmitMulti/V50/2-16                  	       1	     10831 ns/op	  19.11 MB/s	       207.0 wire-B/op	     672 B/op	      13 allocs/op
+BenchmarkCodecDecode/SubmitMulti/V50/255-16                	       1	    213501 ns/op	  18.74 MB/s	      4002 wire-B/op	   52704 B/op	     779 allocs/op
+BenchmarkCodecCopy/187/NewBuffer-16                        	       1	      1423 ns/op	 131.41 MB/s	     192 B/op	       1 allocs/op
+BenchmarkCodecCopy/187/ReuseBuffer-16                      	       1	       752.0 ns/op	 248.67 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCodecCopy/4143/NewBuffer-16                       	       1	      4780 ns/op	 866.74 MB/s	    4864 B/op	       1 allocs/op
+BenchmarkCodecCopy/4143/ReuseBuffer-16                     	       1	      1413 ns/op	2932.06 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCodecCopy/65582/NewBuffer-16                      	       1	    246014 ns/op	 266.58 MB/s	   73728 B/op	       1 allocs/op
+BenchmarkCodecCopy/65582/ReuseBuffer-16                    	       1	    170697 ns/op	 384.20 MB/s	       0 B/op	       0 allocs/op
+BenchmarkSubmitCodec-16                                    	       1	     16733 ns/op	  10.34 MB/s	     400 B/op	       6 allocs/op
+BenchmarkSubmitMultiCodec/2-16                             	       1	     19478 ns/op	   4.00 MB/s	     656 B/op	      16 allocs/op
+BenchmarkSubmitMultiCodec/255-16                           	       1	    178441 ns/op	  18.87 MB/s	   52176 B/op	     782 allocs/op
+BenchmarkReviewRejectOversizedFrame-16                     	       1	     66931 ns/op	    2840 B/op	      11 allocs/op
+BenchmarkCodecRead/SubmitSM/V33/140-16                     	       1	     15440 ns/op	  12.31 MB/s	     656 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V34/140-16                     	       1	      6483 ns/op	  29.31 MB/s	     656 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V50/140-16                     	       1	      7465 ns/op	  25.45 MB/s	     656 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V50/255-16                     	       1	      6313 ns/op	  48.31 MB/s	     928 B/op	      10 allocs/op
+BenchmarkCodecRead/DataSM/V50/140-16                       	       1	     11252 ns/op	  16.62 MB/s	     624 B/op	      11 allocs/op
+BenchmarkCodecRead/DataSM/V50/4096-16                      	       1	     14689 ns/op	 282.05 MB/s	    9984 B/op	      11 allocs/op
+BenchmarkCodecRead/DataSM/V50/65535-16                     	       1	    418274 ns/op	 156.79 MB/s	  147712 B/op	      11 allocs/op
+BenchmarkCodecRead/SubmitMulti/V50/2-16                    	       1	     13807 ns/op	  14.99 MB/s	     896 B/op	      15 allocs/op
+BenchmarkCodecRead/SubmitMulti/V50/255-16                  	       1	    157681 ns/op	  25.38 MB/s	   56816 B/op	     781 allocs/op
+BenchmarkCodecTLVs/0/EncodeReuse-16                        	       1	     14168 ns/op	   2.68 MB/s	     112 B/op	       3 allocs/op
+BenchmarkCodecTLVs/0/Decode-16                             	       1	     43846 ns/op	   0.87 MB/s	     264 B/op	       6 allocs/op
+BenchmarkCodecTLVs/8/EncodeReuse-16                        	       1	     24178 ns/op	   5.54 MB/s	     496 B/op	       5 allocs/op
+BenchmarkCodecTLVs/8/Decode-16                             	       1	     42975 ns/op	   3.12 MB/s	     848 B/op	      10 allocs/op
+BenchmarkCodecTLVs/64/EncodeReuse-16                       	       1	     58064 ns/op	  13.88 MB/s	    6488 B/op	      16 allocs/op
+BenchmarkCodecTLVs/64/Decode-16                            	       1	     87342 ns/op	   9.23 MB/s	   10040 B/op	      22 allocs/op
+BenchmarkCodecReject/ShortHeader-16                        	       1	     27344 ns/op	    2712 B/op	       8 allocs/op
+BenchmarkCodecReject/TruncatedTLV-16                       	       1	     18186 ns/op	     240 B/op	       7 allocs/op
+PASS
+ok  	github.com/skill215/smppkit/codec	1.067s
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit/message
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkMessagePlan/UDH8/Prepare-16         	       1	     93845 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH8/Materialize-16     	       1	     11954 ns/op	         5.000 segments/op	    1744 B/op	      16 allocs/op
+BenchmarkMessagePlan/UDH16/Prepare-16        	       1	     86711 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH16/Materialize-16    	       1	      6213 ns/op	         5.000 segments/op	    1744 B/op	      16 allocs/op
+BenchmarkMessagePlan/SAR/Prepare-16          	       1	    101640 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/SAR/Materialize-16      	       1	     10781 ns/op	         5.000 segments/op	    2288 B/op	      26 allocs/op
+BenchmarkReceiverReassemble/UDH16/Reversefalse-16         	       1	    146789 ns/op	         5.000 segments/op	   13696 B/op	      82 allocs/op
+BenchmarkReceiverReassemble/UDH16/Reversetrue-16          	       1	    140176 ns/op	         5.000 segments/op	   13568 B/op	      80 allocs/op
+BenchmarkReceiverReassemble/SAR/Reversefalse-16           	       1	    128634 ns/op	         5.000 segments/op	   13824 B/op	     110 allocs/op
+BenchmarkReceiverReassemble/SAR/Reversetrue-16            	       1	    112672 ns/op	         5.000 segments/op	   13824 B/op	     110 allocs/op
+BenchmarkReceiverDuplicate-16                             	       1	     13216 ns/op	     736 B/op	      11 allocs/op
+BenchmarkPrepare-16                                       	       1	    168723 ns/op	    7864 B/op	      13 allocs/op
+PASS
+ok  	github.com/skill215/smppkit/message	1.030s
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit/textcodec
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkTextCodec/GSM7/Basic160/Encode-16  	       1	     36932 ns/op	   4.33 MB/s	    1440 B/op	       2 allocs/op
+BenchmarkTextCodec/GSM7/Basic160/Decode-16  	       1	     13527 ns/op	  11.83 MB/s	     816 B/op	       2 allocs/op
+BenchmarkTextCodec/GSM7/Extension80/Encode-16         	       1	     15510 ns/op	   5.16 MB/s	     896 B/op	       4 allocs/op
+BenchmarkTextCodec/GSM7/Extension80/Decode-16         	       1	     12765 ns/op	  12.53 MB/s	     736 B/op	       2 allocs/op
+BenchmarkTextCodec/Latin1/140/Encode-16               	       1	     12575 ns/op	  22.27 MB/s	    1440 B/op	       2 allocs/op
+BenchmarkTextCodec/Latin1/140/Decode-16               	       1	      6352 ns/op	  22.04 MB/s	     864 B/op	       2 allocs/op
+BenchmarkTextCodec/UCS2/70/Encode-16                  	       1	      7204 ns/op	  29.15 MB/s	     800 B/op	       2 allocs/op
+BenchmarkTextCodec/UCS2/70/Decode-16                  	       1	      4208 ns/op	  33.27 MB/s	     800 B/op	       2 allocs/op
+BenchmarkTextCodec/UTF16BE/35/Encode-16               	       1	      3677 ns/op	  38.07 MB/s	     432 B/op	       2 allocs/op
+BenchmarkTextCodec/UTF16BE/35/Decode-16               	       1	      4830 ns/op	  28.99 MB/s	     720 B/op	       2 allocs/op
+PASS
+ok  	github.com/skill215/smppkit/textcodec	1.028s
+
+Self-contained examples
+$ go run -race ./examples/codec
+0000001080000015000000000000002a
+exit=0
+$ go run -race ./examples/multipart
+encoding=GSM7-unpacked segments=3 reference_bits=16
+segment=1 encoded_units=152
+segment=2 encoded_units=151
+segment=3 encoded_units=57
+exit=0
+$ go run -race ./examples/custom-tlv
+encoded 49 octets
+exit=0
+$ go run -race ./examples/private-command
+000000110001020000000000000000012a
+exit=0
+$ go run -race ./examples/data-direction
+delivery receipt accepted
+same receipt rejected as submission
+response=0000001180000103000000000000000700
+exit=0
+$ go run -race ./examples/data-transaction
+transaction response validated: status=0x000000fe
+same TLVs rejected for explicit store-and-forward
+exit=0
+$ go run -race ./examples/notifications
+availability notification for 12345; sequence=2; no ACK
+exit=0
+$ go run -race ./examples/submit-multi
+message_id=demo:1 unsuccessful=1
+destination=10002 status=0x00000058
+exit=0
+
+Freshly rebuilt -race client/server binaries, loopback smoke harness (exit 0)
+Go 1.26.4, linux/amd64. Both example executables built with -race.
+Only loopback TCP; synthetic credentials/messages.
+client version=3.3 utf8_bytes=7 wait_delivery=False exit=0
+2026/10/28 11:41:00 Bound SMPP 3.3
+2026/10/28 11:41:00 part=1 outcome=4 sequence=2 bytes_written=53 message_id="0d378687" error=<nil>
+2026/10/28 11:41:00 All segments accepted; final delivery remains unknown.
+2026/10/28 11:41:00 Unbound and closed.
+
+client version=3.4 utf8_bytes=7 wait_delivery=False exit=0
+2026/10/28 11:41:01 Bound SMPP 3.4
+2026/10/28 11:41:01 part=1 outcome=4 sequence=2 bytes_written=53 message_id="92fe6c33b451fede23be1166ec8d8e3f" error=<nil>
+2026/10/28 11:41:01 All segments accepted; final delivery remains unknown.
+2026/10/28 11:41:01 Unbound and closed.
+
+client version=5.0 utf8_bytes=7 wait_delivery=False exit=0
+2026/10/28 11:41:02 Bound SMPP 5.0
+2026/10/28 11:41:02 part=1 outcome=4 sequence=2 bytes_written=53 message_id="7c6143b6a64bd99be0fd7cc34f8ad3b7" error=<nil>
+2026/10/28 11:41:02 All segments accepted; final delivery remains unknown.
+2026/10/28 11:41:02 Unbound and closed.
+
+client version=3.3 utf8_bytes=200 wait_delivery=False exit=1
+2026/10/28 11:41:03 Bound SMPP 3.3
+2026/10/28 11:41:03 submit (inspect segment outcomes; no retry): smpp: invalid or conflicting message metadata: 3.3 standard submit_sm does not define UDHI; use a peer-specific low-level policy
+
+client version=5.0 utf8_bytes=5 wait_delivery=False exit=1
+2026/10/28 11:41:03 dial/bind: smpp: command 0x00000009 rejected with status 0x0000000d
+
+client version=5.0 utf8_bytes=5 wait_delivery=True exit=1
+2026/10/28 11:41:03 Bound SMPP 5.0
+2026/10/28 11:41:03 part=1 outcome=4 sequence=2 bytes_written=50 message_id="f11e0be37fe93a3513251f491dd98cd8" error=<nil>
+2026/10/28 11:41:03 All segments accepted; final delivery remains unknown.
+2026/10/28 11:41:03 receive delivery: context deadline exceeded
+
+server exit=0
+2026/10/28 11:40:59 Listening on 127.0.0.1:37845 (echo=false)
+2026/10/28 11:41:00 Complete message: segments=1 bytes=8 receipt=false decoded=true
+2026/10/28 11:41:01 Complete message: segments=1 bytes=8 receipt=false decoded=true
+2026/10/28 11:41:02 Complete message: segments=1 bytes=8 receipt=false decoded=true
+2026/10/28 11:41:03 Session ended: EOF
+2026/10/28 11:41:03 Complete message: segments=1 bytes=5 receipt=false decoded=true
+2026/10/28 11:41:03 Session ended: EOF
+
+client version=3.4 utf8_bytes=560 wait_delivery=True exit=0
+2026/10/28 11:41:04 Bound SMPP 3.4
+2026/10/28 11:41:04 part=1 outcome=4 sequence=2 bytes_written=204 message_id="95a2edfdbd289fc627a1116320e86b0c" error=<nil>
+2026/10/28 11:41:04 part=2 outcome=4 sequence=3 bytes_written=204 message_id="585c904f96ca5c32e1411d01501c52a1" error=<nil>
+2026/10/28 11:41:04 part=3 outcome=4 sequence=4 bytes_written=204 message_id="0556efe8885a96c9c5ce93aec1ea498f" error=<nil>
+2026/10/28 11:41:04 part=4 outcome=4 sequence=5 bytes_written=204 message_id="a0d9452b978e4cc91f5030313fade671" error=<nil>
+2026/10/28 11:41:04 part=5 outcome=4 sequence=6 bytes_written=84 message_id="8090d88facdda1d8047b2a57d69edaa5" error=<nil>
+2026/10/28 11:41:04 All segments accepted; final delivery remains unknown.
+2026/10/28 11:41:04 Received delivery: segments=5 bytes=640 receipt=false text="Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^"
+2026/10/28 11:41:04 Unbound and closed.
+
+client version=3.4 utf8_bytes=540 wait_delivery=True exit=0
+2026/10/28 11:41:05 Bound SMPP 3.4
+2026/10/28 11:41:05 part=1 outcome=4 sequence=2 bytes_written=184 message_id="112276367f2e064f92e296cbc9a6715c" error=<nil>
+2026/10/28 11:41:05 part=2 outcome=4 sequence=3 bytes_written=184 message_id="a8c3f7ccb67c9d3495820100c1d4cb6a" error=<nil>
+2026/10/28 11:41:05 part=3 outcome=4 sequence=4 bytes_written=148 message_id="21ead2af6a289059f147d956c0390b65" error=<nil>
+2026/10/28 11:41:05 All segments accepted; final delivery remains unknown.
+2026/10/28 11:41:05 Received delivery: segments=3 bytes=360 receipt=false text="中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中"
+2026/10/28 11:41:05 Unbound and closed.
+
+client version=5.0 utf8_bytes=560 wait_delivery=True exit=0
+2026/10/28 11:41:06 Bound SMPP 5.0
+2026/10/28 11:41:06 part=1 outcome=4 sequence=2 bytes_written=204 message_id="3a1138983bb9ce7254182acdee3cb6c2" error=<nil>
+2026/10/28 11:41:06 part=2 outcome=4 sequence=3 bytes_written=204 message_id="d1378523165c4ff2218739a90f867170" error=<nil>
+2026/10/28 11:41:06 part=3 outcome=4 sequence=4 bytes_written=204 message_id="4a31febfa5b141f6425b1f79f9eb3208" error=<nil>
+2026/10/28 11:41:06 part=4 outcome=4 sequence=5 bytes_written=204 message_id="fcb6c9f00113e154d033788dd5572a90" error=<nil>
+2026/10/28 11:41:06 part=5 outcome=4 sequence=6 bytes_written=84 message_id="5e3badb97efd044f799e172fd351b134" error=<nil>
+2026/10/28 11:41:06 All segments accepted; final delivery remains unknown.
+2026/10/28 11:41:06 Received delivery: segments=5 bytes=640 receipt=false text="Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^Hello ^"
+2026/10/28 11:41:06 Unbound and closed.
+
+client version=5.0 utf8_bytes=540 wait_delivery=True exit=0
+2026/10/28 11:41:07 Bound SMPP 5.0
+2026/10/28 11:41:07 part=1 outcome=4 sequence=2 bytes_written=184 message_id="c3f9ed3abbf448c1bf6aaf1f03fbd3e3" error=<nil>
+2026/10/28 11:41:07 part=2 outcome=4 sequence=3 bytes_written=184 message_id="1ad0fa5424ebbb8994b6c61c043561c0" error=<nil>
+2026/10/28 11:41:07 part=3 outcome=4 sequence=4 bytes_written=148 message_id="5cea01053e7d2e08cda6dd9e330cb7b1" error=<nil>
+2026/10/28 11:41:07 All segments accepted; final delivery remains unknown.
+2026/10/28 11:41:07 Received delivery: segments=3 bytes=360 receipt=false text="中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中中"
+2026/10/28 11:41:07 Unbound and closed.
+
+server exit=0
+2026/10/28 11:41:04 Listening on 127.0.0.1:43557 (echo=true)
+2026/10/28 11:41:04 Complete message: segments=5 bytes=640 receipt=false decoded=true
+2026/10/28 11:41:04 Echo part=1 outcome=4 error=<nil>
+2026/10/28 11:41:04 Echo part=2 outcome=4 error=<nil>
+2026/10/28 11:41:04 Echo part=3 outcome=4 error=<nil>
+2026/10/28 11:41:04 Echo part=4 outcome=4 error=<nil>
+2026/10/28 11:41:04 Echo part=5 outcome=4 error=<nil>
+2026/10/28 11:41:05 Complete message: segments=3 bytes=360 receipt=false decoded=true
+2026/10/28 11:41:05 Echo part=1 outcome=4 error=<nil>
+2026/10/28 11:41:05 Echo part=2 outcome=4 error=<nil>
+2026/10/28 11:41:05 Echo part=3 outcome=4 error=<nil>
+2026/10/28 11:41:06 Complete message: segments=5 bytes=640 receipt=false decoded=true
+2026/10/28 11:41:06 Echo part=1 outcome=4 error=<nil>
+2026/10/28 11:41:06 Echo part=2 outcome=4 error=<nil>
+2026/10/28 11:41:06 Echo part=3 outcome=4 error=<nil>
+2026/10/28 11:41:06 Echo part=4 outcome=4 error=<nil>
+2026/10/28 11:41:06 Echo part=5 outcome=4 error=<nil>
+2026/10/28 11:41:07 Complete message: segments=3 bytes=360 receipt=false decoded=true
+2026/10/28 11:41:07 Echo part=1 outcome=4 error=<nil>
+2026/10/28 11:41:07 Echo part=2 outcome=4 error=<nil>
+2026/10/28 11:41:07 Echo part=3 outcome=4 error=<nil>

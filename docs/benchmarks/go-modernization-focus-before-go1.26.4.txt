@@ -1,0 +1,11 @@
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit/codec
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkCodecDecode/DataSM/V50/140         	  525716	       711.9 ns/op	 262.66 MB/s	       187.0 wire-B/op	     408 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/140         	  407728	       805.7 ns/op	 232.09 MB/s	       187.0 wire-B/op	     408 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/140         	  524655	       661.5 ns/op	 282.70 MB/s	       187.0 wire-B/op	     408 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/140         	  620342	       662.6 ns/op	 282.21 MB/s	       187.0 wire-B/op	     408 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/140         	  466006	       944.7 ns/op	 197.95 MB/s	       187.0 wire-B/op	     408 B/op	       9 allocs/op
+PASS
+ok  	github.com/skill215/smppkit/codec	1.910s

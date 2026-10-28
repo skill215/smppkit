@@ -1,0 +1,20 @@
+R3, 2026-10-28; Go 1.26.4 linux/amd64.
+$ GOPROXY=off sh interop/legacy/run.sh /path/to/read-only/go-smpp
+go: creating new go.mod: module smppkit-legacy-check
+go: to add module requirements and sums:
+	go mod tidy
+=== RUN   TestLegacySimulator
+    legacy_test.go:40: fresh simulator process:
+        === RUN   TestLegacySimulator
+            legacy_test.go:226: 3.4 TRX: UDH16 submit, UDH8 reversed/duplicate delivery and per-segment ACK, negative/uncertain results, enquire, unbind PASS; TLVs disabled
+        2026/10/28 13:30:48 smpptest: read failed: read tcp 127.0.0.1:43571->127.0.0.1:60314: use of closed network connection
+        --- PASS: TestLegacySimulator (0.09s)
+        PASS
+--- PASS: TestLegacySimulator (1.13s)
+=== RUN   TestLegacyBindSequenceMismatch
+    legacy_test.go:252: legacy bind_resp sequence mismatch correctly remains uncorrelated and times out
+--- PASS: TestLegacyBindSequenceMismatch (0.10s)
+PASS
+ok  	smppkit-legacy-check	2.289s
+
+PASS: reference git status and SHA-256 hashes of all 95 tracked/nonignored files unchanged before/after legacy harness. No reference content is copied into these validation records.
