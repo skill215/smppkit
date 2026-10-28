@@ -11,7 +11,7 @@ go test . ./codec ./message ./textcodec -run='^$' -bench=. \
 ```
 
 [Raw results](r3-go1.26.4.txt) retain all 240 observations. Fixture sizes and copy/
-ownership semantics are unchanged from the [README](../../README.md#encode-decode-and-memory-copy-benchmarks).
+ownership semantics are unchanged from the [benchmark guide](README.md#encode-decode-and-memory-copy-benchmarks).
 The source identity is in the [R3 record](../r3-validation.md).
 
 All **75** cases overlapping the earlier [expanded suite](expanded-go1.26.4-linux-amd64.txt)
