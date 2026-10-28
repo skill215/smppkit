@@ -14,23 +14,21 @@ The [Go 1.27 assessment](docs/go1.27-assessment.md) maps new APIs and runtime
 changes to this code. The Go 1.27 upgrade is deferred, with Go 1.26 retained as
 the minimum.
 
-This is an implementation preview with working SMS paths, **not a complete SMPP
-conformance release**. See the [command/version matrix](docs/support.md),
-[API contracts and implementation decisions](docs/decisions.md), and
-[validation record](docs/validation.md), and
-[implementation review](docs/review.md). The candidate API is locally frozen;
-see the [compatibility policy and API snapshot](docs/compatibility.md).
-The [R1 review record](docs/review-gaps.md) records three reproduced defects,
-their corrections and formal regressions. The
-[R1 evidence follow-up](docs/review-gaps.md#r1-evidence-follow-up-completed) adds
-positive fuzz assertions, fallback preflight coverage and the timeout investigation.
-R1 and the [R2 public API/support audit](docs/r2-contract-audit.md) are complete
-locally. [R3 local candidate validation](docs/r3-validation.md) is complete.
-The [R4 local readiness record](docs/r4-readiness.md) and
-[unreleased changelog](CHANGELOG.md) prepare the publication review. A submitted
-candidate, remote CI and explicit owner release authorization remain outstanding.
-The [Release 1.0 target](docs/release-1.0.md)
-defines the SMS scope and acceptance gates; it is not a release announcement.
+**Version 1.0.0** provides the documented SMS subset of SMPP 3.3, 3.4 and 5.0.
+See the [command/version matrix](docs/support.md),
+[API contracts](docs/decisions.md), [compatibility policy](docs/compatibility.md)
+and [changelog](CHANGELOG.md). Stable API support does not imply full SMPP
+conformance or interoperability with every SMSC.
+
+```sh
+go get github.com/skill215/smppkit@v1.0.0
+```
+
+[R1/R2](docs/r2-contract-audit.md), [R3 local validation](docs/r3-validation.md)
+and [R4 preparation](docs/r4-readiness.md) record the implementation review,
+regressions and local evidence. The [1.0 release record](docs/release-1.0.md)
+links the submitted candidate's successful remote CI and publication procedure.
+Historical validation records retain the status and limitations at their run date.
 The subsequent [RV20/RV21 corrections](docs/review-final.md#rv20rv21-corrections)
 isolate decoded byte-field append capacity and restrict automatic buffered ACKs
 to requests whose meaning is compatible with memory admission.

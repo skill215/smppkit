@@ -1,6 +1,12 @@
 # R4 local release-readiness review
 
-Prepared 2026-10-28. **Local release preparation only; not approval to publish.**
+Prepared 2026-10-28. **Historical local preparation record.**
+The file manifest below identifies candidate `4749b177`, before final release
+documentation updates. For subsequent remote CI and owner authorization, see
+[the release record](release-1.0.md). The statements below describe the R4 run
+at the time it completed; they are not the current publication status.
+
+**Original disposition: local preparation only; not approval to publish.**
 The candidate still needs remote CI on a submitted revision and the owner's
 explicit instruction to tag, push or publish. These gates were not bypassed.
 

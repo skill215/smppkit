@@ -1,15 +1,15 @@
 # Implementation support matrix
 
-Status: implementation preview; R2 audit completed 2026-10-28. This inventory distinguishes command
+Status: v1.0.0 SMS support; R2 audit completed 2026-10-28. This inventory distinguishes command
 layouts from endpoint support. “Implemented” is not a full conformance claim;
 semantic restrictions and unvalidated areas below still apply.
 
 R1 update, 2026-10-28: [RV17–RV19](review-gaps.md) are corrected with formal
 regressions for response TLV negotiation, cancellation during a write join, and
-3.3 Latin-1 preparation. The [Release 1.0 target](release-1.0.md) still requires
-the submitted-candidate remote-CI and owner-publication gates before release.
-[R4 local preparation](r4-readiness.md) records the API freeze, compatibility
-policy, release notes and public-distribution checks; it is not a release.
+3.3 Latin-1 preparation. The [release record](release-1.0.md) links the
+submitted candidate's successful remote CI and the authorized publication steps.
+[R4 preparation](r4-readiness.md) preserves the historical API freeze and
+public-distribution checks.
 [R3 local validation](r3-validation.md) records the timed fuzz, ten-minute resource
 workload, unchanged legacy peer and local two-toolchain checks separately.
 The [R2 public contract audit](r2-contract-audit.md) maps the exported API and

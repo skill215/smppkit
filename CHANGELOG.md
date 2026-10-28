@@ -1,10 +1,9 @@
 # Changelog
 
-## Unreleased — Release 1.0 candidate
+## 1.0.0 — 2026-10-28
 
-This is the proposed initial stable SMS release, **not a release announcement**.
-There is no published-version claim in this record. The candidate still needs
-remote CI and explicit owner authorization before release.
+Initial stable release of the documented SMS subset. The six public packages
+follow the [v1 compatibility policy](docs/compatibility.md).
 
 ### Included
 
@@ -35,7 +34,7 @@ Minimum Go: **1.26** (`go 1.26.0`). There are no third-party runtime module
 dependencies. Root import `github.com/skill215/smppkit` uses package name `smpp`.
 The old go-smpp API is not a compatibility target; existing applications adopt
 this API explicitly. The library does not replace ygw or import sms-fw/DEI
-business behavior. See the [candidate compatibility policy](docs/compatibility.md).
+business behavior. See the [compatibility policy](docs/compatibility.md).
 
 ### Boundaries users must retain
 
@@ -54,7 +53,7 @@ business behavior. See the [candidate compatibility policy](docs/compatibility.m
 - External SMSC interoperability remains unverified. The optional legacy
   simulator check covers only the documented 3.4 TRX/UDH path.
 
-### Validation and remaining gates
+### Validation
 
 [R1/R2](docs/r2-contract-audit.md) close the recorded RV01–RV21 findings and
 audit the public contract. [R3](docs/r3-validation.md) records local build/vet/
@@ -68,6 +67,11 @@ a diagnostic reproduction identifies the coordinator cancellation window, with
 successful timed runs recorded separately. Unpatched timed fuzz jobs can still
 encounter it; CI does not ignore errors or retry them into success.
 
-[R4 local readiness](docs/r4-readiness.md) records the frozen API snapshot,
-distribution-content checks and the open remote-CI/publication gates. The source
-is still uncommitted; no tag, push or publication was performed by this work.
+[R4 local readiness](docs/r4-readiness.md) records the frozen API snapshot and
+historical candidate distribution checks. Candidate `4749b177` passed
+[remote CI on its first attempt](https://github.com/skill215/smppkit/actions/runs/40646388506):
+Go 1.26.10 and 1.27.3, formatting, build, vet, full race and all 11 fuzz targets
+(5 seconds each, two workers). The Go minimum remains 1.26. The owner authorized
+merge and v1.0.0 publication on 2026-10-28. Final release documentation and the publication workflow must
+also pass the configured CI before the release tag is created; see the
+[release record](docs/release-1.0.md).

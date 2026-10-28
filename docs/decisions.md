@@ -1,8 +1,8 @@
 # API contracts and implementation decisions
 
 Recorded 2026-10-27. The Release 1.0 candidate API was frozen locally during
-[R4 preparation](r4-readiness.md); publication remains gated. The
-[compatibility policy](compatibility.md) applies upon the first stable release.
+[R4 preparation](r4-readiness.md). The [compatibility policy](compatibility.md)
+applies from v1.0.0; see the [release record](release-1.0.md).
 
 ## Module and ownership
 

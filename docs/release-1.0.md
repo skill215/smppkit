@@ -1,13 +1,29 @@
 # Release 1.0 target and acceptance gates
 
-Defined 2026-10-28. **Target, not a release announcement or completed checklist.**
-The [R1 review](review-gaps.md) records three reproduced defects, now corrected
-with formal regressions. R1's subsequent test-evidence follow-up is also complete;
-R2's public contract audit is also complete locally. R3 local validation is
-complete, and R4 local release preparation is complete. Submitted-candidate
-identity, remote-CI evidence and publication authorization remain open.
-Go upgrade work U1 is deferred and is not a release
-prerequisite. Publishing or pushing still requires the owner's explicit request.
+Defined 2026-10-28. R1–R4 local work is complete. Candidate
+`4749b177d9c40cde688e50c4f1786b30cbaf64fe` was pushed and passed
+[remote CI run 40646388506](https://github.com/skill215/smppkit/actions/runs/40646388506)
+on its first attempt. Both Go 1.26.10 and 1.27.3 passed formatting, build, vet,
+full race and all 11 timed fuzz targets (5 seconds, two workers each).
+The owner explicitly authorized merge and v1.0.0 publication on 2026-10-28.
+Go upgrade U1 remains deferred; the module minimum remains Go 1.26.
+
+## Final publication procedure
+
+The finalization updates release documentation and adds a tag-triggered Release
+workflow. Go source, API, module, the existing Go CI matrix and license remain
+identical to the validated candidate. Historical manifests
+identify their original trees and are not rewritten to claim evidence for later
+document edits. The actual `v1.0.0` Git tag identifies the complete release tree.
+
+Before tagging, require the configured matrix to pass on the final submitted
+revision and on `main` after integration. Record the exact tagged commit and
+successful workflow links in the GitHub Release notes. Do not infer release
+completion from this procedure: the [published release](https://github.com/skill215/smppkit/releases/tag/v1.0.0)
+and its Git tag are the publication evidence. Do not overwrite an existing tag.
+The Release workflow verifies that the tag matches main, waits for successful
+main and tag CI on that SHA, then creates the release with the checked-in notes.
+It does not retry failed CI or create/move tags.
 
 ## Goal
 
@@ -132,7 +148,7 @@ R4 still owns the final stable API/versioning approval.
 - [x] On the candidate tree, pass formatting, build, vet and the full race suite
   with the declared minimum Go series (1.26). Also execute the configured
   toolchain matrix's checks locally and record the actual versions/results.
-- [ ] Run every configured toolchain CI job on the recorded submitted candidate.
+- [x] Run every configured toolchain CI job on the recorded submitted candidate.
   A workflow file alone is not evidence that remote CI has passed.
 - [x] Run every checked-in fuzz target with a recorded corpus/time/worker budget
   (at least 30 seconds per target for the candidate); retain minimized failures
@@ -156,8 +172,9 @@ Local execution completed 2026-10-28: [R3 evidence and candidate identity](r3-va
 One Go 1.26.4 fuzz budget-exit failure is retained and attributed through a
 reproduced coordinator cancellation window; it is not silently converted to a
 pass. Every target also has a successful 30-second run. Installed toolchains and
-CI were not patched to suppress failures. The source remains uncommitted and
-was not pushed, so remote CI is still an explicit open gate. No external-peer
+CI were not patched to suppress failures. At the end of the local R3 campaign
+the source was uncommitted; the subsequent
+submitted-candidate CI result is recorded above. No external-peer
 requirement or Go-baseline upgrade was added.
 
 ### R4 — Release readiness review
@@ -166,19 +183,19 @@ requirement or Go-baseline upgrade was added.
   race/fuzz failure. Document any remaining non-blocking limitations explicitly.
 - [x] Record the exact local candidate file set and completed gate evidence;
   distinguish new results from historical local runs.
-- [ ] Attach the submitted commit identity and its remote-CI results before
+- [x] Attach the submitted commit identity and its remote-CI results before
   publication; a local file manifest is not a submitted revision.
 - [x] Finalize README, GoDoc, support matrix, examples, license and release notes;
   ensure `/doc/` and reference/private materials are not included in the release.
 - [x] Review and freeze the local candidate public API for 1.0; compatibility changes after that
   must follow the published versioning policy. Stable does not mean all SMPP
   commands or all peer dialects are supported.
-- [ ] Obtain the owner's explicit release instruction before tagging, pushing
+- [x] Obtain the owner's explicit release instruction before tagging, pushing
   or publishing. Local implementation/testing remains authorized meanwhile.
 
 Local preparation completed 2026-10-28: [R4 readiness record](r4-readiness.md),
 [compatibility policy](compatibility.md), [API snapshot](api-v1.txt) and
-[unreleased notes](../CHANGELOG.md). The proposed public distribution passes
+[release notes](../CHANGELOG.md). The proposed public distribution passes
 Go 1.26.4 build/vet/full race checks independently of the ignored design directory.
 R3 source hashes remain unchanged; its longer campaign is reused as historical
 evidence for the same implementation, not claimed as a fresh R4 run.
@@ -200,8 +217,7 @@ M0/M1 foundations and M2/M3 SMS paths exist, with later command/TLV/context chec
 local lifecycle/resource evidence and a narrow legacy simulator check. Go 1.26.4
 build/vet/race pass on the R1 tree; RV17–RV19 are now covered by ordinary regressions.
 R1's fixes and bounded evidence follow-up and R2's public SMS contract audit are
-complete. R3 local checks are complete; its remote-CI gate still needs a submitted
-candidate. R4 local preparation is complete; submission and publication gates
-remain open. Local results do not authorize
-tagging, pushing or publishing.
-U1 is deferred, and no release date is claimed yet.
+complete. R3 local checks and the submitted-candidate CI matrix are complete.
+R4 local preparation is complete, and the owner has authorized publication.
+The final publication procedure above still applies to the integrated revision.
+U1 remains deferred.

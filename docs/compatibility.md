@@ -1,9 +1,8 @@
 # Public API and compatibility policy
 
-Status: Release 1.0 candidate policy, 2026-10-28. The local candidate API is
-frozen for release preparation. This is not a published v1.0.0 tag. Any change
-before publication must update the candidate record and affected validation;
-the commitments below apply once the first stable release is published.
+Version 1.0 policy, 2026-10-28. The six public packages have a stable API
+starting with v1.0.0. The candidate review snapshot remains the API baseline;
+subsequent changes follow the compatibility rules below.
 
 ## Stable surface
 
