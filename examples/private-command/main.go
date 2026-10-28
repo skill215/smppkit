@@ -1,3 +1,9 @@
+// SPDX-AI-Disclosure: ai-generated
+// SPDX-AI-Model: GPT-6.0 Astra
+// SPDX-AI-Provider: OpenAI
+// SPDX-AI-Scope: Example program generated and revised with Codex under maintainer direction.
+// SPDX-AI-Date: 2026-10-28
+
 // A neutral private command pair can be registered without TLV registration.
 package main
 

@@ -1,3 +1,9 @@
+// SPDX-AI-Disclosure: ai-generated
+// SPDX-AI-Model: GPT-6.0 Astra
+// SPDX-AI-Provider: OpenAI
+// SPDX-AI-Scope: Example program generated and revised with Codex under maintainer direction.
+// SPDX-AI-Date: 2026-10-28
+
 // A self-contained submit_multi exchange over net.Pipe. The synthetic SMSC
 // rejects one SME to demonstrate partial acceptance; it does not deliver SMS.
 package main

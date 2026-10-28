@@ -1,3 +1,9 @@
+// SPDX-AI-Disclosure: ai-generated
+// SPDX-AI-Model: GPT-6.0 Astra
+// SPDX-AI-Provider: OpenAI
+// SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
+// SPDX-AI-Date: 2026-10-28
+
 // Package codec implements bounded, version-specific SMPP encoding independent
 // of transport or session ownership. Codecs are immutable and safe to share.
 package codec

@@ -10,7 +10,7 @@ outcomes and bounded resources. One shared Session and versioned Codec support
 [Apache-2.0](LICENSE) · No third-party runtime module dependencies
 
 > **AI-written:** OpenAI Codex generated this library under maintainer direction.
-> See [AI authorship and review status](#ai-authorship-and-review-status).
+> Model: **GPT-6.0 Astra**. See [AI_DISCLOSURE.md](AI_DISCLOSURE.md).
 
 [Quick start](#quick-start) · [Go API](#go-api) · [Protocol support](#protocol-support) ·
 [Examples](#examples) · [Benchmarks](#benchmarks) · [Documentation](#documentation)
@@ -250,6 +250,10 @@ maintainer direction.** AI generated and revised the implementation, tests,
 benchmarks, examples and substantial documentation. The library has no AI runtime
 dependency.
 
+The maintainer confirms the model used as **GPT-6.0 Astra**. The repository-level
+[AI_DISCLOSURE.md](AI_DISCLOSURE.md) and every Go file's `SPDX-AI-*` header record
+the model, provider, scope and provenance classification.
+
 The maintainer supplied requirements, constrained scope and directed corrections.
 This does **not** claim an independent line-by-line human audit. Agent review and
 AI-authored tests can share mistakes; independent wire fixtures are independent
@@ -260,6 +264,6 @@ Maintainers remain responsible for accepted changes and releases. Contributors
 should disclose the tools and scope of material AI-generated work, then review
 and test it. The Apache-2.0 license is unchanged by this disclosure.
 
-This statement draws on the community [AI Disclosure Convention](https://github.com/ggfevans/ai-disclosure)
-and [GitHub's AI code review guidance](https://docs.github.com/en/copilot/tutorials/review-ai-generated-code),
-checked on 2026-10-28. The convention is a draft, not a GitHub certification.
+We adopt the community [AI Disclosure Convention](https://github.com/ggfevans/ai-disclosure)
+and draw on [GitHub's AI code review guidance](https://docs.github.com/en/copilot/tutorials/review-ai-generated-code),
+checked on 2026-10-28. The convention is a voluntary draft, not a GitHub certification.

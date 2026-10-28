@@ -1,3 +1,9 @@
+// SPDX-AI-Disclosure: ai-generated
+// SPDX-AI-Model: GPT-6.0 Astra
+// SPDX-AI-Provider: OpenAI
+// SPDX-AI-Scope: Example program generated and revised with Codex under maintainer direction.
+// SPDX-AI-Date: 2026-10-28
+
 // Connect, submit text, optionally receive one delivery, then unbind.
 // See examples/README.md for a matching local server and multipart commands.
 package main

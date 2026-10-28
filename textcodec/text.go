@@ -1,3 +1,9 @@
+// SPDX-AI-Disclosure: ai-generated
+// SPDX-AI-Model: GPT-6.0 Astra
+// SPDX-AI-Provider: OpenAI
+// SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
+// SPDX-AI-Date: 2026-10-28
+
 // Package textcodec implements strict text conversion. GSM7 represents unpacked
 // septets, never guessed packed bytes. UCS2 rejects supplementary characters;
 // UTF16BE is an explicit compatibility encoding with the same DCS value.

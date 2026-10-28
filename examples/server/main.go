@@ -1,3 +1,9 @@
+// SPDX-AI-Disclosure: ai-generated
+// SPDX-AI-Model: GPT-6.0 Astra
+// SPDX-AI-Provider: OpenAI
+// SPDX-AI-Scope: Example program generated and revised with Codex under maintainer direction.
+// SPDX-AI-Date: 2026-10-28
+
 // Run a bounded in-memory SMSC demo. Optional echo sends deliver_sm messages;
 // it is not routing, a delivery receipt, or a promise of handset delivery.
 package main
