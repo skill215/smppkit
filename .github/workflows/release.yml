@@ -24,37 +24,4 @@ jobs:
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
         shell: bash
-        run: |
-          set -euo pipefail
-          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
-          notes="docs/releases/$RELEASE_TAG.md"
-          test -s "$notes"
-          sha=$(git rev-parse HEAD)
-          main_sha=$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')
-          test "$sha" = "$main_sha"
-          cp "$notes" "$RUNNER_TEMP/release-notes.md"
-          printf '\n## Verified publication\n\nCommit: `%s`\n' "$sha" >> "$RUNNER_TEMP/release-notes.md"
-          # Both main and tag pushes run the existing Go matrix. Never turn a
-          # failed check into a release by retrying jobs or ignoring a result.
-          for branch in main "$RELEASE_TAG"; do
-            passed=false
-            # Count-budget fuzzing can outlast the old ten-minute wait. Allow
-            # the Go workflow's 45-minute limit plus scheduling overhead;
-            # this polls status only and never reruns a failed workflow.
-            for attempt in $(seq 1 300); do
-              run=$(gh api --method GET "repos/$GH_REPO/actions/workflows/ci.yml/runs" \
-                -f head_sha="$sha" -f event=push -f per_page=100 |
-                jq --arg branch "$branch" '[.workflow_runs[] | select(.head_branch == $branch)] | sort_by(.run_number) | last // {}')
-              if [[ $(jq -r '.status' <<< "$run") == completed ]]; then
-                test "$(jq -r '.head_sha' <<< "$run")" = "$sha"
-                test "$(jq -r '.conclusion' <<< "$run")" = success
-                printf '\n- %s CI: %s\n' "$branch" "$(jq -r '.html_url' <<< "$run")" >> "$RUNNER_TEMP/release-notes.md"
-                passed=true
-                break
-              fi
-              sleep 10
-            done
-            test "$passed" = true
-          done
-          gh release create "$RELEASE_TAG" --repo "$GH_REPO" --verify-tag \
-            --title "smppkit $RELEASE_TAG" --notes-file "$RUNNER_TEMP/release-notes.md" --latest
+        run: bash .github/scripts/release.sh

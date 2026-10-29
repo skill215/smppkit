@@ -1,0 +1,5 @@
+2026-10-29; RV25 baseline regression check. Local command stubs only; no GitHub calls.
+Baseline: fb52051997c8b7e50e644e365f7240419ec85f44 release workflow.
+main_moves: old script exit=0, publication stub reached with a mismatched ref (defect reproduced).
+tag_moves: old script exit=0, publication stub reached with a mismatched ref (defect reproduced).
+annotated_tag_moves: old script exit=0, publication stub reached with a mismatched ref (defect reproduced).

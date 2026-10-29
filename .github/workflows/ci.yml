@@ -26,6 +26,8 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
           cache: false
+      - name: Release gate regressions (local stubs only)
+        run: python3 .github/scripts/test_release.py
       - run: test -z "$(gofmt -l .)"
       - run: go build ./...
       - run: go vet ./...

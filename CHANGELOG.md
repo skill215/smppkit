@@ -55,6 +55,10 @@ and publication are not. There is no release date yet. See the
   or rerunning jobs. Retain Go 1.27 timed fuzzing, preserve failing corpus files,
   and let both compiler jobs finish independently. See the
   [diagnosis and validation](docs/v1.1.0-ci-fuzz.md).
+- Correct RV25 in release automation: after CI completes, recheck remote main
+  and the resolved tag commit against the tested SHA. Block publication on
+  changed refs or lookup failures; add local regression coverage for lightweight
+  and annotated tags. Library behavior is unchanged.
 
 Go 1.26 and the existing protocol/runtime architecture are unchanged.
 The [design](docs/v1.1.0-design.md) and [roadmap](docs/roadmap/v1.1.0.md)

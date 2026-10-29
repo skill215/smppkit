@@ -1,0 +1,30 @@
+2026-10-29 Asia/Shanghai; RV25 local correction validation.
+No GitHub publishing calls, commit, push or tag creation.
+
+First full formal regression run:
+$ python3 .github/scripts/test_release.py
+test_failed_main_or_tag_ci_still_blocks_publication (__main__.ReleaseGateTests.test_failed_main_or_tag_ci_still_blocks_publication) ... ok
+test_missing_invalid_or_unreadable_refs_block_publication (__main__.ReleaseGateTests.test_missing_invalid_or_unreadable_refs_block_publication) ... ok
+test_rv25_refs_changed_during_ci_block_publication (__main__.ReleaseGateTests.test_rv25_refs_changed_during_ci_block_publication) ... ok
+test_verified_lightweight_and_annotated_tags_publish (__main__.ReleaseGateTests.test_verified_lightweight_and_annotated_tags_publish) ... ok
+
+Ran 4 tests in 11.593s
+OK
+exit=0
+14 subtest scenarios total; all local command stubs, with real jq parsing.
+
+Review checks:
+- bash -n .github/scripts/release.sh: PASS.
+- Both workflow YAML files parse; workflow shell steps pass bash -n.
+- Original version/notes checks, initial main check, CI polling and release arguments preserved.
+- CI invokes the same production script exercised by the regression suite through Release workflow.
+- Go CI includes the regression suite; existing formatting/build/vet/race/fuzz commands and budgets unchanged.
+- All 108 S5 Go/module manifest entries remain byte-identical.
+- Go build/vet/race/fuzz results from fb52051 reused, not rerun or claimed as new.
+- Corrected workflow remote CI: NOT RUN (local changes not committed/pushed).
+
+Reviewed files (SHA-256):
+a3fb8cd8f01c76e74b83b1204410c87352bcfe87d209d056762e50e0e5b27c54  .github/scripts/release.sh
+ff9338c4856f7c45b7b4e52faa89515f0a532632c391bb02362711ef47152f00  .github/scripts/test_release.py
+1fd3a9bcf4510bcc6e2cb8e650992106e4639f22f6b4d2cb8d57a6fb12fdadc5  .github/workflows/release.yml
+eaed486c436a39d0c9220e8bf8fb353d4b4c00ce110bb9033f5688490ebaed75  .github/workflows/ci.yml

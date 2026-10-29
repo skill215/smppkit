@@ -997,3 +997,12 @@ All 14 targets remain, Go 1.27 keeps timed fuzzing, and target failures still
 fail CI. The record separates diagnostic overlays, unmodified-toolchain local
 validation and the new revision's remote checks. No library functionality or
 minimum Go version changes.
+
+## v1.1.0 RV25 release-gate correction — 2026-10-29
+
+The [RV25 correction](v1.1.0-rv25.md) adds final remote main/tag commit checks
+after CI, with annotated-tag resolution and failure propagation. Four formal
+test groups cover 14 local stub scenarios, including reproductions that reach
+publication incorrectly in the old script. No real publication is attempted.
+Go source and module hashes remain unchanged; prior Go verification is reused,
+and the modified workflow requires CI after submission.
