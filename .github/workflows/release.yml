@@ -10,7 +10,7 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 60
     permissions:
       actions: read
       contents: write
@@ -38,7 +38,10 @@ jobs:
           # failed check into a release by retrying jobs or ignoring a result.
           for branch in main "$RELEASE_TAG"; do
             passed=false
-            for attempt in $(seq 1 60); do
+            # Count-budget fuzzing can outlast the old ten-minute wait. Allow
+            # the Go workflow's 45-minute limit plus scheduling overhead;
+            # this polls status only and never reruns a failed workflow.
+            for attempt in $(seq 1 300); do
               run=$(gh api --method GET "repos/$GH_REPO/actions/workflows/ci.yml/runs" \
                 -f head_sha="$sha" -f event=push -f per_page=100 |
                 jq --arg branch "$branch" '[.workflow_runs[] | select(.head_branch == $branch)] | sort_by(.run_number) | last // {}')

@@ -363,7 +363,10 @@ go test -race -count=1 -timeout=90s ./...
 ```
 
 The current [CI configuration](.github/workflows/ci.yml) covers the Go 1.26/1.27
-matrix and all 14 fuzz targets.
+matrix and all 14 fuzz targets. Go 1.26 runs each target for **1,000,000
+executions**; Go 1.27 retains a five-second budget per target. The count budget
+avoids a Go 1.26 fuzz shutdown race without ignoring failures or retrying tests.
+See the [diagnosis and CI policy](docs/v1.1.0-ci-fuzz.md).
 Tests include independent protocol bytes and raw TCP peers, beyond shared-Codec
 round trips. Historical records distinguish local results from remote CI.
 

@@ -987,3 +987,13 @@ regressions and reconciled support documentation. See the
 build/vet/full race results, 20 heartbeat race repetitions, decoder fuzz and
 allocation benchmark evidence. Public signatures and Go 1.26 are unchanged.
 This is local validation, not submitted-candidate CI or release publication.
+
+## v1.1.0 CI fuzz shutdown correction — 2026-10-29
+
+The [diagnosis and CI policy](v1.1.0-ci-fuzz.md) preserve the initial failed
+candidate, reproduce the Go 1.26 parent/child cancellation race under controlled
+scheduling, and replace timed budgets with native execution budgets on 1.26.
+All 14 targets remain, Go 1.27 keeps timed fuzzing, and target failures still
+fail CI. The record separates diagnostic overlays, unmodified-toolchain local
+validation and the new revision's remote checks. No library functionality or
+minimum Go version changes.

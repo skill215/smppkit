@@ -50,6 +50,12 @@ and publication are not. There is no release date yet. See the
   fields from gateway text/error conventions. Add independent wire fixtures,
   boundary/concurrency/fuzz tests, allocation benchmarks and a receipt example.
 
+- Fix the Go 1.26 CI fuzz budget: all 14 targets run for 1,000,000 executions
+  each, avoiding the toolchain's timed-shutdown race without filtering failures
+  or rerunning jobs. Retain Go 1.27 timed fuzzing, preserve failing corpus files,
+  and let both compiler jobs finish independently. See the
+  [diagnosis and validation](docs/v1.1.0-ci-fuzz.md).
+
 Go 1.26 and the existing protocol/runtime architecture are unchanged.
 The [design](docs/v1.1.0-design.md) and [roadmap](docs/roadmap/v1.1.0.md)
 record the completed scope. The [S5 recheck](docs/v1.1.0-s5-recheck.md) found no

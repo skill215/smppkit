@@ -1,0 +1,90 @@
+2026-10-29 Asia/Shanghai; Go 1.26.10 linux/amd64.
+Diagnostic overlays only: installed Go sources and repository Go files unchanged.
+Go sources: https://github.com/golang/go/tree/go1.26.10/src (Go BSD license).
+
+sha256 /usr/local/go/src/internal/fuzz/fuzz.go d9de12569d5c18fb629c8e79a4d629eb2985b719e4fbfe30c3f3ce23fc44feb5
+--- /usr/local/go/src/internal/fuzz/fuzz.go
++++ /tmp/smppkit-v110-fuzz-diagnosis/fuzz.go
+@@ -129 +129,5 @@
+-		if err == fuzzCtx.Err() || isInterruptError(err) {
++		childErr := fuzzCtx.Err()
++		if err != nil && err == ctx.Err() && err != childErr {
++			c.debugLogf("v1.1 diagnostic: incoming=%v parent=%v child=%v", err, ctx.Err(), childErr)
++		}
++		if err == childErr || isInterruptError(err) {
+sha256 /usr/local/go/src/context/context.go 765f99f7cc0710b0117ffa183e432524f429c21496fcbad9b63fb9886fdbaac7
+--- /usr/local/go/src/context/context.go
++++ /tmp/smppkit-v110-fuzz-diagnosis/context.go
+@@ -567,0 +568,4 @@
++	}
++	// Diagnostic-only scheduling fault: widen the real parent/child cancellation gap.
++	if err == DeadlineExceeded && len(c.children) > 0 {
++		time.Sleep(10 * time.Millisecond)
+
+Overlay manifests (copies outside installed toolchain):
+overlay.json
+{"Replace": {"/usr/local/go/src/internal/fuzz/fuzz.go": "/tmp/smppkit-v110-fuzz-diagnosis/fuzz.go"}}
+forced-overlay.json
+{"Replace": {"/usr/local/go/src/internal/fuzz/fuzz.go": "/tmp/smppkit-v110-fuzz-diagnosis/fuzz.go", "/usr/local/go/src/context/context.go": "/tmp/smppkit-v110-fuzz-diagnosis/context.go"}}
+
+Environment: GOCACHE=/tmp/smppkit-go-build GOMODCACHE=/tmp/smppkit-go-mod GOTOOLCHAIN=local GOWORK=off GOPROXY=off GODEBUG=fuzzdebug=1
+Logging-only command, maximum ten diagnostic attempts, stop at first failure (not CI retries):
+go test -overlay=/tmp/smppkit-v110-fuzz-diagnosis/overlay.json ./codec -run=^$ -fuzz=^FuzzStandardTLVSection$ -fuzztime=5s -parallel=2 -timeout=60s
+Diagnostic attempts stop at first failure, never retry to turn failure into a pass.
+Go1.26.10 original fuzz.go sha256=d9de12569d5c18fb629c8e79a4d629eb2985b719e4fbfe30c3f3ce23fc44feb5
+attempt=1 exit=0
+attempt=2 exit=0
+attempt=3 exit=0
+attempt=4 exit=0
+attempt=5 exit=0
+attempt=6 exit=0
+attempt=7 exit=0
+attempt=8 exit=0
+attempt=9 exit=0
+attempt=10 exit=0
+
+Controlled scheduling command:
+go test -overlay=/tmp/smppkit-v110-fuzz-diagnosis/forced-overlay.json ./codec -run=^$ -fuzz=^FuzzStandardTLVSection$ -fuzztime=5s -parallel=2 -timeout=60s
+Output excerpt (final 18 lines):
+2026-10-29 14:23:53.349591448 DEBUG worker reported interesting input that doesn't expand coverage, id: 0b065f38, parent: seed#10, canMinimize: false
+2026-10-29 14:23:54.51388968 DEBUG queueing input for minimization, id: 40691ac8, parent: seed#36, keepCoverage: true, crasher: false
+2026-10-29 14:23:54.528561465 DEBUG input minimized, id: a65e4159, original id: 40691ac8, crasher: false, originally crasher: false, minimizing took: 13.930657ms
+2026-10-29 14:23:54.528626804 DEBUG worker reported interesting input that doesn't expand coverage, id: a65e4159, parent: seed#36, canMinimize: false
+2026-10-29 14:23:54.529265781 DEBUG queueing input for minimization, id: 6563dc36, parent: seed#37, keepCoverage: true, crasher: false
+2026-10-29 14:23:54.544643465 DEBUG input minimized, id: 68189cc0, original id: 6563dc36, crasher: false, originally crasher: false, minimizing took: 14.832334ms
+2026-10-29 14:23:54.544695859 DEBUG worker reported interesting input that doesn't expand coverage, id: 68189cc0, parent: seed#37, canMinimize: false
+fuzz: elapsed: 3s, execs: 122623 (40874/sec), new interesting: 0 (total: 140)
+2026-10-29 14:23:57.755035953 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:232. stopping: false
+2026-10-29 14:23:57.755063056 DEBUG v1.1 diagnostic: incoming=context deadline exceeded parent=context deadline exceeded child=<nil>
+2026-10-29 14:23:57.766543933 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:236. stopping: true
+2026-10-29 14:23:57.778979394 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:236. stopping: true
+fuzz: elapsed: 5s, execs: 202484 (39451/sec), new interesting: 0 (total: 140)
+--- FAIL: FuzzStandardTLVSection (5.03s)
+    context deadline exceeded
+FAIL
+exit status 1
+FAIL	github.com/skill215/smppkit/codec	5.036s
+
+Controlled scheduling command:
+go test -overlay=/tmp/smppkit-v110-fuzz-diagnosis/forced-overlay.json ./codec -run=^$ -fuzz=^FuzzStandardTLVSection$ -fuzztime=10000x -parallel=2 -timeout=60s
+Output excerpt (final 18 lines):
+2026-10-29 14:23:58.133958102 DEBUG processed an initial input, id: , new bits: 3, size: 0, exec time: 70.79µs
+2026-10-29 14:23:58.134002691 DEBUG processed an initial input, id: , new bits: 1, size: 0, exec time: 68.055µs
+2026-10-29 14:23:58.134450839 DEBUG processed an initial input, id: , new bits: 0, size: 0, exec time: 74.959µs
+2026-10-29 14:23:58.134558452 DEBUG processed an initial input, id: , new bits: 1, size: 0, exec time: 71.983µs
+2026-10-29 14:23:58.134995456 DEBUG processed an initial input, id: , new bits: 0, size: 0, exec time: 70.72µs
+2026-10-29 14:23:58.135061798 DEBUG processed an initial input, id: , new bits: 1, size: 0, exec time: 64.869µs
+2026-10-29 14:23:58.135606298 DEBUG processed an initial input, id: , new bits: 0, size: 0, exec time: 65.69µs
+2026-10-29 14:23:58.135655919 DEBUG processed an initial input, id: , new bits: 0, size: 0, exec time: 101.231µs
+2026-10-29 14:23:58.136122344 DEBUG processed an initial input, id: , new bits: 3, size: 0, exec time: 59.798µs
+fuzz: elapsed: 0s, gathering baseline coverage: 140/140 completed, now fuzzing with 2 workers
+2026-10-29 14:23:58.136155911 DEBUG finished processing input corpus, entries: 140, initial coverage bits: 1323
+2026-10-29 14:23:58.391458123 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:213. stopping: false
+2026-10-29 14:23:58.394473113 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:236. stopping: true
+2026-10-29 14:23:58.394496729 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:213. stopping: true
+2026-10-29 14:23:58.394536809 DEBUG stop called at /usr/local/go/src/internal/fuzz/fuzz.go:236. stopping: true
+fuzz: elapsed: 0s, execs: 10000 (33018/sec), new interesting: 0 (total: 140)
+PASS
+ok  	github.com/skill215/smppkit/codec	0.311s
+
+Interpretation: forced scheduling reproduces the parent/child error mismatch; this is not an observed internal trace from the original CI failure. Million-execution validation and the assertion negative control use unmodified Go, no overlay and no GODEBUG.

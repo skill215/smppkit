@@ -1,0 +1,31 @@
+2026-10-29; unchanged smppkit Go sources; unmodified Go 1.26.10.
+Network permission enabled for local TCP/TLS race tests. No retries.
+$ go version
+go version go1.26.10 linux/amd64
+exit=0
+$ go build ./...
+exit=0
+$ go vet ./...
+exit=0
+$ go test -race -count=1 -timeout=90s ./...
+ok  	github.com/skill215/smppkit	2.131s
+ok  	github.com/skill215/smppkit/codec	1.426s
+ok  	github.com/skill215/smppkit/examples/client	1.026s
+?   	github.com/skill215/smppkit/examples/codec	[no test files]
+?   	github.com/skill215/smppkit/examples/custom-tlv	[no test files]
+?   	github.com/skill215/smppkit/examples/data-direction	[no test files]
+?   	github.com/skill215/smppkit/examples/data-transaction	[no test files]
+?   	github.com/skill215/smppkit/examples/framing	[no test files]
+?   	github.com/skill215/smppkit/examples/logging	[no test files]
+?   	github.com/skill215/smppkit/examples/multipart	[no test files]
+?   	github.com/skill215/smppkit/examples/notifications	[no test files]
+?   	github.com/skill215/smppkit/examples/private-command	[no test files]
+ok  	github.com/skill215/smppkit/examples/receipts	1.034s
+?   	github.com/skill215/smppkit/examples/server	[no test files]
+?   	github.com/skill215/smppkit/examples/submit-multi	[no test files]
+ok  	github.com/skill215/smppkit/internal/wire	1.022s
+ok  	github.com/skill215/smppkit/message	1.138s
+?   	github.com/skill215/smppkit/pdu	[no test files]
+ok  	github.com/skill215/smppkit/textcodec	1.024s
+ok  	github.com/skill215/smppkit/tlv	1.022s
+exit=0

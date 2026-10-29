@@ -1,0 +1,26 @@
+2026-10-29; isolated temporary module; Go 1.26.10; expected failure is proof of error propagation, not a library failure.
+Source:
+package control
+import "testing"
+func FuzzAssertionControl(f *testing.F) {
+    f.Add(false)
+    f.Fuzz(func(t *testing.T, fail bool) {
+        if fail { t.Fatal("synthetic assertion control") }
+    })
+}
+
+Command: go test -run=^$ -fuzz=^FuzzAssertionControl$ -fuzztime=1000000x -parallel=2 -timeout=2m
+fuzz: elapsed: 0s, gathering baseline coverage: 0/1 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 1/1 completed, now fuzzing with 2 workers
+fuzz: elapsed: 0s, execs: 3 (331/sec), new interesting: 0 (total: 1)
+--- FAIL: FuzzAssertionControl (0.01s)
+    --- FAIL: FuzzAssertionControl (0.00s)
+        control_test.go:6: synthetic assertion control
+
+    Failing input written to testdata/fuzz/FuzzAssertionControl/c65b91a05f9ec86e
+    To re-run:
+    go test -run=FuzzAssertionControl/c65b91a05f9ec86e
+FAIL
+exit status 1
+FAIL	example.invalid/fuzz-control	0.015s
+exit=1 (expected)
