@@ -1,22 +1,34 @@
 # Session lifecycle and independent peer checks
 
 The shared Session remains one connection generation, with one reader, one
-serialized writer and one inbound-expiry loop. No public signature changed in
-this increment. All three protocol profiles use the same lifecycle code.
+serialized writer and one inbound-expiry loop. All three protocol profiles use
+the same lifecycle code. The unreleased v1.1.0 adds optional
+[slog diagnostics](logging.md) without adding logging goroutines, and an optional
+[heartbeat scheduler](keepalive.md) that starts probing after bind.
 
 ## Closing a connection
 
 `Close` aborts immediately. `Shutdown(ctx)` attempts unbind and closes even if
 the exchange fails. Neither method drains outstanding business requests or
 application handlers. Finish that work before calling Shutdown when it matters.
-`Done` signals terminal shutdown; call `Wait` to join Session's three goroutines.
+`Done` signals terminal shutdown; call `Wait` to join Session's runtime
+goroutines, including the optional scheduler.
 Wait does not join application goroutines making Request/Notify/Respond calls.
+
+With an explicit logger, the expiry loop emits the terminal diagnostic outside
+Session locks. Close never calls a handler; Wait joins terminal logging. Request
+diagnostics run in the calling goroutine after releasing window capacity;
+automatic-probe diagnostics run in the scheduler after its request completes. Slow
+handlers can delay Wait or Request return, so handlers must return promptly.
 
 An admitted `Request(ctx, &pdu.Unbind{})` also retires the connection on
 completion or failure. Local encoding/admission failures before unbind is
 accepted do not by themselves retire it. Once Unbinding, new business requests
 are rejected. An inbound unbind is automatically acknowledged on the shared
 writer. Duplicate peer unbind requests during this exchange are rejected.
+Incoming enquiries that cross unbind are consumed without replying while
+Unbinding, so a pre-existing heartbeat cannot abort or block the final exchange.
+This does not admit new business requests or restart the heartbeat scheduler.
 
 When both peers initiate unbind, there are two obligations: receive the
 correlated response to our request, and fully write our response to the peer's

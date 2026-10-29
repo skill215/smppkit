@@ -1,0 +1,42 @@
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkLoggingEvent/DefaultNil         	78761604	         3.337 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLoggingEvent/DefaultNil         	71712753	         3.357 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLoggingEvent/DefaultNil         	67488716	         3.169 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLoggingEvent/Discard            	33344174	         7.338 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLoggingEvent/Discard            	34045276	         7.218 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLoggingEvent/Discard            	33894872	         7.175 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLoggingEvent/FilteredInfo       	35514058	         6.778 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLoggingEvent/FilteredInfo       	34283328	         6.819 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLoggingEvent/FilteredInfo       	38483364	         6.672 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLoggingEvent/EnabledSink        	  468654	       467.7 ns/op	     240 B/op	       1 allocs/op
+BenchmarkLoggingEvent/EnabledSink        	  680978	       440.0 ns/op	     240 B/op	       1 allocs/op
+BenchmarkLoggingEvent/EnabledSink        	  691584	       437.1 ns/op	     240 B/op	       1 allocs/op
+BenchmarkLoggingEvent/JSON               	  173094	      1741 ns/op	     240 B/op	       1 allocs/op
+BenchmarkLoggingEvent/JSON               	  173694	      1732 ns/op	     240 B/op	       1 allocs/op
+BenchmarkLoggingEvent/JSON               	  165675	      1752 ns/op	     240 B/op	       1 allocs/op
+BenchmarkLoggingEvent/Text               	  186674	      1624 ns/op	     240 B/op	       1 allocs/op
+BenchmarkLoggingEvent/Text               	  181357	      1758 ns/op	     240 B/op	       1 allocs/op
+BenchmarkLoggingEvent/Text               	  166879	      1624 ns/op	     240 B/op	       1 allocs/op
+BenchmarkSessionLogging/DefaultNil       	   33302	      7188 ns/op	    1664 B/op	      30 allocs/op
+BenchmarkSessionLogging/DefaultNil       	   32076	      7343 ns/op	    1664 B/op	      30 allocs/op
+BenchmarkSessionLogging/DefaultNil       	   32178	      7370 ns/op	    1664 B/op	      30 allocs/op
+BenchmarkSessionLogging/Discard          	   32258	      7163 ns/op	    1664 B/op	      30 allocs/op
+BenchmarkSessionLogging/Discard          	   34645	      6868 ns/op	    1664 B/op	      30 allocs/op
+BenchmarkSessionLogging/Discard          	   34610	      6892 ns/op	    1664 B/op	      30 allocs/op
+BenchmarkSessionLogging/FilteredInfo     	   34723	      6948 ns/op	    1664 B/op	      30 allocs/op
+BenchmarkSessionLogging/FilteredInfo     	   33540	      6945 ns/op	    1664 B/op	      30 allocs/op
+BenchmarkSessionLogging/FilteredInfo     	   34014	      7144 ns/op	    1664 B/op	      30 allocs/op
+BenchmarkSessionLogging/EnabledSink      	   30339	      7843 ns/op	    1904 B/op	      31 allocs/op
+BenchmarkSessionLogging/EnabledSink      	   31093	      7816 ns/op	    1904 B/op	      31 allocs/op
+BenchmarkSessionLogging/EnabledSink      	   30735	      7687 ns/op	    1904 B/op	      31 allocs/op
+BenchmarkSessionLogging/JSON             	   26841	      8915 ns/op	    1904 B/op	      31 allocs/op
+BenchmarkSessionLogging/JSON             	   27166	      8800 ns/op	    1904 B/op	      31 allocs/op
+BenchmarkSessionLogging/JSON             	   26067	      8878 ns/op	    1904 B/op	      31 allocs/op
+BenchmarkSessionLogging/Text             	   26908	      8981 ns/op	    1904 B/op	      31 allocs/op
+BenchmarkSessionLogging/Text             	   27037	      9158 ns/op	    1904 B/op	      31 allocs/op
+BenchmarkSessionLogging/Text             	   25336	      9502 ns/op	    1904 B/op	      31 allocs/op
+PASS
+ok  	github.com/skill215/smppkit	9.106s

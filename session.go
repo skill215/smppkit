@@ -2,13 +2,14 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-10-29
 
 package smpp
 
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net"
 	"sync"
 	"time"
@@ -82,6 +83,9 @@ type Session struct {
 	notices                      chan pdu.PDU
 	incoming                     chan *Inbound
 	done                         chan struct{}
+	heartbeatReady               chan struct{} // allocated only when scheduling is enabled
+	heartbeatStop                chan struct{}
+	heartbeatStopping            bool // protected by mu; channels themselves never change
 	wg                           sync.WaitGroup
 }
 
@@ -122,10 +126,21 @@ func newSessionAtSequence(conn net.Conn, c *codec.Codec, cfg Config, server bool
 		responses: make(chan *writeJob, cfg.InboundLimit+2),
 		incoming:  make(chan *Inbound, cfg.InboundLimit), done: make(chan struct{}),
 	}
+	if cfg.EnquireLinkInterval > 0 {
+		s.heartbeatReady = make(chan struct{})
+		s.heartbeatStop = make(chan struct{})
+		if state == Bound {
+			close(s.heartbeatReady)
+		}
+	}
+	s.logEvent(context.Background(), slog.LevelDebug, "session_started", slog.Int("state", int(state)))
 	// Register all runtime tasks before publishing the Session to callers.
 	s.wg.Go(s.readLoop)
 	s.wg.Go(s.writeLoop)
 	s.wg.Go(s.expiryLoop)
+	if s.heartbeatReady != nil {
+		s.wg.Go(s.heartbeatLoop)
+	}
 	return s, nil
 }
 
@@ -144,15 +159,22 @@ func (s *Session) Err() error { s.mu.Lock(); defer s.mu.Unlock(); return s.err }
 // stop publishes the terminal cause before waking waiters. Close runs outside
 // mu because a transport may block while interrupting outstanding I/O.
 func (s *Session) stop(err error) {
+	s.stopWithState(err, false)
+}
+
+// A heartbeat failure can retire only a bound connection. Checking and retiring
+// under the same lock lets an admitted unbind win against a probe deadline.
+func (s *Session) stopWithState(err error, boundOnly bool) {
 	if err == nil {
 		err = ErrClosed
 	}
 	s.mu.Lock()
-	if s.state == Closed {
+	if s.state == Closed || boundOnly && s.state != Bound {
 		s.mu.Unlock()
 		return
 	}
 	s.state = Closed
+	s.stopHeartbeatLocked()
 	s.err = err
 	// Callers retain their own pending/result/Inbound handles. The terminal
 	// Session must not retain unconsumed application payloads or reservations.
@@ -175,10 +197,11 @@ func (s *Session) stop(err error) {
 	_ = s.conn.Close()
 }
 
-// Close aborts immediately. Wait joins the three runtime goroutines.
+// Close aborts immediately. Wait joins all runtime goroutines.
 func (s *Session) Close() error { s.stop(ErrClosed); return nil }
 
-// Wait joins the reader, writer and expiry loop; it does not initiate shutdown.
+// Wait joins the reader, writer, expiry loop and optional heartbeat scheduler;
+// it does not initiate shutdown.
 func (s *Session) Wait() { s.wg.Wait() }
 func bindRole(id pdu.CommandID) Role {
 	switch id {
@@ -198,7 +221,10 @@ func (s *Session) allowed(id pdu.CommandID, out bool) bool {
 	if bindRole(id) != 0 {
 		return !s.server && out && s.state == Connected && (!s.outbindReceived || id == pdu.BindReceiverID)
 	}
-	if s.state == Unbinding && !out && id == pdu.UnbindID {
+	if s.state == Unbinding && !out && (id == pdu.UnbindID || id == pdu.EnquireLinkID) {
+		// A peer's enquiry may already be in flight when local unbind starts.
+		// dispatchRequest drains it without responding; business admission and
+		// outbound enquiries remain closed throughout unbinding.
 		return true
 	}
 	if s.state != Bound {
@@ -247,16 +273,45 @@ func (s *Session) Bind(ctx context.Context, b pdu.Body) (Result, error) {
 // reported outcome using that request's semantics; no delivery tracking is added.
 // An admitted Unbind retires the connection on completion or failure. If both
 // peers initiate unbind, success waits for our response and the peer's ACK write.
-func (s *Session) Request(ctx context.Context, body pdu.Body) (Result, error) {
-	result := Result{Outcome: NotWritten}
-	ctx, cancel := context.WithTimeout(ctx, s.cfg.RequestTimeout)
+func (s *Session) Request(ctx context.Context, body pdu.Body) (result Result, err error) {
+	return s.request(ctx, body, false)
+}
+
+// Automatic probes share encoding, correlation and byte outcomes with Request.
+// Their admission never waits for capacity, and unbind cancels them without
+// aborting a write that has already started on the shared transport.
+func (s *Session) request(ctx context.Context, body pdu.Body, automatic bool) (result Result, err error) {
+	result = Result{Outcome: NotWritten}
+	var command pdu.CommandID // zero until local encoding validates the body
+	// Preserve the caller's context, not the internal timeout context canceled
+	// during cleanup before this diagnostic runs.
+	defer func(logCtx context.Context) {
+		if !automatic {
+			s.logRequest(logCtx, command, result, err)
+		}
+	}(ctx)
+	timeout := s.cfg.RequestTimeout
+	var heartbeatStop <-chan struct{}
+	if automatic {
+		timeout = s.cfg.EnquireLinkTimeout
+		heartbeatStop = s.heartbeatStop
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	select {
-	case s.slots <- struct{}{}:
-	case <-ctx.Done():
-		return result, ctx.Err()
-	case <-s.done:
-		return result, s.Err()
+	if automatic {
+		select {
+		case s.slots <- struct{}{}:
+		default:
+			return result, ErrOverloaded
+		}
+	} else {
+		select {
+		case s.slots <- struct{}{}:
+		case <-ctx.Done():
+			return result, ctx.Err()
+		case <-s.done:
+			return result, s.Err()
+		}
 	}
 	defer func() { <-s.slots }()
 	if err := ctx.Err(); err != nil {
@@ -271,6 +326,7 @@ func (s *Session) Request(ctx context.Context, body pdu.Body) (Result, error) {
 		return result, e
 	}
 	id := body.CommandID()
+	command = id
 	expected, ok := s.codec.ResponseCommand(id)
 	if !ok {
 		return result, ErrState
@@ -294,6 +350,7 @@ func (s *Session) Request(ctx context.Context, body pdu.Body) (Result, error) {
 	data[12], data[13], data[14], data[15] = byte(seq>>24), byte(seq>>16), byte(seq>>8), byte(seq)
 	j := job(data)
 	j.ctx = ctx
+	j.heartbeat = automatic
 	p := &pending{expected: expected, response: make(chan pdu.PDU, 1), job: j, request: id, dataESM: requestESMClass(body)}
 	s.pending[seq] = p
 	if r := bindRole(id); r != 0 {
@@ -321,6 +378,9 @@ func (s *Session) Request(ctx context.Context, body pdu.Body) (Result, error) {
 		result.Sequence = seq
 		return result, ErrOverloaded
 	}
+	if id == pdu.UnbindID {
+		s.stopHeartbeatLocked()
+	}
 	s.mu.Unlock()
 	result.Sequence = seq
 	var response pdu.PDU
@@ -330,6 +390,7 @@ func (s *Session) Request(ctx context.Context, body pdu.Body) (Result, error) {
 		received = true
 	case <-ctx.Done():
 	case <-s.done:
+	case <-heartbeatStop:
 	}
 	// Correlation and cancellation have one linearization point. Once removed,
 	// a late response cannot change bind state or complete this request.
@@ -343,8 +404,15 @@ func (s *Session) Request(ctx context.Context, body pdu.Body) (Result, error) {
 	}
 	delete(s.pending, seq)
 	s.mu.Unlock()
+	cancelWrite := func() {
+		if automatic {
+			s.cancelHeartbeatWrite(j, ctx, received)
+		} else {
+			s.cancelWrite(j)
+		}
+	}
 	if !received {
-		s.cancelWrite(j)
+		cancelWrite()
 	}
 	// A response proves the peer parsed the request. Its bytes may have been read
 	// before net.Conn.Write returned; join the writer before inspecting counters.
@@ -353,10 +421,13 @@ func (s *Session) Request(ctx context.Context, body pdu.Body) (Result, error) {
 	select {
 	case <-j.done:
 	case <-ctx.Done():
-		s.cancelWrite(j)
+		cancelWrite()
 		<-j.done
 	case <-s.done:
-		s.cancelWrite(j)
+		cancelWrite()
+		<-j.done
+	case <-heartbeatStop:
+		cancelWrite()
 		<-j.done
 	}
 	result.BytesWritten = j.n
@@ -457,6 +528,7 @@ func (s *Session) Shutdown(ctx context.Context) error {
 // expiryLoop bounds the lifetime of inbound handles, including replies queued
 // behind a slow peer. One ticker per connection avoids a timer per request.
 func (s *Session) expiryLoop() {
+	defer s.logClosed()
 	interval := max(time.Millisecond, min(s.cfg.InboundTimeout/4, time.Second))
 	t := time.NewTicker(interval)
 	defer t.Stop()
@@ -475,7 +547,7 @@ func (s *Session) expiryLoop() {
 			}
 			s.mu.Unlock()
 			if expired {
-				s.stop(errors.New("smpp: inbound response deadline exceeded"))
+				s.stop(errInboundTimeout)
 				return
 			}
 		}

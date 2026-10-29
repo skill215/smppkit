@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Example program generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-10-29
 
 // Run a bounded in-memory SMSC demo. Optional echo sends deliver_sm messages;
 // it is not routing, a delivery receipt, or a promise of handset delivery.
@@ -14,6 +14,7 @@ import (
 	"errors"
 	"flag"
 	"log"
+	"log/slog"
 	"net"
 	"os"
 	"os/signal"
@@ -38,6 +39,9 @@ func run() error {
 	address := flag.String("address", "127.0.0.1:2775", "listen address; port 0 selects a free port")
 	system := flag.String("system-id", "demo", "accepted ESME system ID")
 	echo := flag.Bool("echo", false, "echo decoded submissions as deliver_sm; requires a 3.4/5.0 transceiver bind")
+	diagnostics := flag.Bool("diagnostics", false, "enable structured library diagnostics on stderr")
+	enquireInterval := flag.Duration("enquire-link-interval", 0, "active probe interval after bind; 0 disables scheduling")
+	enquireTimeout := flag.Duration("enquire-link-timeout", 0, "automatic probe deadline; 0 uses Session RequestTimeout")
 	flag.Parse()
 	password := os.Getenv("SMPP_PASSWORD")
 	if password == "" || len(password) > 8 || strings.IndexByte(password, 0) >= 0 {
@@ -58,8 +62,13 @@ func run() error {
 		}
 		profiles = append(profiles, c)
 	}
+	var logger *slog.Logger // independent of the example's application log output
+	if *diagnostics {
+		logger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	}
 	srv, err := smpp.NewServer(smpp.ServerConfig{
 		Profiles: profiles, MaxConnections: 32,
+		Session: smpp.Config{Logger: logger, EnquireLinkInterval: *enquireInterval, EnquireLinkTimeout: *enquireTimeout},
 		Authenticate: func(_ context.Context, info smpp.BindInfo) (smpp.BindDecision, error) {
 			status := pdu.OK
 			if info.Fields.SystemID != *system || subtle.ConstantTimeCompare([]byte(info.Fields.Password), []byte(password)) != 1 {

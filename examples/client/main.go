@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Example program generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-10-29
 
 // Connect, submit text, optionally receive one delivery, then unbind.
 // See examples/README.md for a matching local server and multipart commands.
@@ -14,6 +14,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"time"
@@ -42,6 +43,10 @@ func run() error {
 	text := flag.String("text", "Hello from smppkit", "message text; long text is automatically segmented")
 	waitDelivery := flag.Bool("wait-delivery", false, "receive one complete deliver_sm message before unbind (3.4/5.0)")
 	timeout := flag.Duration("timeout", 30*time.Second, "overall bind/send/receive deadline")
+	diagnostics := flag.Bool("diagnostics", false, "enable structured library diagnostics on stderr")
+	enquireInterval := flag.Duration("enquire-link-interval", 0, "active probe interval after bind; 0 disables scheduling")
+	enquireTimeout := flag.Duration("enquire-link-timeout", 0, "automatic probe deadline; 0 uses Session RequestTimeout")
+	idle := flag.Duration("idle", 0, "remain bound after sending/receiving, within the overall timeout")
 	flag.Parse()
 	password := os.Getenv("SMPP_PASSWORD")
 	if password == "" || len(password) > 8 {
@@ -49,6 +54,9 @@ func run() error {
 	}
 	if *timeout <= 0 {
 		return errors.New("timeout must be positive")
+	}
+	if *idle < 0 {
+		return errors.New("idle must not be negative")
 	}
 	v, ok := map[string]pdu.Version{"3.3": pdu.V33, "3.4": pdu.V34, "5.0": pdu.V50}[*version]
 	if !ok {
@@ -70,7 +78,13 @@ func run() error {
 	if v == pdu.V33 {
 		bind = &pdu.BindTransmitter{BindFields: fields}
 	}
-	s, err := smpp.Dial(ctx, *address, smpp.ClientConfig{Codec: c, Bind: bind})
+	var logger *slog.Logger // nil keeps library diagnostics silent
+	if *diagnostics {
+		logger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	}
+	s, err := smpp.Dial(ctx, *address, smpp.ClientConfig{Codec: c, Bind: bind, Session: smpp.Config{
+		Logger: logger, EnquireLinkInterval: *enquireInterval, EnquireLinkTimeout: *enquireTimeout,
+	}})
 	if err != nil {
 		return fmt.Errorf("dial/bind: %w", err)
 	}
@@ -125,6 +139,19 @@ func run() error {
 			return fmt.Errorf("receive delivery: %w", receiveErr)
 		case <-ctx.Done():
 			return fmt.Errorf("receive delivery: %w", ctx.Err())
+		}
+	}
+	// Keep the Session bound to demonstrate optional background probes. Inbound
+	// enquire_link replies need no application Receive loop, including in 3.3.
+	if *idle > 0 {
+		timer := time.NewTimer(*idle)
+		defer timer.Stop()
+		select {
+		case <-timer.C:
+		case <-s.Done():
+			return fmt.Errorf("idle session: %w", s.Err())
+		case <-ctx.Done():
+			return fmt.Errorf("idle session: %w", ctx.Err())
 		}
 	}
 	// Use a separate bounded cleanup deadline; the operation context may expire

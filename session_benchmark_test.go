@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Benchmark code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-10-29
 
 package smpp
 
@@ -26,16 +26,20 @@ var benchmarkSendResult SendResult
 // endpoints' encoding, framing, correlation and in-memory transport work, but
 // excludes TCP/TLS, bind, startup and teardown. This is not a network TPS test.
 func benchmarkSessions(b *testing.B) *Session {
+	return benchmarkSessionsConfig(b, Config{Window: 1})
+}
+
+func benchmarkSessionsConfig(b *testing.B, cfg Config) *Session {
 	b.Helper()
 	a, peer := net.Pipe()
 	c := testCodec(b)
-	client, err := newSession(a, c, Config{Window: 1}, false, Bound, Transceiver)
+	client, err := newSession(a, c, cfg, false, Bound, Transceiver)
 	if err != nil {
 		a.Close()
 		peer.Close()
 		b.Fatal(err)
 	}
-	server, err := newSession(peer, c, Config{Window: 1}, true, Bound, Transceiver)
+	server, err := newSession(peer, c, cfg, true, Bound, Transceiver)
 	if err != nil {
 		client.Close()
 		client.Wait()

@@ -1,0 +1,18 @@
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit/message
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkReceiveLanguagePolicy/OrdinaryText         	  196585	      1139 ns/op	   4.39 MB/s	     520 B/op	       8 allocs/op
+BenchmarkReceiveLanguagePolicy/OrdinaryText         	  203934	      1297 ns/op	   3.85 MB/s	     520 B/op	       8 allocs/op
+BenchmarkReceiveLanguagePolicy/OrdinaryText         	  230350	      1147 ns/op	   4.36 MB/s	     520 B/op	       8 allocs/op
+BenchmarkReceiveLanguagePolicy/OpaqueIE             	  235852	      1100 ns/op	   4.55 MB/s	     528 B/op	       9 allocs/op
+BenchmarkReceiveLanguagePolicy/OpaqueIE             	  236113	      1090 ns/op	   4.59 MB/s	     528 B/op	       9 allocs/op
+BenchmarkReceiveLanguagePolicy/OpaqueIE             	  241237	      1086 ns/op	   4.60 MB/s	     528 B/op	       9 allocs/op
+BenchmarkReceiveLanguagePolicy/LanguageBlocked      	  215710	      1054 ns/op	   4.75 MB/s	     520 B/op	       8 allocs/op
+BenchmarkReceiveLanguagePolicy/LanguageBlocked      	  241924	      1041 ns/op	   4.80 MB/s	     520 B/op	       8 allocs/op
+BenchmarkReceiveLanguagePolicy/LanguageBlocked      	  231066	      1048 ns/op	   4.77 MB/s	     520 B/op	       8 allocs/op
+BenchmarkReceiveLanguagePolicy/LanguageRaw          	  244256	      1030 ns/op	   4.85 MB/s	     520 B/op	       8 allocs/op
+BenchmarkReceiveLanguagePolicy/LanguageRaw          	  253765	      1018 ns/op	   4.91 MB/s	     520 B/op	       8 allocs/op
+BenchmarkReceiveLanguagePolicy/LanguageRaw          	  228498	      1017 ns/op	   4.92 MB/s	     520 B/op	       8 allocs/op
+PASS
+ok  	github.com/skill215/smppkit/message	3.005s

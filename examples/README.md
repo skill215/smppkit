@@ -60,6 +60,44 @@ No request is automatically retried after a rejection or uncertain outcome.
 
 ## Version and error paths
 
+In the v1.1.0 development checkout, add `-diagnostics` to either Client or Server
+to enable library debug diagnostics on stderr. Without it, library logs are
+discarded; the examples' application logs still print their normal output.
+The [logging contract](../docs/logging.md) explains event fields and handler
+requirements. This option does not enable periodic enquire_link.
+
+### Active enquire_link (v1.1.0, unreleased)
+
+Both examples accept `-enquire-link-interval` (default `0`, disabled) and
+`-enquire-link-timeout` (default `0`, Session RequestTimeout). Both endpoints
+already answer incoming enquiries automatically, even with scheduling disabled.
+To observe client probes after sending, use two terminals:
+
+```sh
+SMPP_PASSWORD=demo go run ./examples/server -diagnostics
+SMPP_PASSWORD=demo go run ./examples/client -diagnostics \
+  -enquire-link-interval 1s -enquire-link-timeout 3s -idle 5s -timeout 20s
+```
+
+To initiate on the server instead, put the two enquiry flags on the server
+command and keep `-idle 5s` on the client. Both may initiate simultaneously.
+The client idle period remains inside its overall timeout and ends early if
+Session closes. The same scheduling works with `-version 3.3` transmitter bind.
+The default two-minute ReadTimeout remains independent: choose a shorter
+interval plus probe timeout for proactive detection. Full request windows skip
+probes; failed sent probes retire the connection without retry or reconnect.
+See [keepalive](../docs/keepalive.md) for shutdown and failure details.
+
+
+Run a standalone standard-logger bridge without a network connection:
+
+```sh
+go run ./examples/logging
+```
+
+It uses a canceled Dial context to emit a setup diagnostic through an
+application-owned TextHandler. It does not change global logger settings.
+
 | Client option | Bind and supported demo flow |
 | --- | --- |
 | `-version 3.3` | Transmitter bind, single-part submit; standard multipart and `-wait-delivery` are rejected. Use the server without `-echo`. |
@@ -106,3 +144,38 @@ The [legacy simulator harness](../interop/legacy/README.md) exercises the
 [go-smpp smpptest server](https://github.com/skill215/go-smpp/tree/743fa92c92a2e87fc64d53c677f774a856c1b6e3/smpp/smpptest)
 in a separate temporary module. Its recorded scope is 3.4 UDH, not all features
 demonstrated by these examples. See [local validation](../docs/local-validation.md).
+
+
+## Raw framing and explicit decode policy (v1.1.0, unreleased)
+
+```sh
+go run ./examples/framing
+```
+
+This standalone example uses synthetic bytes, no sockets. It retains a complete
+invalid submit_sm frame, inspects structured decoding diagnostics, and explicitly
+chooses to continue to the next valid frame. It is not an automatic bad-frame
+recovery or proxy policy. See the [framing contract](../docs/framing.md).
+
+
+## Delivery receipts (v1.1.0, unreleased)
+
+`examples/receipts` runs a Client and Server over net.Pipe. The server constructs
+an explicitly supplied synthetic EXPIRED report; it does not derive delivery
+from a submit response. The client parses separate text/TLV evidence and chooses
+an explicit ACK only after inspecting diagnostics, then unbinds. No sockets,
+external peer, credentials configuration, persistence or delivery tracker needed.
+
+```sh
+go run ./examples/receipts -version 3.3
+go run ./examples/receipts -version 3.4
+go run ./examples/receipts -version 5.0
+go run ./examples/receipts -version 3.4 -data-sm
+go run ./examples/receipts -version 5.0 -data-sm
+```
+
+3.3 uses the documented legacy text convention; data_sm is rejected. 3.4/5.0
+use text plus standard ID/state/network-error TLVs. Text err and network error
+intentionally differ to show their separate namespaces. The input outcome and
+addresses are application facts. See [receipt contracts](../docs/receipts.md)
+and [source](receipts/main.go) for version, grammar, ownership and ACK boundaries.

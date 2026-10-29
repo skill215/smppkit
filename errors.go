@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-10-29
 
 package smpp
 
@@ -12,6 +12,10 @@ import (
 
 	"github.com/skill215/smppkit/pdu"
 )
+
+// Internal identity preserves the existing timeout text while allowing safe
+// diagnostic classification without parsing or printing arbitrary error text.
+var errInboundTimeout = errors.New("smpp: inbound response deadline exceeded")
 
 var (
 	// ErrClosed is the terminal cause of an explicit local close.
@@ -25,6 +29,10 @@ var (
 	ErrResponse = errors.New("smpp: mismatched response command")
 	// ErrResponded means the Inbound response handle has already been claimed.
 	ErrResponded = errors.New("smpp: request already responded")
+	// ErrEnquireLinkTimeout retires a bound Session when an automatic probe
+	// started writing but did not finish its exchange before EnquireLinkTimeout.
+	// A full request window or expiry before writing does not cause this error.
+	ErrEnquireLinkTimeout = errors.New("smpp: enquire_link deadline exceeded")
 )
 
 // PeerError reports protocol rejection. Request's Result retains the complete

@@ -1,0 +1,29 @@
+$ go version
+go version go1.26.10 linux/amd64
+exit=0
+$ go test . -run '^$' -bench '^BenchmarkHeartbeat(Request|Lifecycle)$' -benchmem -benchtime=200ms -count=3 -cpu=1
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkHeartbeatRequest/Manual         	   32103	      7038 ns/op	    1696 B/op	      30 allocs/op
+BenchmarkHeartbeatRequest/Manual         	   33970	      6907 ns/op	    1696 B/op	      30 allocs/op
+BenchmarkHeartbeatRequest/Manual         	   32373	      7320 ns/op	    1696 B/op	      30 allocs/op
+BenchmarkHeartbeatRequest/Automatic      	   32670	      7239 ns/op	    1696 B/op	      30 allocs/op
+BenchmarkHeartbeatRequest/Automatic      	   33844	      7070 ns/op	    1696 B/op	      30 allocs/op
+BenchmarkHeartbeatRequest/Automatic      	   34742	      6691 ns/op	    1696 B/op	      30 allocs/op
+BenchmarkHeartbeatRequest/WindowFull     	  577030	       504.4 ns/op	     272 B/op	       4 allocs/op
+BenchmarkHeartbeatRequest/WindowFull     	  571471	       525.2 ns/op	     272 B/op	       4 allocs/op
+BenchmarkHeartbeatRequest/WindowFull     	  558118	       514.8 ns/op	     272 B/op	       4 allocs/op
+BenchmarkHeartbeatLifecycle/DisabledBound         	   72717	      3350 ns/op	    4912 B/op	      38 allocs/op
+BenchmarkHeartbeatLifecycle/DisabledBound         	   71664	      3513 ns/op	    4912 B/op	      38 allocs/op
+BenchmarkHeartbeatLifecycle/DisabledBound         	   71280	      3525 ns/op	    4912 B/op	      38 allocs/op
+BenchmarkHeartbeatLifecycle/EnabledBeforeBind     	   67303	      3716 ns/op	    5176 B/op	      42 allocs/op
+BenchmarkHeartbeatLifecycle/EnabledBeforeBind     	   68008	      3675 ns/op	    5176 B/op	      42 allocs/op
+BenchmarkHeartbeatLifecycle/EnabledBeforeBind     	   66254	      3643 ns/op	    5176 B/op	      42 allocs/op
+BenchmarkHeartbeatLifecycle/EnabledBound          	   63612	      3871 ns/op	    5300 B/op	      43 allocs/op
+BenchmarkHeartbeatLifecycle/EnabledBound          	   57934	      4156 ns/op	    5300 B/op	      43 allocs/op
+BenchmarkHeartbeatLifecycle/EnabledBound          	   57392	      4090 ns/op	    5299 B/op	      43 allocs/op
+PASS
+ok  	github.com/skill215/smppkit	4.509s
+exit=0

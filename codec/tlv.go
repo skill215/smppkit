@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-10-29
 
 package codec
 
@@ -20,6 +20,13 @@ func (c *Codec) readTLVs(r *wire.Reader, id pdu.CommandID) tlv.Fields {
 	if r.Err != nil {
 		return nil
 	}
+	// Mark errors at the optional-section boundary, never by parsing text.
+	// A prior mandatory-field failure returned above is not reclassified.
+	defer func() {
+		if r.Err != nil {
+			r.Err = &categorizedError{DecodeTLV, r.Err}
+		}
+	}()
 	var f tlv.Fields
 	for r.Pos < len(r.Data) && r.Err == nil {
 		h := r.Bytes(4, "tlv.header")

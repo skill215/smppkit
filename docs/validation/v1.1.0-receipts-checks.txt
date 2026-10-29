@@ -1,0 +1,13 @@
+$ go version
+go version go1.26.10 linux/amd64
+exit=0
+$ go build ./...
+exit=0
+$ go vet ./...
+exit=0
+$ go test -race ./message ./examples/receipts -run 'TestReceipt|FuzzReceipt' -count=20 -timeout=60s
+ok  	github.com/skill215/smppkit/message	1.197s
+ok  	github.com/skill215/smppkit/examples/receipts	1.107s
+exit=0
+Final inspection: gofmt clean; git diff --check PASS; six-package API snapshot regenerated/reviewed; source disclosure headers present; go.mod/v1.0 API unchanged; doc/ remains ignored.
+Source manifest: 106 project Go files and go.mod, 107 SHA-256 entries.

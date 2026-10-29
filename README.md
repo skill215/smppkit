@@ -6,7 +6,7 @@ Send text, segment long messages, and reassemble incoming SMS with explicit
 outcomes and bounded resources. One shared Session and versioned Codec support
 **SMPP 3.3, 3.4, and 5.0**.
 
-**Go 1.26+** · [v1.0.0](https://github.com/skill215/smppkit/releases/tag/v1.0.0) ·
+**Go 1.26+** · [Latest published: v1.0.0](https://github.com/skill215/smppkit/releases/tag/v1.0.0) ·
 [Apache-2.0](LICENSE) · No third-party runtime module dependencies
 
 > **AI-written:** OpenAI Codex generated this library under maintainer direction.
@@ -14,6 +14,19 @@ outcomes and bounded resources. One shared Session and versioned Codec support
 
 [Quick start](#quick-start) · [Go API](#go-api) · [Protocol support](#protocol-support) ·
 [Examples](#examples) · [Benchmarks](#benchmarks) · [Documentation](#documentation)
+
+**v1.1.0 release candidate — not yet tagged or published.** Implementation and
+[S5 correction review](docs/v1.1.0-s5-recheck.md) are complete. This candidate adds:
+
+- Optional [slog diagnostics](docs/logging.md), with discard as the default.
+- [Active enquire_link](docs/keepalive.md), disabled by default on both endpoints.
+- [Raw framing and classified decode errors](docs/framing.md) for standalone tools.
+- [DLR parsing and construction](docs/receipts.md), with explicit dialects and separate evidence.
+- [UDH national-language protection](docs/v1.1.0-design.md#u1-national-language-declarations-and-text-safety)
+  to prevent unsupported text decoding.
+
+See the [release notes](docs/releases/v1.1.0.md) and
+[submission/publication gates](docs/v1.1.0-release.md). Go 1.26 remains the minimum.
 
 ## What it provides
 
@@ -41,6 +54,10 @@ Requires **Go 1.26 or newer** (`go 1.26.0` in `go.mod`). The root package is nam
 ```sh
 go get github.com/skill215/smppkit@v1.0.0
 ```
+
+This installs the published stable version. To evaluate the v1.1.0 additions,
+use the candidate source checkout below; `@v1.1.0` is available only after its
+tag is published. No v1.1.0 tag is created by candidate submission.
 
 ### Run a local server and client
 
@@ -125,6 +142,23 @@ See the [server example](examples/server/main.go) and [ACK contract](docs/decisi
 `Shutdown(ctx)` exchanges unbind and closes; `Close()` aborts and `Wait()` joins
 Session goroutines. Applications still own their workers and processing lifecycle.
 
+### Optional diagnostics (v1.1.0, unreleased)
+
+Pass `smpp.Config{Logger: logger}` through `ClientConfig.Session`,
+`ServerConfig.Session`, or `NewSession`, where `logger` is a `*slog.Logger`.
+Nil means discard; global loggers are never used or changed. For example:
+
+```go
+logger := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+    Level: slog.LevelDebug,
+}))
+sessionConfig := smpp.Config{Logger: logger}
+```
+
+See the [logging contract](docs/logging.md) for safe fields, synchronous handler
+requirements and shutdown behavior, and the [bridge example](examples/logging/main.go)
+for application-owned output. Client/Server demos accept `-diagnostics`.
+
 ## Protocol support
 
 Version selection is explicit; there is no automatic downgrade.
@@ -166,6 +200,7 @@ individual unsuccessful SMEs even when the response header is OK.
 | --- | --- |
 | Connect, send text and receive deliveries | [client](examples/client/main.go) |
 | Authenticate peers and receive complete messages | [server](examples/server/main.go) |
+| Bridge optional slog diagnostics to application output | [logging](examples/logging/main.go) (v1.1.0, unreleased) |
 | Encode/decode without networking | [codec](examples/codec/main.go) |
 | Preview text segmentation | [multipart](examples/multipart/main.go) |
 | Submit to multiple destinations | [submit-multi](examples/submit-multi/main.go) |
@@ -220,6 +255,89 @@ go test . ./codec ./message ./textcodec -run='^$' -bench=. \
 [Raw output](docs/benchmarks/r3-go1.26.4.txt) ·
 [Methodology, historical tables and allocation profiling](docs/benchmarks/README.md)
 
+### Optional logging (v1.1.0, unreleased)
+
+Local Go 1.26.10 results on 2026-10-29, linux/amd64 WSL2, Ryzen 7 6800H:
+median of three 200 ms runs, `-cpu=1`. Disabled diagnostics allocate no record;
+the Session numbers include the existing protocol/runtime allocations.
+
+| Workload | ns/op | B/op | allocs/op |
+| --- | ---: | ---: | ---: |
+| Default nil — isolated event | 3.337 | 0 | 0 |
+| JSON — isolated event | 1741 | 240 | 1 |
+| Text — isolated event | 1624 | 240 | 1 |
+| Default nil — Session round trip | 7343 | 1664 | 30 |
+| JSON — Session round trip | 8878 | 1904 | 31 |
+| Text — Session round trip | 9158 | 1904 | 31 |
+
+JSON/text use `io.Discard`: formatting is included, file/terminal I/O is not.
+Session measurements use a manual enquiry/automatic response over `net.Pipe`,
+excluding startup and shutdown. These are local observations, not throughput
+promises. [All cases, commands and raw output](docs/benchmarks/README.md#optional-logging-v110-unreleased).
+
+### UDH language protection (v1.1.0, unreleased)
+
+Five-byte inputs, complete bounded `Admit` + `Receive` path; Go 1.26.10,
+three 200 ms runs, `-cpu=1`, same local machine as above:
+
+| Workload | Median ns/op | B/op | allocs/op |
+| --- | ---: | ---: | ---: |
+| Language declaration, decoding blocked | 1048 | 520 | 8 |
+| Language declaration, raw-only reception | 1018 | 520 | 8 |
+
+These include ownership copies and message ID creation. They measure allocation,
+not copy counts or isolated guard overhead. [Controls, commands and raw results](docs/benchmarks/README.md#udh-language-protection-v110-unreleased).
+
+### Raw framing (v1.1.0, unreleased)
+
+Go 1.26.10 on the same local machine, median of three 200 ms runs, `-cpu=1`:
+
+| Workload | ns/op | B/op | allocs/op |
+| --- | ---: | ---: | ---: |
+| ReadFrame, owned 4 KiB frame | 409.0 | 4100 | 2 |
+| WriteFrame, reused 4 KiB bytes.Buffer | 34.33 | 0 | 0 |
+| Decode, complete malformed body | 338.2 | 360 | 8 |
+
+Read includes acquisition copies; the buffer write includes its payload copy.
+Allocation counts do not measure copies. These exclude network I/O and do not
+claim an improvement over an earlier release. [Full results and commands](docs/benchmarks/README.md#raw-framing-and-diagnostic-errors-v110-unreleased).
+
+### Active heartbeat paths (v1.1.0, unreleased)
+
+Go 1.26.10, same local machine, median of three 200 ms runs, `-cpu=1`:
+
+| Workload | Median ns/op | B/op | allocs/op |
+| --- | ---: | ---: | ---: |
+| Explicit enquiry round trip | 7038 | 1696 | 30 |
+| Automatic probe request path | 7070 | 1696 | 30 |
+| Full-window skip | 514.8 | 272 | 4 |
+| Construct/close: disabled, bound | 3513 | 4912 | 38 |
+| Construct/close: enabled, before bind | 3675 | 5176 | 42 |
+| Construct/close: enabled, bound | 4090 | 5300 | 43 |
+
+The request benchmarks include both peers and net.Pipe work. Automatic probes
+measure the shared request path without waiting for scheduled intervals. Lifecycle
+rows include construction, Close/Wait and startup races; they are not isolated
+timer costs. B/op is allocated memory, not copied bytes. See the
+[method and raw output](docs/benchmarks/README.md#heartbeat-paths-v110-unreleased).
+
+### DLR helpers (v1.1.0, unreleased)
+
+Go 1.26.10, same local machine; median of three 200 ms runs, `-cpu=1`:
+
+| Workload | Median ns/op | B/op | allocs/op |
+| --- | ---: | ---: | ---: |
+| Parse/FullText | 2529 | 784 | 7 |
+| Parse/TLVOnly | 313 | 136 | 6 |
+| Parse/Mixed | 2912 | 920 | 13 |
+| Parse/Malformed | 2445 | 1640 | 17 |
+| Build/TLVOnly | 790 | 608 | 12 |
+| Build/Mixed | 1333 | 1496 | 20 |
+
+Parsing includes owned evidence copies and diagnostics. Construction includes
+standard Codec preflight and its temporary wire buffer. These are stateless
+helper costs; B/op is not a copy counter. [All 11 cases, scope and raw output](docs/benchmarks/README.md#receipt-helpers-v110-unreleased).
+
 ## Documentation
 
 | Read about | Guide |
@@ -229,6 +347,11 @@ go test . ./codec ./message ./textcodec -run='^$' -bench=. \
 | Command, role and TLV coverage | [Support matrix](docs/support.md) · [TLVs](docs/tlv-support.md) |
 | Field validation and data_sm context | [Field semantics](docs/field-semantics.md) · [Direction](docs/data-direction.md) · [Transactions](docs/data-transaction.md) |
 | Cancellation, shutdown and local resources | [Session lifecycle](docs/session-lifecycle.md) · [Local validation](docs/local-validation.md) |
+| v1.1.0 scope, increments and implementation status | [Design](docs/v1.1.0-design.md) · [Roadmap](docs/roadmap/v1.1.0.md) |
+| Raw frames, ownership and classified decode errors | [Framing](docs/framing.md) · [Runnable example](examples/framing/main.go) (v1.1.0, unreleased) |
+| DLR text/TLV evidence, construction and peer conventions | [Receipt helpers](docs/receipts.md) · [Compiling example](examples/receipts/main.go) (v1.1.0, unreleased) |
+| Active enquiries, window pressure and probe deadlines | [Keepalive](docs/keepalive.md) (v1.1.0, unreleased) |
+| Optional structured diagnostics and handler integration | [Logging](docs/logging.md) (v1.1.0, unreleased) |
 | Release changes and test evidence | [Changelog](CHANGELOG.md) · [Validation records](docs/validation.md) |
 
 Run the core checks from the repository root:
@@ -239,7 +362,8 @@ go vet ./...
 go test -race -count=1 -timeout=90s ./...
 ```
 
-[CI](.github/workflows/ci.yml) runs the Go 1.26/1.27 matrix and all 11 fuzz targets.
+The current [CI configuration](.github/workflows/ci.yml) covers the Go 1.26/1.27
+matrix and all 14 fuzz targets.
 Tests include independent protocol bytes and raw TCP peers, beyond shared-Codec
 round trips. Historical records distinguish local results from remote CI.
 

@@ -1,0 +1,19 @@
+2026-10-29 Asia/Shanghai; v1.1.0 candidate preparation, not publication.
+$ go version
+go version go1.26.10 linux/amd64
+exit=0
+$ go build ./...
+exit=0
+$ go vet ./...
+exit=0
+$ git diff --check
+exit=0
+All 108 Go/module entries match the corrected S5 manifest; no source changes in release preparation.
+All six public packages match the existing v1.1.0 API snapshot.
+Public distribution inventory: 228 tracked/nonignored files; UTF-8, symlink, size, targeted secret-form and Go disclosure checks PASS.
+Go 1.26 module minimum, formatting, whitespace and /doc/ exclusion PASS.
+Candidate document local links PASS; release note links use absolute repository URLs for GitHub Release rendering.
+Fresh full race suite PASS; see v1.1.0-candidate-race.txt.
+Staged inventory: 108 changed files; no ignored /doc/ entries.
+Default staged whitespace check: 8 warnings confined to verbatim machine output (benchmark CPU lines and go doc final blank line). Preserved to retain recorded raw evidence/API snapshot bytes.
+Staged whitespace check excluding only docs/api-v1.1.0.txt and docs/benchmarks/*.txt: PASS; all Go formatting checks PASS.

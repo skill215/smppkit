@@ -1,0 +1,25 @@
+$ go version
+go version go1.26.10 linux/amd64
+exit=0
+$ go test -race -count=1 -timeout=90s ./...
+ok  	github.com/skill215/smppkit	2.081s
+ok  	github.com/skill215/smppkit/codec	1.371s
+ok  	github.com/skill215/smppkit/examples/client	1.021s
+?   	github.com/skill215/smppkit/examples/codec	[no test files]
+?   	github.com/skill215/smppkit/examples/custom-tlv	[no test files]
+?   	github.com/skill215/smppkit/examples/data-direction	[no test files]
+?   	github.com/skill215/smppkit/examples/data-transaction	[no test files]
+?   	github.com/skill215/smppkit/examples/framing	[no test files]
+?   	github.com/skill215/smppkit/examples/logging	[no test files]
+?   	github.com/skill215/smppkit/examples/multipart	[no test files]
+?   	github.com/skill215/smppkit/examples/notifications	[no test files]
+?   	github.com/skill215/smppkit/examples/private-command	[no test files]
+ok  	github.com/skill215/smppkit/examples/receipts	1.023s
+?   	github.com/skill215/smppkit/examples/server	[no test files]
+?   	github.com/skill215/smppkit/examples/submit-multi	[no test files]
+ok  	github.com/skill215/smppkit/internal/wire	1.019s
+ok  	github.com/skill215/smppkit/message	1.111s
+?   	github.com/skill215/smppkit/pdu	[no test files]
+ok  	github.com/skill215/smppkit/textcodec	1.021s
+ok  	github.com/skill215/smppkit/tlv	1.019s
+exit=0

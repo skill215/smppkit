@@ -1,0 +1,111 @@
+$ go build -race -o /tmp/smppkit-heartbeat-client ./examples/client
+$ go build -race -o /tmp/smppkit-heartbeat-server ./examples/server
+CASE version=3.3 initiator=client
+time=2026-10-29T11:52:38.536+08:00 level=DEBUG msg=session_started component=smppkit event=session_started session_id=1ec59f2c32046d93391e05efb0e9d961 endpoint=client version=51 state=0
+time=2026-10-29T11:52:38.537+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=1ec59f2c32046d93391e05efb0e9d961 endpoint=client version=51 command_id=2 sequence=1 outcome=4 bytes_written=31 status=0 reason=ok
+2026/10/29 11:52:38 Bound SMPP 3.3
+time=2026-10-29T11:52:38.538+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=1ec59f2c32046d93391e05efb0e9d961 endpoint=client version=51 command_id=4 sequence=2 outcome=4 bytes_written=63 status=0 reason=ok
+2026/10/29 11:52:38 part=1 outcome=4 sequence=2 bytes_written=63 message_id="09b97a9b" error=<nil>
+2026/10/29 11:52:38 All segments accepted; final delivery remains unknown.
+time=2026-10-29T11:52:38.839+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=1ec59f2c32046d93391e05efb0e9d961 endpoint=client version=51 command_id=21 sequence=3 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:39.140+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=1ec59f2c32046d93391e05efb0e9d961 endpoint=client version=51 command_id=21 sequence=4 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:39.441+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=1ec59f2c32046d93391e05efb0e9d961 endpoint=client version=51 command_id=21 sequence=5 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:39.742+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=1ec59f2c32046d93391e05efb0e9d961 endpoint=client version=51 command_id=21 sequence=6 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:40.039+08:00 level=DEBUG msg=session_closed component=smppkit event=session_closed session_id=1ec59f2c32046d93391e05efb0e9d961 endpoint=client version=51 reason=closed
+time=2026-10-29T11:52:40.039+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=1ec59f2c32046d93391e05efb0e9d961 endpoint=client version=51 command_id=6 sequence=7 outcome=4 bytes_written=16 status=0 reason=ok
+2026/10/29 11:52:40 Unbound and closed.
+
+2026/10/29 11:52:38 Listening on 127.0.0.1:44419 (echo=false)
+time=2026-10-29T11:52:38.537+08:00 level=DEBUG msg=session_started component=smppkit event=session_started session_id=ba6fd29c3f1d8bbe001eae717501bfaf endpoint=server version=51 state=2
+2026/10/29 11:52:38 Complete message: segments=1 bytes=18 receipt=false decoded=true
+time=2026-10-29T11:52:40.040+08:00 level=DEBUG msg=session_closed component=smppkit event=session_closed session_id=ba6fd29c3f1d8bbe001eae717501bfaf endpoint=server version=51 reason=closed
+
+PASS: submission, scheduled probes, unbind and joined shutdown; no race report
+CASE version=3.4 initiator=client
+time=2026-10-29T11:52:42.132+08:00 level=DEBUG msg=session_started component=smppkit event=session_started session_id=5acf330e82a9a4f79a2b1ea2fbfc108a endpoint=client version=52 state=0
+time=2026-10-29T11:52:42.133+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=5acf330e82a9a4f79a2b1ea2fbfc108a endpoint=client version=52 command_id=9 sequence=1 outcome=4 bytes_written=31 status=0 reason=ok
+2026/10/29 11:52:42 Bound SMPP 3.4
+time=2026-10-29T11:52:42.134+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=5acf330e82a9a4f79a2b1ea2fbfc108a endpoint=client version=52 command_id=4 sequence=2 outcome=4 bytes_written=63 status=0 reason=ok
+2026/10/29 11:52:42 part=1 outcome=4 sequence=2 bytes_written=63 message_id="7261db99b259e89a10bcfd4d6abdf622" error=<nil>
+2026/10/29 11:52:42 All segments accepted; final delivery remains unknown.
+time=2026-10-29T11:52:42.434+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=5acf330e82a9a4f79a2b1ea2fbfc108a endpoint=client version=52 command_id=21 sequence=3 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:42.735+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=5acf330e82a9a4f79a2b1ea2fbfc108a endpoint=client version=52 command_id=21 sequence=4 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:43.036+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=5acf330e82a9a4f79a2b1ea2fbfc108a endpoint=client version=52 command_id=21 sequence=5 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:43.338+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=5acf330e82a9a4f79a2b1ea2fbfc108a endpoint=client version=52 command_id=21 sequence=6 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:43.636+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=5acf330e82a9a4f79a2b1ea2fbfc108a endpoint=client version=52 command_id=6 sequence=7 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:43.636+08:00 level=DEBUG msg=session_closed component=smppkit event=session_closed session_id=5acf330e82a9a4f79a2b1ea2fbfc108a endpoint=client version=52 reason=closed
+2026/10/29 11:52:43 Unbound and closed.
+
+2026/10/29 11:52:42 Listening on 127.0.0.1:36583 (echo=false)
+time=2026-10-29T11:52:42.133+08:00 level=DEBUG msg=session_started component=smppkit event=session_started session_id=ae4a38bec8ef9db3748299450959a343 endpoint=server version=52 state=2
+2026/10/29 11:52:42 Complete message: segments=1 bytes=18 receipt=false decoded=true
+time=2026-10-29T11:52:43.636+08:00 level=DEBUG msg=session_closed component=smppkit event=session_closed session_id=ae4a38bec8ef9db3748299450959a343 endpoint=server version=52 reason=closed
+
+PASS: submission, scheduled probes, unbind and joined shutdown; no race report
+CASE version=5.0 initiator=client
+time=2026-10-29T11:52:45.718+08:00 level=DEBUG msg=session_started component=smppkit event=session_started session_id=f30792cd15b4e8d326be807b9d09a5bb endpoint=client version=80 state=0
+time=2026-10-29T11:52:45.719+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=f30792cd15b4e8d326be807b9d09a5bb endpoint=client version=80 command_id=9 sequence=1 outcome=4 bytes_written=31 status=0 reason=ok
+2026/10/29 11:52:45 Bound SMPP 5.0
+time=2026-10-29T11:52:45.720+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=f30792cd15b4e8d326be807b9d09a5bb endpoint=client version=80 command_id=4 sequence=2 outcome=4 bytes_written=63 status=0 reason=ok
+2026/10/29 11:52:45 part=1 outcome=4 sequence=2 bytes_written=63 message_id="b47d59e3342318b7c2025672a5cd2436" error=<nil>
+2026/10/29 11:52:45 All segments accepted; final delivery remains unknown.
+time=2026-10-29T11:52:46.020+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=f30792cd15b4e8d326be807b9d09a5bb endpoint=client version=80 command_id=21 sequence=3 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:46.322+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=f30792cd15b4e8d326be807b9d09a5bb endpoint=client version=80 command_id=21 sequence=4 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:46.623+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=f30792cd15b4e8d326be807b9d09a5bb endpoint=client version=80 command_id=21 sequence=5 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:46.924+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=f30792cd15b4e8d326be807b9d09a5bb endpoint=client version=80 command_id=21 sequence=6 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:47.221+08:00 level=DEBUG msg=session_closed component=smppkit event=session_closed session_id=f30792cd15b4e8d326be807b9d09a5bb endpoint=client version=80 reason=closed
+time=2026-10-29T11:52:47.221+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=f30792cd15b4e8d326be807b9d09a5bb endpoint=client version=80 command_id=6 sequence=7 outcome=4 bytes_written=16 status=0 reason=ok
+2026/10/29 11:52:47 Unbound and closed.
+
+2026/10/29 11:52:45 Listening on 127.0.0.1:42185 (echo=false)
+time=2026-10-29T11:52:45.719+08:00 level=DEBUG msg=session_started component=smppkit event=session_started session_id=02dc629e082e9588d7a65e883c7a874e endpoint=server version=80 state=2
+2026/10/29 11:52:45 Complete message: segments=1 bytes=18 receipt=false decoded=true
+time=2026-10-29T11:52:47.221+08:00 level=DEBUG msg=session_closed component=smppkit event=session_closed session_id=02dc629e082e9588d7a65e883c7a874e endpoint=server version=80 reason=closed
+
+PASS: submission, scheduled probes, unbind and joined shutdown; no race report
+CASE version=5.0 initiator=server
+time=2026-10-29T11:52:49.304+08:00 level=DEBUG msg=session_started component=smppkit event=session_started session_id=7e6a84d853ee797dc47a6cec1d86c930 endpoint=client version=80 state=0
+time=2026-10-29T11:52:49.305+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=7e6a84d853ee797dc47a6cec1d86c930 endpoint=client version=80 command_id=9 sequence=1 outcome=4 bytes_written=31 status=0 reason=ok
+2026/10/29 11:52:49 Bound SMPP 5.0
+time=2026-10-29T11:52:49.306+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=7e6a84d853ee797dc47a6cec1d86c930 endpoint=client version=80 command_id=4 sequence=2 outcome=4 bytes_written=63 status=0 reason=ok
+2026/10/29 11:52:49 part=1 outcome=4 sequence=2 bytes_written=63 message_id="a7cc3b7ac3412bacb9bc227819a7d036" error=<nil>
+2026/10/29 11:52:49 All segments accepted; final delivery remains unknown.
+time=2026-10-29T11:52:50.806+08:00 level=DEBUG msg=session_closed component=smppkit event=session_closed session_id=7e6a84d853ee797dc47a6cec1d86c930 endpoint=client version=80 reason=closed
+time=2026-10-29T11:52:50.806+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=7e6a84d853ee797dc47a6cec1d86c930 endpoint=client version=80 command_id=6 sequence=3 outcome=4 bytes_written=16 status=0 reason=ok
+2026/10/29 11:52:50 Unbound and closed.
+
+2026/10/29 11:52:49 Listening on 127.0.0.1:44859 (echo=false)
+time=2026-10-29T11:52:49.305+08:00 level=DEBUG msg=session_started component=smppkit event=session_started session_id=c5415c0d73eec0877d4797f5245c86d4 endpoint=server version=80 state=2
+2026/10/29 11:52:49 Complete message: segments=1 bytes=18 receipt=false decoded=true
+time=2026-10-29T11:52:49.606+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=c5415c0d73eec0877d4797f5245c86d4 endpoint=server version=80 command_id=21 sequence=1 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:49.908+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=c5415c0d73eec0877d4797f5245c86d4 endpoint=server version=80 command_id=21 sequence=2 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:50.209+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=c5415c0d73eec0877d4797f5245c86d4 endpoint=server version=80 command_id=21 sequence=3 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:50.511+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=c5415c0d73eec0877d4797f5245c86d4 endpoint=server version=80 command_id=21 sequence=4 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:50.806+08:00 level=DEBUG msg=session_closed component=smppkit event=session_closed session_id=c5415c0d73eec0877d4797f5245c86d4 endpoint=server version=80 reason=closed
+
+PASS: submission, scheduled probes, unbind and joined shutdown; no race report
+CASE version=5.0 initiator=both
+time=2026-10-29T11:52:52.895+08:00 level=DEBUG msg=session_started component=smppkit event=session_started session_id=001f12ef000f6e89afb117c439c96c6f endpoint=client version=80 state=0
+time=2026-10-29T11:52:52.896+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=001f12ef000f6e89afb117c439c96c6f endpoint=client version=80 command_id=9 sequence=1 outcome=4 bytes_written=31 status=0 reason=ok
+2026/10/29 11:52:52 Bound SMPP 5.0
+time=2026-10-29T11:52:52.897+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=001f12ef000f6e89afb117c439c96c6f endpoint=client version=80 command_id=4 sequence=2 outcome=4 bytes_written=63 status=0 reason=ok
+2026/10/29 11:52:52 part=1 outcome=4 sequence=2 bytes_written=63 message_id="96e1e255c103aa205363b8f3fafbeaf6" error=<nil>
+2026/10/29 11:52:52 All segments accepted; final delivery remains unknown.
+time=2026-10-29T11:52:53.198+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=001f12ef000f6e89afb117c439c96c6f endpoint=client version=80 command_id=21 sequence=3 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:53.499+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=001f12ef000f6e89afb117c439c96c6f endpoint=client version=80 command_id=21 sequence=4 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:53.800+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=001f12ef000f6e89afb117c439c96c6f endpoint=client version=80 command_id=21 sequence=5 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:54.101+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=001f12ef000f6e89afb117c439c96c6f endpoint=client version=80 command_id=21 sequence=6 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:54.399+08:00 level=DEBUG msg=session_closed component=smppkit event=session_closed session_id=001f12ef000f6e89afb117c439c96c6f endpoint=client version=80 reason=closed
+time=2026-10-29T11:52:54.399+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=001f12ef000f6e89afb117c439c96c6f endpoint=client version=80 command_id=6 sequence=7 outcome=4 bytes_written=16 status=0 reason=ok
+2026/10/29 11:52:54 Unbound and closed.
+
+2026/10/29 11:52:52 Listening on 127.0.0.1:36339 (echo=false)
+time=2026-10-29T11:52:52.896+08:00 level=DEBUG msg=session_started component=smppkit event=session_started session_id=52543e5efbfcffb092da9d8dbd5e76bb endpoint=server version=80 state=2
+2026/10/29 11:52:52 Complete message: segments=1 bytes=18 receipt=false decoded=true
+time=2026-10-29T11:52:53.197+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=52543e5efbfcffb092da9d8dbd5e76bb endpoint=server version=80 command_id=21 sequence=1 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:53.499+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=52543e5efbfcffb092da9d8dbd5e76bb endpoint=server version=80 command_id=21 sequence=2 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:53.800+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=52543e5efbfcffb092da9d8dbd5e76bb endpoint=server version=80 command_id=21 sequence=3 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:54.101+08:00 level=DEBUG msg=request_completed component=smppkit event=request_completed session_id=52543e5efbfcffb092da9d8dbd5e76bb endpoint=server version=80 command_id=21 sequence=4 outcome=4 bytes_written=16 status=0 reason=ok
+time=2026-10-29T11:52:54.399+08:00 level=DEBUG msg=session_closed component=smppkit event=session_closed session_id=52543e5efbfcffb092da9d8dbd5e76bb endpoint=server version=80 reason=closed
+
+PASS: submission, scheduled probes, unbind and joined shutdown; no race report

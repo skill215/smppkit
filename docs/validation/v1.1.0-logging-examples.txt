@@ -1,0 +1,7 @@
+PASS standalone application logger bridge (no socket)
+PASS client/server SMPP 3.3, diagnostics=False, submitted and unbound
+PASS client/server SMPP 3.4, diagnostics=False, submitted and unbound
+PASS client/server SMPP 5.0, diagnostics=False, submitted and unbound
+PASS client/server SMPP 3.3, diagnostics=True, submitted and unbound
+PASS client/server SMPP 3.4, diagnostics=True, submitted and unbound
+PASS client/server SMPP 5.0, diagnostics=True, submitted and unbound

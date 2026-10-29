@@ -1,0 +1,439 @@
+2026-10-29 Asia/Shanghai; Go 1.26.10 linux/amd64
+Corrected manifest: all 122 entries unchanged.
+Six public packages: exact v1.1.0 API snapshot match.
+Formatting, git diff --check, /doc/ exclusion: PASS.
+go list -m all: github.com/skill215/smppkit
+
+Initial sandbox attempt
+$ go test -race . -run '^(TestHeartbeat|TestLifecycle|TestR1ResponseBeforeWriteCompletion|TestPartialWriteAndQueuedCancellation|TestCloseCancelRaces)' -count=20 -cpu=1,2,4 -timeout=180s
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+--- FAIL: TestLifecycleIndependentTCPVersions (0.00s)
+    --- FAIL: TestLifecycleIndependentTCPVersions/33 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/34 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+    --- FAIL: TestLifecycleIndependentTCPVersions/50 (0.00s)
+        session_interoperability_test.go:43: listen tcp 127.0.0.1:0: socket: operation not permitted
+FAIL
+FAIL	github.com/skill215/smppkit	34.734s
+FAIL
+exit=1; only TCP listener permission failures
+
+Identical command with local-listener permission
+$ go test -race . -run '^(TestHeartbeat|TestLifecycle|TestR1ResponseBeforeWriteCompletion|TestPartialWriteAndQueuedCancellation|TestCloseCancelRaces)' -count=20 -cpu=1,2,4 -timeout=180s
+ok  	github.com/skill215/smppkit	41.516s
+exit=0
+
+Build/vet/full race/fuzz/benchmark evidence reused from the unchanged corrected manifest; not rerun here.

@@ -1,0 +1,22 @@
+$ go test -race ./... -count=1 -timeout=180s
+ok  	github.com/skill215/smppkit	2.366s
+ok  	github.com/skill215/smppkit/codec	1.812s
+ok  	github.com/skill215/smppkit/examples/client	1.047s
+?   	github.com/skill215/smppkit/examples/codec	[no test files]
+?   	github.com/skill215/smppkit/examples/custom-tlv	[no test files]
+?   	github.com/skill215/smppkit/examples/data-direction	[no test files]
+?   	github.com/skill215/smppkit/examples/data-transaction	[no test files]
+?   	github.com/skill215/smppkit/examples/framing	[no test files]
+?   	github.com/skill215/smppkit/examples/logging	[no test files]
+?   	github.com/skill215/smppkit/examples/multipart	[no test files]
+?   	github.com/skill215/smppkit/examples/notifications	[no test files]
+?   	github.com/skill215/smppkit/examples/private-command	[no test files]
+ok  	github.com/skill215/smppkit/examples/receipts	1.066s
+?   	github.com/skill215/smppkit/examples/server	[no test files]
+?   	github.com/skill215/smppkit/examples/submit-multi	[no test files]
+ok  	github.com/skill215/smppkit/internal/wire	1.045s
+ok  	github.com/skill215/smppkit/message	1.250s
+?   	github.com/skill215/smppkit/pdu	[no test files]
+ok  	github.com/skill215/smppkit/textcodec	1.064s
+ok  	github.com/skill215/smppkit/tlv	1.064s
+exit=0

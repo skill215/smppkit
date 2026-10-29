@@ -18,6 +18,7 @@ jobs:
       - run: go build ./...
       - run: go vet ./...
       - run: go test -race -count=1 -timeout=90s ./...
+      - run: go test ./codec -run='^$' -fuzz=FuzzRawFrame -fuzztime=5s -parallel=2
       - run: go test ./codec -run='^$' -fuzz=FuzzDecode -fuzztime=5s -parallel=2
       - run: go test ./codec -run='^$' -fuzz=FuzzEncodeSM -fuzztime=5s -parallel=2
       - run: go test ./codec -run='^$' -fuzz=FuzzSubmitMulti -fuzztime=5s -parallel=2
@@ -27,5 +28,7 @@ jobs:
       - run: go test ./codec -run='^$' -fuzz=FuzzDataResponse -fuzztime=5s -parallel=2
       - run: go test ./message -run='^$' -fuzz=FuzzUDH -fuzztime=5s -parallel=2
       - run: go test ./message -run='^$' -fuzz=FuzzAdditionalUDH -fuzztime=5s -parallel=2
+      - run: go test ./message -run='^$' -fuzz=FuzzNationalLanguageProtection -fuzztime=5s -parallel=2
+      - run: go test ./message -run='^$' -fuzz=FuzzReceipt -fuzztime=5s -parallel=2
       - run: go test ./message -run='^$' -fuzz=FuzzPrepareVersionEncoding -fuzztime=5s -parallel=2
       - run: go test ./textcodec -run='^$' -fuzz=FuzzCharsets -fuzztime=5s -parallel=2

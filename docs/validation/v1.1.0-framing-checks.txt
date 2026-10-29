@@ -1,0 +1,12 @@
+$ go version
+go version go1.26.10 linux/amd64
+exit=0
+$ go build ./...
+exit=0
+$ go vet ./...
+exit=0
+$ go run ./examples/framing
+raw frame: bytes=17 command=00000004 sequence=7
+typed decode rejected: kind=3 header_valid=true stream_read=false
+next frame: written=16 unchanged=true
+exit=0

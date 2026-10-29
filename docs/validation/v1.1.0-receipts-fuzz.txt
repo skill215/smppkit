@@ -1,0 +1,16 @@
+$ timeout 45s go test ./message -run '^$' -fuzz '^FuzzReceipt$' -fuzztime=5s -parallel=2 -timeout=40s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/112 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 112/112 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 143185 (47721/sec), new interesting: 12 (total: 124)
+fuzz: elapsed: 5s, execs: 255158 (53427/sec), new interesting: 19 (total: 131)
+PASS
+ok  	github.com/skill215/smppkit/message	5.105s
+exit=0
+$ timeout 45s go test ./codec -run '^$' -fuzz '^FuzzDecode$' -fuzztime=5s -parallel=2 -timeout=40s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/180 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 180/180 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 163430 (54467/sec), new interesting: 4 (total: 184)
+fuzz: elapsed: 5s, execs: 285190 (59744/sec), new interesting: 6 (total: 186)
+PASS
+ok  	github.com/skill215/smppkit/codec	5.049s
+exit=0

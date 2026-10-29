@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-10-29
 
 package smpp
 
@@ -111,7 +111,13 @@ func (srv *Server) Outbind(ctx context.Context, conn net.Conn, version pdu.Versi
 	return srv.accept(ctx, conn, version, body)
 }
 
-func (srv *Server) accept(ctx context.Context, conn net.Conn, outbindVersion pdu.Version, outbind *pdu.Outbind) (*Session, error) {
+func (srv *Server) accept(ctx context.Context, conn net.Conn, outbindVersion pdu.Version, outbind *pdu.Outbind) (session *Session, err error) {
+	stage := "transport"
+	defer func(logCtx context.Context) {
+		if err != nil {
+			logSetup(logCtx, srv.cfg.Session.Logger, "server", stage, err)
+		}
+	}(ctx)
 	if conn == nil {
 		return nil, ErrState
 	}
@@ -134,6 +140,7 @@ func (srv *Server) accept(ctx context.Context, conn net.Conn, outbindVersion pdu
 	fail := func(e error) (*Session, error) { conn.Close(); return nil, e }
 	initialSequence := uint32(0)
 	if outbind != nil {
+		stage = "outbind"
 		data, err := srv.profiles[outbindVersion].Append(nil, pdu.PDU{Sequence: 1, Body: outbind})
 		if err != nil {
 			return fail(err)
@@ -155,6 +162,7 @@ func (srv *Server) accept(ctx context.Context, conn net.Conn, outbindVersion pdu
 	if outbind != nil {
 		maxFrame = srv.profiles[outbindVersion].MaxFrame()
 	}
+	stage = "read_bind"
 	packet, v, e := codec.ReadBind(conn, maxFrame)
 	if e != nil {
 		return fail(e)
@@ -180,6 +188,7 @@ func (srv *Server) accept(ctx context.Context, conn net.Conn, outbindVersion pdu
 		fields = b.BindFields
 	}
 	role := bindRole(packet.Body.CommandID())
+	stage = "authenticate"
 	decision, e := srv.cfg.Authenticate(ctx, BindInfo{v, role, fields, conn.RemoteAddr()})
 	if e != nil {
 		return fail(e)
@@ -188,6 +197,7 @@ func (srv *Server) accept(ctx context.Context, conn net.Conn, outbindVersion pdu
 		return fail(e)
 	}
 	id := packet.Body.CommandID() | pdu.ResponseBit
+	stage = "bind_response"
 	var body pdu.Body
 	f := pdu.BindResponseFields{SystemID: decision.SystemID}
 	if v != pdu.V33 {
@@ -221,6 +231,7 @@ func (srv *Server) accept(ctx context.Context, conn net.Conn, outbindVersion pdu
 		return fail(ctx.Err())
 	}
 	wakeStopped = true
+	stage = "session_start"
 	if e = conn.SetDeadline(time.Time{}); e != nil {
 		return fail(e)
 	}
@@ -250,6 +261,7 @@ func (srv *Server) Serve(ctx context.Context, ln net.Listener, handle func(conte
 	if handle == nil {
 		return errors.New("smpp: server handler required")
 	}
+	logCtx := ctx
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	slots := make(chan struct{}, srv.cfg.MaxConnections)
@@ -271,6 +283,7 @@ func (srv *Server) Serve(ctx context.Context, ln net.Listener, handle func(conte
 			if cause != nil {
 				return cause
 			}
+			logSetup(logCtx, srv.cfg.Session.Logger, "server", "listen_accept", e)
 			return e
 		}
 		wg.Go(func() {

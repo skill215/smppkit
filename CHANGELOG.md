@@ -1,5 +1,63 @@
 # Changelog
 
+## v1.1.0 — release candidate, unreleased
+
+Candidate notes finalized 2026-10-29. S0–S5 implementation and local review are
+complete, including RV22–RV24 corrections. Submission is authorized; tagging
+and publication are not. There is no release date yet. See the
+[release record](docs/v1.1.0-release.md) and [release notes](docs/releases/v1.1.0.md).
+
+- Add optional `smpp.Config.Logger *slog.Logger` to shared Session and
+  Client/Server setup. Nil discards logs without consulting a global logger.
+- Record safe lifecycle/request metadata and setup failures, including failed
+  Server.Serve authentication. Arbitrary error text and PDU contents are excluded.
+- Keep Close independent of handlers; Wait joins terminal runtime logging.
+  Handlers execute synchronously outside locks and must return promptly.
+- Add logging regression tests, allocation benchmarks, a standard logger bridge,
+  and optional `-diagnostics` flags in Client/Server examples.
+
+- Protect high-level text operations from unsupported UDH national-language
+  declarations (IE 0x24/0x25). Prepare rejects before encoding; Receive preserves
+  raw evidence and reports `message.ErrUnsupportedNationalLanguage` in DecodeError
+  when decoding was requested. Raw-only and receipt handling are unchanged.
+
+- Add codec.ReadFrame/ParseHeader/WriteFrame for bounded raw access, exact
+  partial-read/write progress and explicit caller-owned transport policy.
+- Wrap decode/read failures in DecodeError with categories and safe header/stream
+  context; preserve prior sentinels, FieldError and I/O/extension causes.
+  Unknown private commands still decode to Opaque.
+- Add independent frame/error regressions, fuzzing, allocation benchmarks and a
+  runnable framing example.
+
+- Add opt-in `Config.EnquireLinkInterval` and `EnquireLinkTimeout` for shared
+  Client/Server Session scheduling. Zero interval disables it; existing automatic
+  replies are unchanged. Window/queue pressure skips probes, while started-probe
+  expiry retires a bound session with `ErrEnquireLinkTimeout`.
+- Stop scheduling at unbind/close, join it with Wait, and preserve uncertain
+  business outcomes. Add independent wire, lifecycle/deadline/concurrency tests,
+  allocation benchmarks and explicit example flags.
+- Correct S5 heartbeat races: a completed correlated exchange cannot be retired
+  merely because its deadline is also observable; incoming enquiries crossing
+  unbind are consumed without queuing replies or reopening business admission.
+  Add formal deadline/shutdown regressions and clarify the receipt support matrix.
+
+- Add bounded, stateless `message.ParseReceipt` / `BuildReceipt` helpers, retaining
+  separate text/TLV evidence, explicit report kinds and safe field diagnostics.
+  Select a named text dialect explicitly; preserve opaque IDs, missing fields,
+  unsupported states, duplicates and conflicts without implicit precedence.
+- Construct existing DeliverSM/DataSM with explicit version/format and caller
+  outcomes, using Codec preflight. Keep 3.3 TLV-free and distinguish standard
+  fields from gateway text/error conventions. Add independent wire fixtures,
+  boundary/concurrency/fuzz tests, allocation benchmarks and a receipt example.
+
+Go 1.26 and the existing protocol/runtime architecture are unchanged.
+The [design](docs/v1.1.0-design.md) and [roadmap](docs/roadmap/v1.1.0.md)
+record the completed scope. The [S5 recheck](docs/v1.1.0-s5-recheck.md) found no
+remaining local correctness blocker; final submitted-revision CI and explicit
+publication authorization remain release gates.
+Raw framing and classified errors are implemented locally under the
+[framing contract](docs/framing.md). See the [logging contract](docs/logging.md).
+
 ## 1.0.0 — 2026-10-28
 
 Initial stable release of the documented SMS subset. The six public packages

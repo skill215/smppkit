@@ -1,0 +1,24 @@
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit/codec
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkCodecDecode/SubmitSM/V33/140         	  305967	       385.5 ns/op	 492.82 MB/s	       190.0 wire-B/op	     440 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V34/140         	  342019	       377.0 ns/op	 503.95 MB/s	       190.0 wire-B/op	     440 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V50/140         	  339555	       374.1 ns/op	 507.88 MB/s	       190.0 wire-B/op	     440 B/op	       8 allocs/op
+BenchmarkCodecDecode/SubmitSM/V50/255         	  294792	       390.5 ns/op	 780.99 MB/s	       305.0 wire-B/op	     584 B/op	       8 allocs/op
+BenchmarkCodecDecode/DataSM/V50/140           	  239847	       491.3 ns/op	 380.63 MB/s	       187.0 wire-B/op	     408 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/4096          	  140300	       838.6 ns/op	4940.16 MB/s	      4143 wire-B/op	    5096 B/op	       9 allocs/op
+BenchmarkCodecDecode/DataSM/V50/65535         	   24327	      4973 ns/op	13186.87 MB/s	     65582 wire-B/op	   73960 B/op	       9 allocs/op
+BenchmarkCodecDecode/SubmitMulti/V50/2        	  212587	       578.8 ns/op	 357.64 MB/s	       207.0 wire-B/op	     664 B/op	      13 allocs/op
+BenchmarkCodecDecode/SubmitMulti/V50/255      	    4294	     29658 ns/op	 134.94 MB/s	      4002 wire-B/op	   52696 B/op	     779 allocs/op
+BenchmarkCodecRead/SubmitSM/V33/140           	  228603	       441.7 ns/op	 430.14 MB/s	     640 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V34/140           	  283125	       440.4 ns/op	 431.44 MB/s	     640 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V50/140           	  277455	       437.3 ns/op	 434.45 MB/s	     640 B/op	      10 allocs/op
+BenchmarkCodecRead/SubmitSM/V50/255           	  265974	       464.1 ns/op	 657.13 MB/s	     912 B/op	      10 allocs/op
+BenchmarkCodecRead/DataSM/V50/140             	  220706	       555.9 ns/op	 336.39 MB/s	     608 B/op	      11 allocs/op
+BenchmarkCodecRead/DataSM/V50/4096            	   99738	      1195 ns/op	3465.69 MB/s	    9968 B/op	      11 allocs/op
+BenchmarkCodecRead/DataSM/V50/65535           	   12343	      9753 ns/op	6724.50 MB/s	  147696 B/op	      11 allocs/op
+BenchmarkCodecRead/SubmitMulti/V50/2          	  187828	       658.6 ns/op	 314.30 MB/s	     880 B/op	      15 allocs/op
+BenchmarkCodecRead/SubmitMulti/V50/255        	    4204	     29174 ns/op	 137.18 MB/s	   56800 B/op	     781 allocs/op
+PASS
+ok  	github.com/skill215/smppkit/codec	2.186s

@@ -1,0 +1,11 @@
+$ go version
+go version go1.26.10 linux/amd64
+exit=0
+$ go build ./...
+exit=0
+$ go vet ./...
+exit=0
+$ git diff --check
+exit=0
+S4 source manifest: all 107 entries unchanged.
+All six public packages match the v1.1.0 API snapshot exactly.

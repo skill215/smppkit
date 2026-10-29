@@ -468,3 +468,85 @@ congestion-bearing response is accepted only in 5.0; 3.3/3.4 NACK has no TLVs:
 
 No production encoder constructs these expected bytes. Existing 3.4/5.0 NACK
 Session and congestion checks remain in use; this closes direct 3.3 wire coverage.
+
+## v1.1.0 automatic enquiry fixtures
+
+The independent byte peer in `session_heartbeat_test.go` uses numeric wire
+headers and authored bodies, never Codec.Encode/Decode. These control frames
+apply unchanged to 3.3, 3.4 and 5.0; none contains TLVs:
+
+```text
+# enquire_link, sequence 1
+00000010 00000015 00000000 00000001
+# corresponding successful response
+00000010 80000015 00000000 00000001
+# unsuccessful response (system error)
+00000010 80000015 00000008 00000001
+# Generic NACK (invalid command ID), same pending sequence
+00000010 80000000 00000003 00000001
+# valid unbind_resp opcode, incompatible with the pending enquiry
+00000010 80000006 00000000 00000001
+```
+
+The tests also send a successful response on an unrelated sequence, a duplicate
+response, and an inbound enquiry reusing the outgoing probe's sequence. Only the
+expected response in the outbound sequence space completes the probe. Virtual
+time tests then check lifecycle/deadline policy without deriving expected bytes
+from the implementation. Same-Codec examples are supplemental execution checks.
+
+## v1.1.0 receipt fixtures
+
+`message/receipt_test.go` contains complete synthetic literal PDUs. These expected
+bytes are authored from field order, independently of BuildReceipt and Codec.
+Sequence is 7, addresses are empty, and the opaque ID is `00Ab` (never parsed as
+hexadecimal or converted to an integer).
+
+3.4/5.0 deliver_sm with ASCII text `id:00Ab stat:DELIVRD` (20 bytes):
+
+```text
+00000035 00000005 00000000 00000007
+00000000000000
+04 00 00 00 00 00 00 01 00 14
+69643a3030416220737461743a44454c49565244
+```
+
+The 3.3 fixture has the same bytes except DataCoding is 00, explicitly using the
+legacy receipt-marker/unpacked-GSM convention. This particular text has the same
+encoded bytes in both alphabets. Separate tests verify the GSM underscore byte
+and malformed escape boundaries; 3.3 never acquires TLVs.
+
+Standard TLV-only deliver_sm, including network type 3 and 16-bit code 0x1234:
+
+```text
+00000036 00000005 00000000 00000007
+00000000000000
+04 00 00 00 00 00 00 00 00 00
+001e 0005 3030416200
+0427 0001 02
+0423 0003 031234
+```
+
+Intermediate data_sm, explicitly kind 0x20 and numeric state 1:
+
+```text
+00000028 00000103 00000000 00000007
+00000000000000 20 00 00
+001e 0005 3030416200
+0427 0001 01
+```
+
+Text-bearing data_sm uses message_payload (3.4/5.0 only):
+
+```text
+00000032 00000103 00000000 00000007
+00000000000000 04 00 01
+0424 0014 69643a3030416220737461743a44454c49565244
+```
+
+The test suite also checks a complete mixed text/TLV literal, independent text
+with missing counts, explicit ten-digit dates, leading-zero IDs, unknown states,
+malformed/duplicate TLVs, conflicting carriers, and literal UCS2 bytes. Constructor
+output must match the independent frames; parser expectations are independently
+asserted against decoded literals and direct typed evidence. Session examples
+are additional checks, not the only correctness argument. No private traffic is
+used, and no interpretation of gateway-specific internal status bytes is imported.

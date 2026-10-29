@@ -1,0 +1,9 @@
+Go 1.26.10 linux/amd64; 2026-10-29
+$ go test ./codec '-run=^$' '-fuzz=^FuzzDecode$' -fuzztime=5s -parallel=2 -timeout=30s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/186 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 186/186 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 147903 (49283/sec), new interesting: 3 (total: 189)
+fuzz: elapsed: 5s, execs: 246344 (48069/sec), new interesting: 6 (total: 192)
+PASS
+ok  	github.com/skill215/smppkit/codec	5.062s
+exit=0

@@ -186,3 +186,202 @@ largest increase (Read data_sm/4096) measured 2880 ns/op in the full run and
 1932 ns/op in an isolated 500 ms ×5 recheck, with unchanged allocation counts.
 Both outputs and the unresolved host-timing variability are retained in the
 report. R3 did not change library runtime code or claim a performance gain.
+
+## Optional logging (v1.1.0, unreleased)
+
+The new suites measure a successful request diagnostic in isolation, and the
+same logging mode during one Session enquiry/automatic response over net.Pipe.
+Both endpoints use the configured logger; only the initiating Request emits a
+per-exchange record. Setup, bind, startup/terminal diagnostics and cleanup are
+outside the timed loop. These results do not measure TCP/TLS or network TPS.
+
+```sh
+go test . -run='^$' -bench='Benchmark(LoggingEvent|SessionLogging)$' \
+  -benchmem -benchtime=200ms -count=3 -cpu=1
+```
+
+Local results, 2026-10-29: Go 1.26.10, linux/amd64 under WSL2, AMD Ryzen 7
+6800H, GOMAXPROCS=1 without CPU affinity. Each row is the median of three runs;
+B/op and allocs/op were stable. [Raw output](logging-go1.26.10-linux-amd64.txt).
+
+| Workload | ns/op | B/op | allocs/op |
+| --- | ---: | ---: | ---: |
+| Default nil — isolated event | 3.337 | 0 | 0 |
+| Explicit discard — isolated event | 7.218 | 0 | 0 |
+| Info threshold — isolated event | 6.778 | 0 | 0 |
+| Enabled sink — isolated event | 440 | 240 | 1 |
+| JSON — isolated event | 1741 | 240 | 1 |
+| Text — isolated event | 1624 | 240 | 1 |
+| Default nil — Session round trip | 7343 | 1664 | 30 |
+| Explicit discard — Session round trip | 6892 | 1664 | 30 |
+| Info threshold — Session round trip | 6948 | 1664 | 30 |
+| Enabled sink — Session round trip | 7816 | 1904 | 31 |
+| JSON — Session round trip | 8878 | 1904 | 31 |
+| Text — Session round trip | 9158 | 1904 | 31 |
+
+`DefaultNil` is normalized outside timing to the shared discard logger.
+`Discard` is an explicitly supplied slog.DiscardHandler. `FilteredInfo` uses
+JSONHandler at Info, so successful Debug events are filtered. `EnabledSink`
+constructs a record but performs no formatting/output. JSON and Text include
+formatting and write to io.Discard, excluding actual output-device cost.
+
+B/op measures heap allocation, not bytes copied or retained. These suites do
+not count copies; the diagnostic path does not copy message payloads. The
+isolated disabled cases allocate no record. Enabled request records currently
+need one allocation; complete Session exchanges still allocate for framing,
+correlation, timers and jobs. No comparison with a separately measured v1.0.0
+build or claim of zero total Session allocation is made. Costs for custom
+handlers, failures, stack capture, sinks and different hardware may differ.
+
+
+## UDH language protection (v1.1.0, unreleased)
+
+Local execution on 2026-10-29, Go 1.26.10, linux/amd64 WSL2, Ryzen 7 6800H.
+Median of three 200 ms runs with one CPU worker; no CPU affinity. Command:
+
+```sh
+go test ./message -run '^$' -bench '^BenchmarkReceiveLanguagePolicy$' -benchmem -benchtime=200ms -count=3 -cpu=1
+```
+
+| Five-byte user data | ns/op | B/op | allocs/op |
+| --- | ---: | ---: | ---: |
+| Empty UDH plus ordinary GSM7 text | 1147 | 520 | 8 |
+| Opaque IE plus ordinary GSM7 text | 1090 | 528 | 9 |
+| Language declaration, decoding blocked | 1048 | 520 | 8 |
+| Language declaration, raw-only reception | 1018 | 520 | 8 |
+
+[Raw output](udh-go1.26.10-linux-amd64.txt). These measure Admit + Receive,
+including owned copies, ID generation and optional text decoding. The receiver
+is reused, its construction is excluded, and completed messages release their
+charges each iteration. UDH/payload proportions differ despite equal total input
+length. Results are not a before/after speed comparison or an isolated guard cost.
+B/op is allocated memory, not bytes copied. Source inspection shows the guard
+scans the already-owned IE slice without an additional payload copy; this suite
+does not instrument copy counts or claim zero-copy reception.
+
+
+## Raw framing and diagnostic errors (v1.1.0, unreleased)
+
+Local results, 2026-10-29: Go 1.26.10, linux/amd64 WSL2, Ryzen 7 6800H,
+three 200 ms runs per case, -cpu=1, no CPU affinity. Command:
+
+```sh
+go test ./codec -run '^$' -bench '^(BenchmarkRawFrame|BenchmarkDecodeDiagnostic)$' -benchmem -benchtime=200ms -count=3 -cpu=1
+```
+
+| Workload | Median ns/op | B/op | allocs/op |
+| --- | ---: | ---: | ---: |
+| RawFrame/Read/16 | 52.95 | 20 | 2 |
+| RawFrame/WriteDiscard/16 | 5.07 | 0 | 0 |
+| RawFrame/WriteBuffer/16 | 8.193 | 0 | 0 |
+| RawFrame/Read/256 | 82.52 | 260 | 2 |
+| RawFrame/WriteDiscard/256 | 5.061 | 0 | 0 |
+| RawFrame/WriteBuffer/256 | 10.39 | 0 | 0 |
+| RawFrame/Read/4096 | 409 | 4100 | 2 |
+| RawFrame/WriteDiscard/4096 | 4.874 | 0 | 0 |
+| RawFrame/WriteBuffer/4096 | 34.33 | 0 | 0 |
+| RawFrame/Read/65536 | 4552 | 65540 | 2 |
+| RawFrame/WriteDiscard/65536 | 4.91 | 0 | 0 |
+| RawFrame/WriteBuffer/65536 | 980.2 | 0 | 0 |
+| DecodeDiagnostic/DecodeCompleteBadBody | 338.2 | 360 | 8 |
+| DecodeDiagnostic/ReadCompleteBadBody | 427.3 | 456 | 11 |
+
+[Raw output](framing-go1.26.10-linux-amd64.txt). Read includes allocation of
+owned frame bytes and copying from bytes.Reader. Successful reads use two
+allocations (length scratch and frame); partial/error paths are distinct.
+WriteDiscard measures validation and dispatch only: io.Discard does not copy the
+payload, so its MB/s is not memory bandwidth or network throughput. WriteBuffer
+uses a preallocated reused bytes.Buffer and includes its copy. WriteFrame itself
+creates no frame copy; B/op is allocated memory, not copied-byte accounting.
+No sockets, TLS, flush, kernel buffers or Session work is measured. Error cases
+include safe error context creation; they are not successful Decode benchmarks.
+No before/after speedup is claimed. Existing successful CodecDecode/CodecRead
+workloads were also run once for 100 ms each as a smoke check, recorded separately
+in [smoke output](framing-codec-smoke-go1.26.10-linux-amd64.txt).
+
+
+## Heartbeat paths (v1.1.0, unreleased)
+
+Local Go 1.26.10 results, 2026-10-29, linux/amd64 WSL2, Ryzen 7 6800H.
+Three 200 ms runs per case, -cpu=1, no CPU affinity. Command:
+
+```sh
+go test . -run '^$' -bench '^BenchmarkHeartbeat(Request|Lifecycle)$' -benchmem -benchtime=200ms -count=3 -cpu=1
+```
+
+| Workload | Median ns/op | B/op | allocs/op |
+| --- | ---: | ---: | ---: |
+| Explicit enquiry round trip | 7038 | 1696 | 30 |
+| Automatic probe request path | 7070 | 1696 | 30 |
+| Full-window skip | 514.8 | 272 | 4 |
+| Construct/close: disabled, bound | 3513 | 4912 | 38 |
+| Construct/close: enabled, before bind | 3675 | 5176 | 42 |
+| Construct/close: enabled, bound | 4090 | 5300 | 43 |
+
+[Raw output](keepalive-go1.26.10-linux-amd64.txt). Round trips include both
+endpoints' Codec, request correlation, timers and net.Pipe copies, with startup
+excluded. The automatic case directly invokes the scheduler's shared request
+path; it excludes interval waiting/wakeup and scheduler diagnostic dispatch.
+The full-window case includes creating/cancelling the request deadline context,
+without a frame write or sequence allocation. These are not network TPS results.
+
+Lifecycle cases include net.Pipe creation, all Session setup, goroutine startup,
+Close and Wait. Immediate close races scheduler startup; EnabledBound may create
+its timer before stopping, so byte/allocation averages depend on that scheduling.
+These numbers are not a pure per-timer allocation measurement. Disabled scheduling
+creates no heartbeat-specific goroutine/channel/timer; the row includes the
+ordinary Session machinery. B/op measures allocations, not copied bytes; no
+instrumented copy count or zero-copy transport claim is made. No comparison with
+historical benchmark environments or before/after speedup is claimed.
+
+The [S5 correction rerun](s5-fixes-keepalive-go1.26.10-linux-amd64.txt) uses the
+same command on Go 1.26.10 after RV22/RV23. Request paths still allocate
+1696 B / 30 allocations, and full-window skips 272 B / 4 allocations; lifecycle
+allocation counts remain 38/42/43. Timings differ between runs; these short
+unpaired samples do not establish a throughput improvement or regression. The
+new cancellation branch adds no buffer copies or new allocation sites.
+
+
+## Receipt helpers (v1.1.0, unreleased)
+
+Local Go 1.26.10 results, 2026-10-29, linux/amd64 WSL2, Ryzen 7 6800H.
+Three 200 ms runs, -cpu=1, no CPU affinity; timing noise is visible in the raw
+samples. Command:
+
+```sh
+go test ./message -run '^$' -bench '^BenchmarkReceipt(Parse|Build)$' -benchmem -benchtime=200ms -count=3 -cpu=1
+```
+
+| Workload | Median ns/op | B/op | allocs/op |
+| --- | ---: | ---: | ---: |
+| Parse/FullText | 2529 | 784 | 7 |
+| Parse/TLVOnly | 313 | 136 | 6 |
+| Parse/Mixed | 2912 | 920 | 13 |
+| Parse/MissingFields | 1194 | 1072 | 9 |
+| Parse/Malformed | 2445 | 1640 | 17 |
+| Parse/RawOnly | 387.9 | 328 | 8 |
+| Build/LegacyText | 2449 | 2008 | 17 |
+| Build/Text | 822.3 | 1112 | 16 |
+| Build/TLVOnly | 790 | 608 | 12 |
+| Build/Mixed | 1333 | 1496 | 20 |
+| Build/DataMixed | 1342 | 1288 | 20 |
+
+[Raw output](receipts-go1.26.10-linux-amd64.txt). Parse includes owned raw evidence,
+text decoding/field extraction when selected, and any diagnostics. Its typed input
+is constructed outside timing. FullText is a 101-byte ASCII report; TLVOnly contains
+ID/state/network error; Mixed combines them. MissingFields/Malformed intentionally
+exercise diagnostic allocation. RawOnly retains mixed raw evidence and extracts
+TLVs without parsing text. These workloads have different content and are not
+before/after speed comparisons.
+
+Build includes owned PDU storage and the standard Codec preflight (including a
+temporary encoded buffer). LegacyText also includes the existing GSM7 encoder's
+boundary metadata; 3.4/5.0 text construction uses ASCII DCS 1. TLVOnly omits text;
+Mixed/DataMixed build both representations. The full text fixture is supplied
+explicitly, without inferred counts, timestamps or delivery state.
+
+Parser raw payloads/TLVs are cloned; text strings own their decoded storage.
+Constructors copy values into new PDUs and allocate the preflight wire buffer.
+B/op measures allocations, not the number of copied bytes. No zero-copy claim or
+instrumented copy count is made. These are stateless helper costs, excluding
+Session, sockets, ACKs, persistence, tracking and delivery TPS.

@@ -1,0 +1,171 @@
+// SPDX-AI-Disclosure: ai-generated
+// SPDX-AI-Model: GPT-6.0 Astra
+// SPDX-AI-Provider: OpenAI
+// SPDX-AI-Scope: Review reproduction tests generated and revised with Codex under maintainer direction.
+// SPDX-AI-Date: 2026-10-29
+
+package smpp
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net"
+	"runtime"
+	"sync"
+	"testing"
+	"testing/synctest"
+	"time"
+
+	"github.com/skill215/smppkit/codec"
+	"github.com/skill215/smppkit/pdu"
+)
+
+// A controllable parent deadline allows both completion signals to be ready
+// before the request's join select runs. It obeys context.Context's Err contract.
+type s5DeadlineContext struct {
+	context.Context
+	done chan struct{}
+}
+
+func (c *s5DeadlineContext) Done() <-chan struct{} { return c.done }
+func (c *s5DeadlineContext) Err() error {
+	select {
+	case <-c.done:
+		return context.DeadlineExceeded
+	default:
+		return nil
+	}
+}
+
+func TestS5CompletedProbeDeadline(t *testing.T) {
+	for _, automatic := range []bool{false, true} {
+		t.Run(fmt.Sprintf("automatic=%t", automatic), func(t *testing.T) {
+			falseClosures := 0
+			for range 32 {
+				cfg := heartbeatConfig()
+				cfg.EnquireLinkInterval = 0 // drive exactly one shared request path
+				s, peer := heartbeatSession(t, cfg, pdu.V50, false, Bound)
+				parent := &s5DeadlineContext{Context: context.Background(), done: make(chan struct{})}
+				type observation struct {
+					r   Result
+					err error
+				}
+				done := make(chan observation, 1)
+				go func() { r, e := s.request(parent, &pdu.EnquireLink{}, automatic); done <- observation{r, e} }()
+				// Capture the request context while the writer cannot complete: the pipe
+				// peer has not yet read a byte. Then join the actual completed wire write.
+				var pending *pending
+				deadline := time.Now().Add(time.Second)
+				for pending == nil {
+					s.mu.Lock()
+					pending = s.pending[1]
+					s.mu.Unlock()
+					if time.Now().After(deadline) {
+						t.Fatal("request not admitted")
+					}
+					runtime.Gosched()
+				}
+				pending.job.mu.Lock()
+				requestCtx := pending.job.ctx
+				pending.job.mu.Unlock()
+				heartbeatExpect(t, peer, 0x15, 0, 1)
+				<-pending.job.done
+				// Reproduce dispatchResponse's publication point under the same mutex.
+				// A correlated, independently decoded literal response is already present
+				// before deadline expiry; the requester cannot finish cleanup until unlock.
+				packet, err := s.codec.Decode([]byte{0, 0, 0, 16, 0x80, 0, 0, 0x15, 0, 0, 0, 0, 0, 0, 0, 1})
+				if err != nil {
+					t.Fatal(err)
+				}
+				s.mu.Lock()
+				delete(s.pending, 1)
+				pending.response <- packet
+				close(parent.done)
+				for requestCtx.Err() == nil {
+					runtime.Gosched()
+				}
+				s.mu.Unlock()
+				got := <-done
+				if got.err != nil || got.r.Outcome != ResponseReceived || got.r.BytesWritten != 16 {
+					t.Fatal(got)
+				}
+				if s.Err() != nil {
+					if !errors.Is(s.Err(), ErrEnquireLinkTimeout) {
+						t.Fatal(s.Err())
+					}
+					falseClosures++
+				}
+				s.Close()
+				peer.Close()
+				s.Wait()
+			}
+			if falseClosures != 0 {
+				t.Fatalf("%d/32 completed, correlated exchanges returned success but retired the Session as enquire_link timeout", falseClosures)
+			}
+		})
+	}
+}
+
+// Delay delivery of the first read to the SMPP reader after a real peer write
+// begins. This represents a pre-existing inbound frame crossing a local unbind.
+type s5GatedRead struct {
+	net.Conn
+	entered, release chan struct{}
+	once             sync.Once
+}
+
+func (c *s5GatedRead) Read(p []byte) (int, error) {
+	n, e := c.Conn.Read(p)
+	if n > 0 {
+		c.once.Do(func() { close(c.entered); <-c.release })
+	}
+	return n, e
+}
+
+func TestS5HeartbeatCrossesUnbind(t *testing.T) {
+	for _, v := range []pdu.Version{pdu.V33, pdu.V34, pdu.V50} {
+		for _, serverInitiates := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%x/serverInitiates=%t", v, serverInitiates), func(t *testing.T) {
+				synctest.Test(t, func(t *testing.T) {
+					c, e := codec.New(codec.Config{Version: v})
+					if e != nil {
+						t.Fatal(e)
+					}
+					a, b := net.Pipe()
+					gated := &s5GatedRead{Conn: a, entered: make(chan struct{}), release: make(chan struct{})}
+					var release sync.Once
+					cfg := heartbeatConfig()
+					cfg.EnquireLinkInterval = 0
+					initiating, e := newSession(gated, c, cfg, serverInitiates, Bound, Transmitter)
+					if e != nil {
+						t.Fatal(e)
+					}
+					peer, e := newSession(b, c, heartbeatConfig(), !serverInitiates, Bound, Transmitter)
+					if e != nil {
+						t.Fatal(e)
+					}
+					defer func() {
+						release.Do(func() { close(gated.release) })
+						initiating.Close()
+						peer.Close()
+						initiating.Wait()
+						peer.Wait()
+					}()
+					<-gated.entered // peer automatic probe has started its frame before unbind
+					done := make(chan error, 1)
+					go func() { done <- initiating.Shutdown(context.Background()) }()
+					synctest.Wait()
+					if initiating.State() != Unbinding || peer.State() != Unbinding {
+						t.Fatal("unbind not crossed with active probe", initiating.State(), peer.State())
+					}
+					release.Do(func() { close(gated.release) })
+					err := <-done
+					if err != nil {
+						t.Fatalf("pre-existing peer probe aborts graceful unbind: %v (initiator=%v, peer=%v)", err, initiating.Err(), peer.Err())
+					}
+				})
+			})
+		}
+	}
+}

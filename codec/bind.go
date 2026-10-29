@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-10-29
 
 package codec
 
@@ -17,16 +17,26 @@ import (
 // exact version bytes 0x33, 0x34, 0x50; no compatibility alias is inferred.
 // Profiles are selected by the server after this operation, before any response.
 func ReadBind(r io.Reader, maxFrame int) (pdu.PDU, pdu.Version, error) {
-	if maxFrame == 0 {
-		maxFrame = 64 << 10
-	}
-	if maxFrame < 16 || maxFrame > 16<<20 {
-		return pdu.PDU{}, 0, ErrValidation
-	}
-	b, e := wire.ReadFrame(r, maxFrame)
+	b, e := ReadFrame(r, maxFrame)
 	if e != nil {
 		return pdu.PDU{}, 0, e
 	}
+	limit, _ := frameLimit(maxFrame) // already validated without consuming on failure
+	p, v, e := decodeBind(b, limit)
+	if e != nil {
+		e = readFailure(e, len(b), true)
+	}
+	return p, v, e
+}
+
+func decodeBind(b []byte, limit int) (packet pdu.PDU, version pdu.Version, err error) {
+	defer func() {
+		if err != nil {
+			if _, wrapped := err.(*DecodeError); !wrapped {
+				err = decodeFailure(err, 0, b, limit)
+			}
+		}
+	}()
 	scan := wire.Reader{Data: b[16:]}
 	scan.C(16, "system_id")
 	scan.C(9, "password")
@@ -35,7 +45,7 @@ func ReadBind(r io.Reader, maxFrame int) (pdu.PDU, pdu.Version, error) {
 	if scan.Err != nil {
 		return pdu.PDU{}, v, scan.Err
 	}
-	c, e := New(Config{Version: v, MaxFrame: maxFrame})
+	c, e := New(Config{Version: v, MaxFrame: limit})
 	if e != nil {
 		return pdu.PDU{}, v, e
 	}

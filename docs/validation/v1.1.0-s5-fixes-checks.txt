@@ -1,0 +1,15 @@
+$ go version
+go version go1.26.10 linux/amd64
+exit=0
+$ go build ./...
+exit=0
+$ go vet ./...
+exit=0
+$ git diff --check
+exit=0
+Six public packages: exact existing v1.1.0 API snapshot match.
+$ go test -race . -run '^TestHeartbeat' -count=20 -timeout=90s
+ok  	github.com/skill215/smppkit	1.767s
+exit=0
+Final inspection: gofmt, local document links, git diff --check, Go 1.26 minimum and /doc/ exclusion PASS.
+Only session.go, session_heartbeat.go and session_reader.go differ among existing Go/module sources from S4; one formal regression source added.

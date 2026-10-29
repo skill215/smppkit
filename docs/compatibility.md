@@ -4,6 +4,40 @@ Version 1.0 policy, 2026-10-28. The six public packages have a stable API
 starting with v1.0.0. The candidate review snapshot remains the API baseline;
 subsequent changes follow the compatibility rules below.
 
+The unreleased v1.1.0 checkout adds `Config.Logger *slog.Logger` and
+`message.ErrUnsupportedNationalLanguage`, plus codec.ReadFrame/ParseHeader/WriteFrame,
+FrameHeader, DecodeError and DecodeErrorKind to the public declarations. Omitting
+Logger preserves silent library logging; configured synchronous handlers have
+the [documented execution contract](logging.md). Diagnostic text/event names
+and field inventories are not a stable structured-events API.
+
+UDH language-table declarations now prevent high-level text encoding/decoding;
+raw Codec data and raw-only receipt/message reception are preserved. This corrects
+silent decoding within the already unsupported national-table scope. All table
+IDs and custom text codecs are covered; no header-aware Encoding contract exists.
+See the [v1.1.0 design](v1.1.0-design.md) for exact behavior and planned APIs.
+The historical v1.0 API snapshot is not rewritten for these additions. The
+[development API snapshot](api-v1.1.0.txt) records the current additive surface.
+
+Decode/read errors now have an outer DecodeError with explicit safe context.
+Existing error causes remain accessible via errors.Is/As; direct concrete-type
+assertions or error-string parsing are not compatibility guarantees. Structural
+FieldError causes remain distinct from ErrValidation. HeaderValid is not proof
+of a complete or valid PDU; see the [framing contract](framing.md).
+
+Opt-in EnquireLinkInterval/EnquireLinkTimeout fields and ErrEnquireLinkTimeout
+are additive v1.1.0 APIs. The default interval leaves existing initiation behavior
+unchanged; incoming automatic replies remain enabled. Enabling probes consumes
+ordinary window slots and can retire an unresponsive bound connection, without
+replaying business requests. ReadTimeout/WriteTimeout keep their independent
+meaning. See the [keepalive contract](keepalive.md).
+
+The receipt helpers are additive in message. Their explicit version/dialect/format
+options and bounded evidence types do not change existing Message.Receipt,
+ParseSegment, ACK, Codec or Session behavior. ParseReceipt is diagnostic extraction,
+not a permissive replacement for Codec. BuildReceipt reuses standard validation.
+See [receipt contracts](receipts.md) for errors, ownership and peer boundaries.
+
 ## Stable surface
 
 The module is `github.com/skill215/smppkit`. Its root package identifier is
@@ -76,8 +110,10 @@ observations, not a claim that every later compiler has already passed.
 Stable means stability of the documented SMS subset, not all commands in every
 SMPP edition. SMPP 3.3 has no TLVs or standard high-level multipart support;
 broadcast and historical excluded commands remain outside Release 1.0.
-Packed GSM/national tables, receipt dialect parsing/aggregation, persistence,
-durable ACK, routing and business delivery tracking are not implied commitments.
+Packed GSM/national tables, arbitrary vendor receipt dialects, aggregation,
+persistence, durable ACK, routing and business delivery tracking are not implied
+commitments. v1.1.0 adds only the explicitly selected ReceiptKeyValue dialect and
+standard TLV receipt helpers described above; it does not infer delivery outcomes.
 
 Ordinary submission acceptance is distinct from final delivery. Explicit
 transaction responses report the peer's synchronous outcome; the application
@@ -87,9 +123,11 @@ positive Codec-only test.
 
 ## Candidate review and publication
 
-Regenerate `docs/api-v1.txt` with Go 1.26.4 `go doc -all` for each of the six
-public packages, in the order listed there, before accepting a public API
-change. Review the diff for signatures, fields, constants, ownership and behavior;
+For a minor-release API change, generate a separate development snapshot with
+`go doc -all` for each of the six public packages in the historical order, using
+a supported Go 1.26 patch and recording it. Preserve `docs/api-v1.txt` as the
+v1.0 baseline; v1.1 development uses `docs/api-v1.1.0.txt`.
+Review the diff for signatures, fields, constants, ownership and behavior;
 a text snapshot is not an automated compatibility proof. Update documentation,
 examples and relevant tests together. Keep the source manifest and CI evidence
 attached to the exact candidate rather than an earlier passing tree.

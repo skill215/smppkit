@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-10-29
 
 package smpp
 
@@ -26,6 +26,7 @@ type writeJob struct {
 	done               chan struct{}
 	complete           sync.Once
 	after              func()
+	heartbeat          bool // immutable: gate automatic probes against unbind
 }
 
 func job(data []byte) *writeJob { return &writeJob{data: data, done: make(chan struct{})} }
@@ -131,7 +132,18 @@ func (s *Session) writeLoop() {
 		}
 		// Cancellation can finish a queued job, but cannot alter an active write.
 		// Once started, aborting the transport is the only safe way to stop it.
+		// Serialize the probe's start with unbind admission. A probe already
+		// writing must finish its frame; one still queued must not start after
+		// unbinding, even if the scheduler has not observed its stop signal yet.
+		if j.heartbeat {
+			s.mu.Lock()
+		}
 		j.mu.Lock()
+		if j.heartbeat && s.state != Bound && !j.cancelled {
+			j.cancelled = true
+			j.err = ErrState
+			j.finish()
+		}
 		if !j.cancelled && j.ctx != nil && j.ctx.Err() != nil {
 			j.cancelled = true
 			j.err = j.ctx.Err()
@@ -142,6 +154,9 @@ func (s *Session) writeLoop() {
 			j.started = true
 		}
 		j.mu.Unlock()
+		if j.heartbeat {
+			s.mu.Unlock()
+		}
 		if skip {
 			continue
 		}

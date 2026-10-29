@@ -1,0 +1,48 @@
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit/codec
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkRawFrame/Read/16 	 4759282	        52.95 ns/op	 302.19 MB/s	      20 B/op	       2 allocs/op
+BenchmarkRawFrame/Read/16 	 4618533	        52.83 ns/op	 302.86 MB/s	      20 B/op	       2 allocs/op
+BenchmarkRawFrame/Read/16 	 4610725	        53.36 ns/op	 299.84 MB/s	      20 B/op	       2 allocs/op
+BenchmarkRawFrame/WriteDiscard/16         	49724896	         4.913 ns/op	3256.60 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteDiscard/16         	47660295	         5.115 ns/op	3128.24 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteDiscard/16         	47239834	         5.070 ns/op	3156.13 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteBuffer/16          	29502241	         8.188 ns/op	1954.05 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteBuffer/16          	29008668	         8.209 ns/op	1949.09 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteBuffer/16          	29257909	         8.193 ns/op	1952.87 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/Read/256                	 2908490	        82.18 ns/op	3115.12 MB/s	     260 B/op	       2 allocs/op
+BenchmarkRawFrame/Read/256                	 2984604	        82.62 ns/op	3098.40 MB/s	     260 B/op	       2 allocs/op
+BenchmarkRawFrame/Read/256                	 2940309	        82.52 ns/op	3102.42 MB/s	     260 B/op	       2 allocs/op
+BenchmarkRawFrame/WriteDiscard/256        	46336232	         5.112 ns/op	50082.26 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteDiscard/256        	49373125	         5.061 ns/op	50582.13 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteDiscard/256        	48509690	         4.882 ns/op	52439.55 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteBuffer/256         	23184192	        10.40 ns/op	24603.66 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteBuffer/256         	23020972	        10.34 ns/op	24747.98 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteBuffer/256         	23258301	        10.39 ns/op	24628.91 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/Read/4096               	  579128	       409.0 ns/op	10015.47 MB/s	    4100 B/op	       2 allocs/op
+BenchmarkRawFrame/Read/4096               	  532460	       410.8 ns/op	9970.18 MB/s	    4100 B/op	       2 allocs/op
+BenchmarkRawFrame/Read/4096               	  546064	       408.7 ns/op	10022.18 MB/s	    4100 B/op	       2 allocs/op
+BenchmarkRawFrame/WriteDiscard/4096       	49635560	         4.887 ns/op	838144.61 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteDiscard/4096       	49589215	         4.870 ns/op	841090.02 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteDiscard/4096       	49486555	         4.874 ns/op	840380.40 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteBuffer/4096        	 7055902	        34.15 ns/op	119955.24 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteBuffer/4096        	 6881241	        35.61 ns/op	115022.75 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteBuffer/4096        	 6993642	        34.33 ns/op	119296.55 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/Read/65536              	   51016	      4574 ns/op	14327.07 MB/s	   65540 B/op	       2 allocs/op
+BenchmarkRawFrame/Read/65536              	   52144	      4552 ns/op	14398.57 MB/s	   65540 B/op	       2 allocs/op
+BenchmarkRawFrame/Read/65536              	   52645	      4535 ns/op	14450.46 MB/s	   65540 B/op	       2 allocs/op
+BenchmarkRawFrame/WriteDiscard/65536      	49697661	         4.904 ns/op	13362497.12 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteDiscard/65536      	49011148	         4.910 ns/op	13346478.04 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteDiscard/65536      	48781766	         4.922 ns/op	13315093.66 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteBuffer/65536       	  243955	       978.9 ns/op	66946.87 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteBuffer/65536       	  244869	       980.2 ns/op	66862.84 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRawFrame/WriteBuffer/65536       	  245264	       983.7 ns/op	66621.08 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeDiagnostic/DecodeCompleteBadBody         	  707503	       340.1 ns/op	     360 B/op	       8 allocs/op
+BenchmarkDecodeDiagnostic/DecodeCompleteBadBody         	  733720	       333.9 ns/op	     360 B/op	       8 allocs/op
+BenchmarkDecodeDiagnostic/DecodeCompleteBadBody         	  752038	       338.2 ns/op	     360 B/op	       8 allocs/op
+BenchmarkDecodeDiagnostic/ReadCompleteBadBody           	  594956	       422.8 ns/op	     456 B/op	      11 allocs/op
+BenchmarkDecodeDiagnostic/ReadCompleteBadBody           	  593078	       427.3 ns/op	     456 B/op	      11 allocs/op
+BenchmarkDecodeDiagnostic/ReadCompleteBadBody           	  582842	       443.1 ns/op	     456 B/op	      11 allocs/op
+PASS
+ok  	github.com/skill215/smppkit/codec	10.168s

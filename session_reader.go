@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-10-29
 
 package smpp
 
@@ -119,6 +119,9 @@ func (s *Session) applyBindResponseLocked(packet pdu.PDU) error {
 	}
 	s.tlvAllowed = enabled
 	s.state = Bound
+	if s.heartbeatReady != nil {
+		close(s.heartbeatReady)
+	}
 	return nil
 }
 
@@ -138,6 +141,14 @@ func (s *Session) dispatchRequest(packet pdu.PDU) error {
 		s.mu.Unlock()
 		return ErrState
 	}
+	if id == pdu.EnquireLinkID && s.state == Unbinding {
+		// The peer can have started this frame before seeing our unbind. Drain
+		// it without adding an ACK that could block behind or race the final
+		// unbind response. Shutdown has its own deadlines; this enquiry neither
+		// restarts scheduling nor changes admission or completion obligations.
+		s.mu.Unlock()
+		return nil
+	}
 	if id == pdu.EnquireLinkID || id == pdu.UnbindID {
 		if id == pdu.UnbindID {
 			if s.peerUnbind {
@@ -146,6 +157,7 @@ func (s *Session) dispatchRequest(packet pdu.PDU) error {
 			}
 			s.peerUnbind = true
 			s.state = Unbinding
+			s.stopHeartbeatLocked()
 		}
 		s.mu.Unlock()
 		return s.respondControl(packet)

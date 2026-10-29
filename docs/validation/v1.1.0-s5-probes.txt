@@ -1,0 +1,87 @@
+S5 review reproduction; Go 1.26.10 linux/amd64; 2026-10-29
+$ go test -race -overlay=/tmp/smppkit-s5-overlay.json . -run '^TestS5' -count=3 -timeout=60s -v
+=== RUN   TestS5CompletedProbeDeadline
+=== RUN   TestS5CompletedProbeDeadline/automatic=false
+=== RUN   TestS5CompletedProbeDeadline/automatic=true
+    s5_review_probe_test.go:104: 15/32 completed, correlated exchanges returned success but retired the Session as enquire_link timeout
+--- FAIL: TestS5CompletedProbeDeadline (0.01s)
+    --- PASS: TestS5CompletedProbeDeadline/automatic=false (0.01s)
+    --- FAIL: TestS5CompletedProbeDeadline/automatic=true (0.01s)
+=== RUN   TestS5HeartbeatCrossesUnbind
+=== RUN   TestS5HeartbeatCrossesUnbind/33/serverInitiates=false
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=io: read/write on closed pipe)
+=== RUN   TestS5HeartbeatCrossesUnbind/33/serverInitiates=true
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=<nil>)
+=== RUN   TestS5HeartbeatCrossesUnbind/34/serverInitiates=false
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=<nil>)
+=== RUN   TestS5HeartbeatCrossesUnbind/34/serverInitiates=true
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=io: read/write on closed pipe)
+=== RUN   TestS5HeartbeatCrossesUnbind/50/serverInitiates=false
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=io: read/write on closed pipe)
+=== RUN   TestS5HeartbeatCrossesUnbind/50/serverInitiates=true
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=io: read/write on closed pipe)
+--- FAIL: TestS5HeartbeatCrossesUnbind (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/33/serverInitiates=false (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/33/serverInitiates=true (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/34/serverInitiates=false (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/34/serverInitiates=true (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/50/serverInitiates=false (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/50/serverInitiates=true (0.00s)
+=== RUN   TestS5CompletedProbeDeadline
+=== RUN   TestS5CompletedProbeDeadline/automatic=false
+=== RUN   TestS5CompletedProbeDeadline/automatic=true
+    s5_review_probe_test.go:104: 13/32 completed, correlated exchanges returned success but retired the Session as enquire_link timeout
+--- FAIL: TestS5CompletedProbeDeadline (0.01s)
+    --- PASS: TestS5CompletedProbeDeadline/automatic=false (0.01s)
+    --- FAIL: TestS5CompletedProbeDeadline/automatic=true (0.01s)
+=== RUN   TestS5HeartbeatCrossesUnbind
+=== RUN   TestS5HeartbeatCrossesUnbind/33/serverInitiates=false
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=<nil>)
+=== RUN   TestS5HeartbeatCrossesUnbind/33/serverInitiates=true
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=io: read/write on closed pipe)
+=== RUN   TestS5HeartbeatCrossesUnbind/34/serverInitiates=false
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=io: read/write on closed pipe)
+=== RUN   TestS5HeartbeatCrossesUnbind/34/serverInitiates=true
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=<nil>)
+=== RUN   TestS5HeartbeatCrossesUnbind/50/serverInitiates=false
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=io: read/write on closed pipe)
+=== RUN   TestS5HeartbeatCrossesUnbind/50/serverInitiates=true
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=<nil>)
+--- FAIL: TestS5HeartbeatCrossesUnbind (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/33/serverInitiates=false (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/33/serverInitiates=true (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/34/serverInitiates=false (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/34/serverInitiates=true (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/50/serverInitiates=false (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/50/serverInitiates=true (0.00s)
+=== RUN   TestS5CompletedProbeDeadline
+=== RUN   TestS5CompletedProbeDeadline/automatic=false
+=== RUN   TestS5CompletedProbeDeadline/automatic=true
+    s5_review_probe_test.go:104: 18/32 completed, correlated exchanges returned success but retired the Session as enquire_link timeout
+--- FAIL: TestS5CompletedProbeDeadline (0.01s)
+    --- PASS: TestS5CompletedProbeDeadline/automatic=false (0.01s)
+    --- FAIL: TestS5CompletedProbeDeadline/automatic=true (0.01s)
+=== RUN   TestS5HeartbeatCrossesUnbind
+=== RUN   TestS5HeartbeatCrossesUnbind/33/serverInitiates=false
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=io: read/write on closed pipe)
+=== RUN   TestS5HeartbeatCrossesUnbind/33/serverInitiates=true
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=io: read/write on closed pipe)
+=== RUN   TestS5HeartbeatCrossesUnbind/34/serverInitiates=false
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=<nil>)
+=== RUN   TestS5HeartbeatCrossesUnbind/34/serverInitiates=true
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=io: read/write on closed pipe)
+=== RUN   TestS5HeartbeatCrossesUnbind/50/serverInitiates=false
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=io: read/write on closed pipe)
+=== RUN   TestS5HeartbeatCrossesUnbind/50/serverInitiates=true
+    s5_review_probe_test.go:165: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=<nil>)
+--- FAIL: TestS5HeartbeatCrossesUnbind (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/33/serverInitiates=false (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/33/serverInitiates=true (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/34/serverInitiates=false (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/34/serverInitiates=true (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/50/serverInitiates=false (0.00s)
+    --- FAIL: TestS5HeartbeatCrossesUnbind/50/serverInitiates=true (0.00s)
+FAIL
+FAIL	github.com/skill215/smppkit	0.069s
+FAIL
+exit=1 (expected review findings; no data race reported)

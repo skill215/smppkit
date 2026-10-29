@@ -1,0 +1,22 @@
+Go 1.26.10 linux/amd64; 2026-10-29
+$ go test -race . -run '^(TestHeartbeatCompletedProbeDeadline|TestHeartbeatCrossesUnbind)$' -count=1 -timeout=60s
+--- FAIL: TestHeartbeatCompletedProbeDeadline (0.01s)
+    --- FAIL: TestHeartbeatCompletedProbeDeadline/automatic=true (0.01s)
+        session_heartbeat_regression_test.go:105: 18/32 completed, correlated exchanges returned success but retired the Session as enquire_link timeout
+--- FAIL: TestHeartbeatCrossesUnbind (0.00s)
+    --- FAIL: TestHeartbeatCrossesUnbind/33/serverInitiates=false (0.00s)
+        session_heartbeat_regression_test.go:167: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=<nil>)
+    --- FAIL: TestHeartbeatCrossesUnbind/33/serverInitiates=true (0.00s)
+        session_heartbeat_regression_test.go:167: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=<nil>)
+    --- FAIL: TestHeartbeatCrossesUnbind/34/serverInitiates=false (0.00s)
+        session_heartbeat_regression_test.go:167: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=io: read/write on closed pipe)
+    --- FAIL: TestHeartbeatCrossesUnbind/34/serverInitiates=true (0.00s)
+        session_heartbeat_regression_test.go:167: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=<nil>)
+    --- FAIL: TestHeartbeatCrossesUnbind/50/serverInitiates=false (0.00s)
+        session_heartbeat_regression_test.go:167: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=io: read/write on closed pipe)
+    --- FAIL: TestHeartbeatCrossesUnbind/50/serverInitiates=true (0.00s)
+        session_heartbeat_regression_test.go:167: pre-existing peer probe aborts graceful unbind: smpp: operation invalid for session state or role (initiator=smpp: operation invalid for session state or role, peer=<nil>)
+FAIL
+FAIL	github.com/skill215/smppkit	0.032s
+FAIL
+exit=1 (pre-fix reproduction)

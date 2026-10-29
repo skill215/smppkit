@@ -946,3 +946,44 @@ R3's timed fuzz, ten-minute soak, legacy harness and benchmarks are reused for
 the identical source, not rerun or relabelled as R4 measurements. Its classified
 Go 1.26.4 fuzz shutdown failure remains visible. No remote CI, commit, tag, push
 or publication occurred.
+
+## v1.1.0 development checks
+
+The [local logging validation](v1.1.0-logging-validation.md) records the unreleased
+implementation of issue #1, including build/vet/race, two timed fuzz targets,
+independent wire tests, examples and logging allocation benchmarks. It is
+separate from the historical release evidence above.
+
+
+The [U1 validation](v1.1.0-udh-validation.md) records the next local increment:
+UDH language-declaration protection, a fresh full build/vet/race run, a new timed
+fuzz target and admission/receive allocation benchmarks. G1/G2, active keepalive
+and G4 remain planned; this evidence makes no claim that those features exist.
+
+
+The [G1/G2 validation](v1.1.0-framing-validation.md) records the next increment:
+raw framing, safe classified decode errors, full build/vet/race, three timed
+codec fuzz targets and raw/error allocation benchmarks. G4 is now explicitly
+planned as parsing plus construction, but is not implemented or validated here.
+
+
+The [G3 validation](v1.1.0-keepalive-validation.md) records optional active enquiries:
+independent wire fixtures, virtual-time lifecycle and capacity tests, full fresh
+build/vet/race, timed Codec fuzz smoke, allocation benchmarks and local example
+execution. Earlier increment records retain their historical implementation scope.
+
+
+The [G4 validation](v1.1.0-receipts-validation.md) records optional stateless
+receipt parsing/construction: independent bytes, boundaries, concurrency,
+full build/vet/race, receipt/Codec fuzzing, allocation benchmarks and five actual
+Client/Server receipt-example runs. S0–S4 are locally implemented; release review
+is still pending. Earlier records retain their original implementation scope.
+
+## v1.1.0 S5 corrections — 2026-10-29
+
+RV22–RV24 are corrected locally with formal heartbeat deadline/unbind
+regressions and reconciled support documentation. See the
+[S5 correction record](v1.1.0-s5-review.md#rv22rv24-corrections) for fresh
+build/vet/full race results, 20 heartbeat race repetitions, decoder fuzz and
+allocation benchmark evidence. Public signatures and Go 1.26 are unchanged.
+This is local validation, not submitted-candidate CI or release publication.

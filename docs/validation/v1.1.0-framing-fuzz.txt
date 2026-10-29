@@ -1,0 +1,25 @@
+$ go test ./codec -run=^$ -fuzz=^FuzzRawFrame$ -fuzztime=5s -parallel=2
+fuzz: elapsed: 0s, gathering baseline coverage: 0/5 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 5/5 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 140878 (46951/sec), new interesting: 52 (total: 57)
+fuzz: elapsed: 5s, execs: 264225 (59311/sec), new interesting: 69 (total: 74)
+PASS
+ok  	github.com/skill215/smppkit/codec	5.087s
+exit=0
+$ go test ./codec -run=^$ -fuzz=^FuzzDecode$ -fuzztime=5s -parallel=2
+fuzz: elapsed: 0s, gathering baseline coverage: 0/105 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 105/105 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 177024 (58994/sec), new interesting: 23 (total: 128)
+fuzz: elapsed: 5s, execs: 301076 (60944/sec), new interesting: 32 (total: 137)
+PASS
+ok  	github.com/skill215/smppkit/codec	5.045s
+exit=0
+$ go test ./codec -run=^$ -fuzz=^FuzzStandardTLVSection$ -fuzztime=5s -parallel=2
+fuzz: elapsed: 0s, gathering baseline coverage: 0/46 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 46/46 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 132982 (44311/sec), new interesting: 59 (total: 105)
+fuzz: elapsed: 6s, execs: 184545 (17191/sec), new interesting: 66 (total: 112)
+fuzz: elapsed: 6s, execs: 184545 (0/sec), new interesting: 66 (total: 112)
+PASS
+ok  	github.com/skill215/smppkit/codec	6.014s
+exit=0

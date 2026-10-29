@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-10-29
 
 // Package wire contains bounded, unexported protocol primitives.
 package wire
@@ -153,16 +153,25 @@ func (w *Writer) U8(v byte) {
 // ReadFrame reads only the four-byte length before validating the allocation.
 // It imposes no deadlines itself; the owner of the transport must supply them.
 func ReadFrame(r io.Reader, max int) ([]byte, error) {
+	if max < 16 || max > 16<<20 {
+		return nil, &Error{"MaxFrame", 0, "outside frame limit"}
+	}
 	var size [4]byte
-	if _, err := io.ReadFull(r, size[:]); err != nil {
-		return nil, err
+	if count, err := io.ReadFull(r, size[:]); err != nil {
+		if count == 0 {
+			return nil, err
+		}
+		return size[:count:count], err
 	}
 	n := binary.BigEndian.Uint32(size[:])
 	if n < 16 || uint64(n) > uint64(max) {
-		return nil, &Error{"command_length", 0, "outside frame limit"}
+		return size[:4:4], &Error{"command_length", 0, "outside frame limit"}
 	}
 	b := make([]byte, int(n))
 	copy(b, size[:])
-	_, err := io.ReadFull(r, b[4:])
-	return b, err
+	count, err := io.ReadFull(r, b[4:])
+	// Return only bytes actually received. In particular, a short read must
+	// not expose a zero-filled body tail as if it came from the peer.
+	count += 4
+	return b[:count:count], err
 }

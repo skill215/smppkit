@@ -1,8 +1,24 @@
 # Implementation support matrix
 
-Status: v1.0.0 SMS support; R2 audit completed 2026-10-28. This inventory distinguishes command
+Status: v1.0.0 SMS support plus the unreleased v1.1.0 candidate; S5 recheck
+completed 2026-10-29. See the [release record](v1.1.0-release.md).
+This inventory distinguishes command
 layouts from endpoint support. “Implemented” is not a full conformance claim;
 semantic restrictions and unvalidated areas below still apply.
+
+The unreleased v1.1.0 checkout adds optional [slog diagnostics](logging.md) to
+Session and Client/Server setup, defaulting to discard across all profiles.
+It also protects high-level text operations from UDH national-language declarations:
+Prepare rejects IE 0x24/0x25 before encoding; requested Receive decoding returns
+`ErrUnsupportedNationalLanguage` in DecodeError while retaining raw evidence.
+Raw-only reception, receipt handling and the Codec remain unchanged. See the
+[v1.1.0 design](v1.1.0-design.md) and [framing contract](framing.md). Raw framing
+and classified errors are locally implemented. Optional [receipt helpers](receipts.md)
+now parse separate text/TLV evidence and build owned DeliverSM/DataSM reports.
+Command, TLV, wire and ACK support are unchanged. Optional
+[active enquire_link](keepalive.md) is now locally implemented for all
+three versions on both endpoints, disabled by default. Automatic replies remain
+independent of scheduling.
 
 R1 update, 2026-10-28: [RV17–RV19](review-gaps.md) are corrected with formal
 regressions for response TLV negotiation, cancellation during a write join, and
@@ -28,7 +44,7 @@ range) cannot bypass validation through an opaque body or private registration.
 | --- | --- | --- | --- | --- |
 | bind_receiver / bind_transmitter | Implemented | Implemented | Implemented | Client bind and server admission |
 | bind_transceiver | Not defined | Implemented | Implemented | Client bind and server admission |
-| unbind / enquire_link | Implemented | Implemented | Implemented | Automatic responses; explicit outbound requests |
+| unbind / enquire_link | Implemented | Implemented | Implemented | Automatic responses while bound; explicit requests; opt-in v1.1.0 scheduling for enquire_link only; see [shutdown control policy](keepalive.md#defaults-and-lifecycle) |
 | generic_nack | Implemented | Implemented | Implemented | Explicit response and outbound correlation |
 | submit_sm / deliver_sm | Implemented | Implemented | Implemented | Direction/role validation, Request/Respond and text helpers |
 | query_sm / replace_sm / cancel_sm | Implemented layouts | Implemented layouts | Implemented layouts | Explicit Request/Respond; no application storage semantics |
@@ -122,10 +138,11 @@ of scope for this increment.
 | Reception | Out-of-order assembly, duplicate suppression, conflict errors, namespace/address/port isolation |
 | ACK | Explicit bounded-memory admission per segment; no wait for whole message. Automatic ACK excludes explicit transaction submissions; mode 0 needs a non-transaction MC default. |
 | Resource control | Groups, retained byte charges, message size, segments, completion queue, tombstones, events, deadlines |
-| Receipts | Classified before reassembly and retained raw with per-segment metadata |
+| Receipts | Existing raw classification/reassembly bypass; optional v1.1.0 text/TLV parsing and report construction, with explicit dialect/version limits |
 | Persistence / durable admission / crash recovery | Application responsibility; outside the public library scope |
-| Receipt text dialects / tracking / aggregation | Not implemented; final delivery is unknown |
-| Packed GSM septets / national language tables | Not implemented; no heuristic decoding |
+| Receipt text dialects | Optional v1.1.0 ReceiptKeyValue dialect; explicit decoding and limits, raw preservation for unsupported input; arbitrary vendor dialects are not inferred |
+| Receipt tracking / aggregation | Not implemented; the application interprets report evidence and determines delivery outcomes |
+| Packed GSM septets / national language tables | Not implemented; v1.1.0 high-level language-declaration protection as described above; no heuristic decoding |
 
 Protocol authorities: [SMPP 3.3](https://smpp.org/SMPP-v3.3.pdf) §§6–7,
 [SMPP 3.4 issue 1.2](https://smpp.org/SMPP_v3_4_Issue1_2.pdf) §§4–5,

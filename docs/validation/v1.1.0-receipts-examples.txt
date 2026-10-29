@@ -1,0 +1,15 @@
+$ go run -race ./examples/receipts -version 3.3
+receipt id=demo-0001 kind=0x04 text_state=EXPIRED tlv_state_present=false
+exit=0
+$ go run -race ./examples/receipts -version 3.4
+receipt id=demo-0001 kind=0x04 text_state=EXPIRED tlv_state_present=true
+exit=0
+$ go run -race ./examples/receipts -version 5.0
+receipt id=demo-0001 kind=0x04 text_state=EXPIRED tlv_state_present=true
+exit=0
+$ go run -race ./examples/receipts -version 3.4 -data-sm
+receipt id=demo-0001 kind=0x04 text_state=EXPIRED tlv_state_present=true
+exit=0
+$ go run -race ./examples/receipts -version 5.0 -data-sm
+receipt id=demo-0001 kind=0x04 text_state=EXPIRED tlv_state_present=true
+exit=0

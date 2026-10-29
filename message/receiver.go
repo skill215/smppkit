@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-10-29
 
 package message
 
@@ -41,6 +41,8 @@ type ReceiveConfig struct {
 	Lifetime          time.Duration // from first segment admission, default 5 minutes
 	TombstoneLifetime time.Duration // from completion, default 5 minutes
 	// DCS interpretation is explicit. Nil retains binary content without decoding.
+	// A UDH national-language declaration prevents text decoding, including with
+	// custom codecs; Receive retains the content and reports DecodeError instead.
 	Encodings map[uint8]textcodec.Encoding
 }
 
@@ -310,6 +312,8 @@ func (r *Receiver) Admit(namespace string, fields pdu.SMFields, now time.Time) (
 // Receive transfers the next complete message and releases its store charges.
 // Optional text decoding runs outside the store lock; decoder failure is retained
 // in Message.DecodeError. An available queued message takes precedence over ctx.
+// Unsupported UDH language declarations bypass all decoders and return
+// ErrUnsupportedNationalLanguage in DecodeError without undoing admission/ACK.
 func (r *Receiver) Receive(ctx context.Context) (Message, error) {
 	for {
 		r.mu.Lock()
@@ -324,7 +328,14 @@ func (r *Receiver) Receive(ctx context.Context) (Message, error) {
 			}
 			r.mu.Unlock()
 			if enc != nil && !m.Receipt {
-				m.Text, m.DecodeError = enc.Decode(m.Payload)
+				// Non-concatenation UDH must match across all parts (consistent).
+				// DCS alone cannot select a language table, so do not silently
+				// decode with a default or caller-supplied unaware decoder.
+				if hasNationalLanguage(m.Segments[0].UDH) {
+					m.DecodeError = ErrUnsupportedNationalLanguage
+				} else {
+					m.Text, m.DecodeError = enc.Decode(m.Payload)
+				}
 				m.Decoded = m.DecodeError == nil
 			}
 			return m, nil

@@ -46,6 +46,13 @@ aliases and multipart compatibility need independent peer fixtures.
 
 ## Session lifecycle and concurrency
 
+The v1.1.0 diagnostic extension uses `Config.Logger *slog.Logger`, with nil
+normalized to a shared discard logger. Standard `slog.Handler` is the output
+extension boundary; no framework-specific public interface or dependency is
+added. Applications own adapters and sinks. Diagnostics use fixed categories
+instead of arbitrary error text. See [logging](logging.md) for synchronous
+handler constraints and the distinction between Close, Wait, and caller logging.
+
 `NewSession` starts an unbound client on an existing net.Conn; `Bind` establishes
 TX/RX/TRX. `Dial` combines transport and bind. `Server.Accept` performs bounded
 bind admission on a supplied connection. `Server.Serve` bounds concurrent
@@ -365,3 +372,82 @@ and malformed escapes/surrogates instead of replacing characters. This decision
 is not a ban on dependencies: additional alphabets/packing should reconsider
 x/text or another pinned candidate only after license, maintenance, boundary,
 error and Go-version review. BCD is not applied to SMPP address strings.
+
+
+## v1.1.0 consumer-gap review and first increment (2026-10-29)
+
+The approved [design](v1.1.0-design.md) adds bounded raw framing and diagnostic
+error categories, keeps logging/keepalive, and schedules optional receipt parsing
+as a v1.1.0 feature. These are general protocol utilities. Consumer migration,
+business routing, storage and delivery aggregation remain separate responsibilities.
+Unknown private commands keep Opaque decoding; no speculative peer relaxations
+or forced Session adoption are introduced. Go remains 1.26.
+
+The first increment addresses UDH language declarations before adding new framing
+APIs. DCS-only Encoding cannot verify a language table. Therefore Prepare rejects
+0x24/0x25 before callbacks; requested Receive decoding returns a specific error
+and preserves raw bytes. This includes custom codecs, default-table declarations
+and octet codecs, avoiding implicit interpretation of contradictory metadata.
+Raw-only users can inspect and decode externally. Existing receipt bypass and
+multipart consistency rules stay in place. Full alphabet support is deferred.
+
+
+## v1.1.0 G1/G2 and G4 refinement (2026-10-29)
+
+G4 now plans both parsing and pure construction using existing DeliverSM/DataSM.
+SMPP receipt formats and gateway conventions are separated in the design: no
+mandatory universal Appendix B template, guessed counts/timezones/radix, private
+error-byte mapping or automatically successful receipt after submission.
+
+G1/G2 remain in codec: ReadFrame/ParseHeader/WriteFrame add no transport object or
+protocol stack. Read and bind bootstrap reuse the bounded primitive. Failed raw
+reads expose only actual bytes, never allocated zero tails. WriteFrame makes one
+Write and returns progress; it does not retry partial writes or flush buffers.
+DecodeError wraps causes rather than changing existing sentinel/type identities.
+Categories are assigned at decoder stages, never by diagnostic string matching.
+Raw header availability, semantic header checks and stream acquisition are
+separate facts; no combination authorizes an automatic NACK or reconnect.
+See [framing](framing.md) for exact public contracts. The historical v1.0 API
+snapshot is retained and a separate unreleased snapshot records the additions.
+
+
+## v1.1.0 automatic enquiries (2026-10-29)
+
+Use two Config durations, not a second endpoint or scheduler interface. Interval
+zero preserves existing behavior; timeout zero inherits RequestTimeout. One
+optional Session-owned goroutine uses the shared request path with nonblocking
+atomic window admission. Its timer restarts after completion/skip. Business
+traffic does not suppress probes; no separate reserved slot or tick queue exists.
+
+ErrEnquireLinkTimeout identifies expiry after writing started. Queued expiry is
+local pressure and leaves the connection intact. ReadTimeout/WriteTimeout remain
+independent. Under the same state lock, admitted unbind prevents later heartbeat
+retirement and prevents queued probes from starting; already active frames finish
+under the existing writer deadline. This avoids tearing down an orderly unbind
+just because a discarded probe response was not received. Wait joins all runtime
+work. See [keepalive](keepalive.md) for negative-response and uncertain-result rules.
+
+
+## v1.1.0 receipt helpers (2026-10-29)
+
+Keep stateless report parsing and construction in message, as originally planned.
+BuildReceipt depends on the existing Codec for final preflight rather than copying
+its protocol-validation tables; there is no reverse dependency or new Session
+runtime. ParseReceipt can diagnose bounded typed evidence independently of Codec,
+while normal transports retain strict acceptance. Existing reassembly classification
+and application-owned ACK policy remain unchanged.
+
+Use explicit version/dialect/format selection, distinct report kind and numeric
+state, separate text/TLV evidence, and fixed resource limits. Unique accessors
+never silently select duplicate values. Missing/unsupported fields remain
+observable; errors and diagnostics exclude values. The supported text grammar is
+a named peer convention, with unpacked GSM7/ASCII-subset/UCS2 interpretation and
+no inferred charset, numeric ID conversion or date zone/century. Standard network
+error codes are not mapped onto text err. 3.3 marker 0x04 is a documented legacy
+convention and never authorizes TLVs. Full rules: [receipts](receipts.md).
+
+The constructor never infers delivery, creates report IDs, fills missing counts
+or dates, truncates, splits, persists or associates reports with submissions.
+5.0-only states 0/9 use TLV-only construction because the chosen text dialect has
+no established spellings for them. The example supplies a synthetic EXPIRED
+outcome explicitly, then uses the ordinary Session request and response APIs.

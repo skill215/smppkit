@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-10-29
 
 package codec
 
@@ -23,20 +23,34 @@ type FieldError = wire.Error
 // Read rejects invalid lengths after four bytes, before acquiring a body. The
 // caller owns partial-frame deadlines (Session applies a finite read timeout).
 func (c *Codec) Read(r io.Reader) (pdu.PDU, error) {
-	b, e := wire.ReadFrame(r, c.max)
+	b, e := ReadFrame(r, c.max)
 	if e != nil {
 		return pdu.PDU{}, e
 	}
-	return c.Decode(b)
+	p, e := c.Decode(b)
+	if e != nil {
+		e = readFailure(e, len(b), true)
+	}
+	return p, e
 }
 
 // Decode requires exactly one complete frame. Returned payloads are owned.
+// Failures wrap DecodeError while preserving prior error causes. Its context
+// makes no assertion about stream consumption; use Read for that information.
 // Standard byte fields may share one owned body allocation, but each field's
 // capacity ends at its length: appending cannot overwrite a sibling field.
 func (c *Codec) Decode(src []byte) (pdu.PDU, error) {
+	p, err := c.decode(src)
+	if err != nil {
+		return p, decodeFailure(err, 0, src, c.max)
+	}
+	return p, nil
+}
+
+func (c *Codec) decode(src []byte) (pdu.PDU, error) {
 	var p pdu.PDU
-	if len(src) < 16 || len(src) > c.max || uint64(binary.BigEndian.Uint32(src)) != uint64(len(src)) {
-		return p, fmt.Errorf("%w: command_length", ErrValidation)
+	if !validFrame(src, c.max) {
+		return p, &categorizedError{DecodeFraming, fmt.Errorf("%w: command_length", ErrValidation)}
 	}
 	id := pdu.CommandID(binary.BigEndian.Uint32(src[4:8]))
 	p.Status = pdu.Status(binary.BigEndian.Uint32(src[8:12]))
@@ -55,10 +69,10 @@ func (c *Codec) Decode(src []byte) (pdu.PDU, error) {
 			}
 			body, e := ext.DecodeBody(b)
 			if e != nil {
-				return p, e
+				return p, &categorizedError{DecodeExtension, e}
 			}
 			if nilBody(body) || body.CommandID() != id {
-				return p, ErrValidation
+				return p, &categorizedError{DecodeExtension, ErrValidation}
 			}
 			p.Body = body
 			return p, nil

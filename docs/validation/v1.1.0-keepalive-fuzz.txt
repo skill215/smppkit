@@ -1,0 +1,16 @@
+$ timeout 45s go test ./codec -run '^$' -fuzz '^FuzzDecode$' -fuzztime=5s -parallel=2 -timeout=40s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/137 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 137/137 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 172515 (57489/sec), new interesting: 15 (total: 152)
+fuzz: elapsed: 5s, execs: 295374 (58296/sec), new interesting: 26 (total: 163)
+PASS
+ok  	github.com/skill215/smppkit/codec	5.117s
+exit=0
+$ timeout 45s go test ./codec -run '^$' -fuzz '^FuzzRawFrame$' -fuzztime=5s -parallel=2 -timeout=40s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/74 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 74/74 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 198031 (65985/sec), new interesting: 9 (total: 83)
+fuzz: elapsed: 5s, execs: 338045 (67714/sec), new interesting: 14 (total: 88)
+PASS
+ok  	github.com/skill215/smppkit/codec	5.076s
+exit=0

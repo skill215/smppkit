@@ -2,10 +2,11 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-10-29
 
-// Package message prepares text messages and assembles received segments without
-// owning a transport. Submission acceptance and delivery receipts are distinct.
+// Package message prepares text, assembles received segments, and optionally
+// parses or constructs receipt evidence without owning a transport. Submission
+// acceptance, later receipt content and receipt ACKs are distinct outcomes.
 package message
 
 import (
@@ -35,7 +36,8 @@ const (
 
 // InformationElement is an additional UDH element without IE length or UDHL.
 // Prepare supplies lengths, rejects caller-supplied concatenation elements and
-// validates application ports; other element contents remain opaque.
+// validates application ports. National-language declarations (0x24/0x25) are
+// rejected with ErrUnsupportedNationalLanguage; other contents remain opaque.
 type InformationElement struct {
 	ID   uint8
 	Data []byte
@@ -164,6 +166,8 @@ func budget(octets, header, unitBits int) int {
 // The selected built-in Latin1 encoding is rejected for 3.3, including after
 // fallback: its DCS=3 assignment belongs to 3.4/5.0, not the GSM DCS used by 3.3.
 // Fallback handles text encoding errors, not an incompatible protocol policy.
+// UDH national-language declarations are rejected before invoking either encoder,
+// since Encoding has no header-aware contract to verify the selected table.
 func Prepare(version pdu.Version, msg Text, policy Policy) (*Plan, error) {
 	if !version.Valid() {
 		return nil, ErrMetadata
@@ -358,6 +362,9 @@ func prepareUDH(elements []InformationElement) ([]byte, error) {
 	total := 0
 	ports := false
 	for _, ie := range elements {
+		if nationalLanguageIE(ie.ID) {
+			return nil, ErrUnsupportedNationalLanguage
+		}
 		if ie.ID == 0 || ie.ID == 8 || len(ie.Data) > 255 {
 			return nil, ErrMetadata
 		}

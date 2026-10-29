@@ -1,0 +1,44 @@
+$ go version
+go version go1.26.10 linux/amd64
+exit=0
+$ go test ./message -run '^$' -bench '^BenchmarkReceipt(Parse|Build)$' -benchmem -benchtime=200ms -count=3 -cpu=1
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit/message
+cpu: AMD Ryzen 7 6800H with Radeon Graphics         
+BenchmarkReceiptParse/FullText         	   91392	      2542 ns/op	     784 B/op	       7 allocs/op
+BenchmarkReceiptParse/FullText         	   94789	      2515 ns/op	     784 B/op	       7 allocs/op
+BenchmarkReceiptParse/FullText         	   97287	      2529 ns/op	     784 B/op	       7 allocs/op
+BenchmarkReceiptParse/TLVOnly          	  948794	       313.0 ns/op	     136 B/op	       6 allocs/op
+BenchmarkReceiptParse/TLVOnly          	  966460	       315.8 ns/op	     136 B/op	       6 allocs/op
+BenchmarkReceiptParse/TLVOnly          	  903498	       301.9 ns/op	     136 B/op	       6 allocs/op
+BenchmarkReceiptParse/Mixed            	   82441	      2906 ns/op	     920 B/op	      13 allocs/op
+BenchmarkReceiptParse/Mixed            	   82940	      3389 ns/op	     920 B/op	      13 allocs/op
+BenchmarkReceiptParse/Mixed            	   81189	      2912 ns/op	     920 B/op	      13 allocs/op
+BenchmarkReceiptParse/MissingFields    	  201592	      1194 ns/op	    1072 B/op	       9 allocs/op
+BenchmarkReceiptParse/MissingFields    	  212610	      1179 ns/op	    1072 B/op	       9 allocs/op
+BenchmarkReceiptParse/MissingFields    	  215602	      1211 ns/op	    1072 B/op	       9 allocs/op
+BenchmarkReceiptParse/Malformed        	   94459	      2488 ns/op	    1640 B/op	      17 allocs/op
+BenchmarkReceiptParse/Malformed        	  101246	      2445 ns/op	    1640 B/op	      17 allocs/op
+BenchmarkReceiptParse/Malformed        	  100436	      2417 ns/op	    1640 B/op	      17 allocs/op
+BenchmarkReceiptParse/RawOnly          	  646159	       384.3 ns/op	     328 B/op	       8 allocs/op
+BenchmarkReceiptParse/RawOnly          	  680242	       390.0 ns/op	     328 B/op	       8 allocs/op
+BenchmarkReceiptParse/RawOnly          	  566775	       387.9 ns/op	     328 B/op	       8 allocs/op
+BenchmarkReceiptBuild/LegacyText       	   86456	      2593 ns/op	    2008 B/op	      17 allocs/op
+BenchmarkReceiptBuild/LegacyText       	   96848	      2449 ns/op	    2008 B/op	      17 allocs/op
+BenchmarkReceiptBuild/LegacyText       	  101361	      2404 ns/op	    2008 B/op	      17 allocs/op
+BenchmarkReceiptBuild/Text             	  288422	       834.0 ns/op	    1112 B/op	      16 allocs/op
+BenchmarkReceiptBuild/Text             	  276990	       822.3 ns/op	    1112 B/op	      16 allocs/op
+BenchmarkReceiptBuild/Text             	  295044	       808.4 ns/op	    1112 B/op	      16 allocs/op
+BenchmarkReceiptBuild/TLVOnly          	  308595	       790.0 ns/op	     608 B/op	      12 allocs/op
+BenchmarkReceiptBuild/TLVOnly          	  290313	       788.2 ns/op	     608 B/op	      12 allocs/op
+BenchmarkReceiptBuild/TLVOnly          	  296410	       803.8 ns/op	     608 B/op	      12 allocs/op
+BenchmarkReceiptBuild/Mixed            	  164728	      1466 ns/op	    1496 B/op	      20 allocs/op
+BenchmarkReceiptBuild/Mixed            	  188984	      1319 ns/op	    1496 B/op	      20 allocs/op
+BenchmarkReceiptBuild/Mixed            	  178971	      1333 ns/op	    1496 B/op	      20 allocs/op
+BenchmarkReceiptBuild/DataMixed        	  171706	      1342 ns/op	    1288 B/op	      20 allocs/op
+BenchmarkReceiptBuild/DataMixed        	  188810	      1301 ns/op	    1288 B/op	      20 allocs/op
+BenchmarkReceiptBuild/DataMixed        	  183508	      1377 ns/op	    1288 B/op	      20 allocs/op
+PASS
+ok  	github.com/skill215/smppkit/message	8.159s
+exit=0

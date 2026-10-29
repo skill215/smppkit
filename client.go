@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-10-29
 
 package smpp
 
@@ -31,11 +31,12 @@ func Dial(ctx context.Context, address string, cfg ClientConfig) (*Session, erro
 	if cfg.Codec == nil || cfg.Bind == nil {
 		return nil, ErrState
 	}
-	if _, e := cfg.Session.normalized(); e != nil {
+	var e error
+	cfg.Session, e = cfg.Session.normalized()
+	if e != nil {
 		return nil, e
 	}
 	var conn net.Conn
-	var e error
 	if cfg.TLS != nil {
 		d := tls.Dialer{Config: cfg.TLS.Clone()}
 		conn, e = d.DialContext(ctx, "tcp", address)
@@ -44,6 +45,7 @@ func Dial(ctx context.Context, address string, cfg ClientConfig) (*Session, erro
 		conn, e = d.DialContext(ctx, "tcp", address)
 	}
 	if e != nil {
+		logSetup(ctx, cfg.Session.Logger, "client", "connect", e)
 		return nil, e
 	}
 	s, e := NewSession(conn, cfg.Codec, cfg.Session)

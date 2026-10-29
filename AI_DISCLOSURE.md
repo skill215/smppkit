@@ -10,7 +10,7 @@ scope: |
   human maintainer direction. The model attribution is GPT-6.0 Astra, as confirmed
   by the maintainer. This describes project authorship, not authorship of the
   standard license text or raw output produced by compilers, tests, and benchmarks.
-last-updated: 2026-10-28
+last-updated: 2026-10-29
 ---
 
 # AI disclosure

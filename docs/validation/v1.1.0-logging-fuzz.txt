@@ -1,0 +1,13 @@
+fuzz: elapsed: 0s, gathering baseline coverage: 0/23 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 23/23 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 193671 (64546/sec), new interesting: 73 (total: 96)
+fuzz: elapsed: 5s, execs: 328390 (66367/sec), new interesting: 82 (total: 105)
+PASS
+ok  	github.com/skill215/smppkit/codec	5.037s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/2 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 2/2 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 162886 (54282/sec), new interesting: 11 (total: 13)
+fuzz: elapsed: 5s, execs: 304103 (67656/sec), new interesting: 11 (total: 13)
+PASS
+ok  	github.com/skill215/smppkit/codec	5.096s
+application: time=2026-10-29T10:40:04.599+08:00 level=DEBUG msg="smpp setup failed" service=example component=smppkit event=setup_failed endpoint=client stage=connect reason=canceled
