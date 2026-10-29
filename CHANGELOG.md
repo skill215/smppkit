@@ -1,10 +1,12 @@
 # Changelog
 
-## v1.1.0 — release candidate, unreleased
+## 1.1.0
 
-Candidate notes finalized 2026-10-29. S0–S5 implementation and local review are
-complete, including RV22–RV24 corrections. Submission is authorized; tagging
-and publication are not. There is no release date yet. See the
+Release notes finalized 2026-10-29; planned publication date **2026-10-29**
+(Asia/Shanghai), subject to explicit publication authorization and final CI.
+S0–S5 and RV22–RV25 are complete; the submitted implementation passed both CI
+jobs on its first attempt. Actual availability/date are recorded in
+[GitHub Releases](https://github.com/skill215/smppkit/releases). See the
 [release record](docs/v1.1.0-release.md) and [release notes](docs/releases/v1.1.0.md).
 
 - Add optional `smpp.Config.Logger *slog.Logger` to shared Session and
@@ -63,9 +65,10 @@ and publication are not. There is no release date yet. See the
 Go 1.26 and the existing protocol/runtime architecture are unchanged.
 The [design](docs/v1.1.0-design.md) and [roadmap](docs/roadmap/v1.1.0.md)
 record the completed scope. The [S5 recheck](docs/v1.1.0-s5-recheck.md) found no
-remaining local correctness blocker; final submitted-revision CI and explicit
-publication authorization remain release gates.
-Raw framing and classified errors are implemented locally under the
+remaining local correctness blocker. RV25 and the Go 1.26 fuzz CI correction
+also passed review and submitted-revision CI; final publication checks and
+explicit authorization remain separate from those results.
+Raw framing and classified errors are implemented under the
 [framing contract](docs/framing.md). See the [logging contract](docs/logging.md).
 
 ## 1.0.0 — 2026-10-28

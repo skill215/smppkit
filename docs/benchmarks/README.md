@@ -187,7 +187,9 @@ largest increase (Read data_sm/4096) measured 2880 ns/op in the full run and
 Both outputs and the unresolved host-timing variability are retained in the
 report. R3 did not change library runtime code or claim a performance gain.
 
-## Optional logging (v1.1.0, unreleased)
+<a id="optional-logging-v110-unreleased"></a>
+
+## Optional logging (v1.1.0)
 
 The new suites measure a successful request diagnostic in isolation, and the
 same logging mode during one Session enquiry/automatic response over net.Pipe.
@@ -234,7 +236,9 @@ build or claim of zero total Session allocation is made. Costs for custom
 handlers, failures, stack capture, sinks and different hardware may differ.
 
 
-## UDH language protection (v1.1.0, unreleased)
+<a id="udh-language-protection-v110-unreleased"></a>
+
+## UDH language protection (v1.1.0)
 
 Local execution on 2026-10-29, Go 1.26.10, linux/amd64 WSL2, Ryzen 7 6800H.
 Median of three 200 ms runs with one CPU worker; no CPU affinity. Command:
@@ -260,7 +264,9 @@ scans the already-owned IE slice without an additional payload copy; this suite
 does not instrument copy counts or claim zero-copy reception.
 
 
-## Raw framing and diagnostic errors (v1.1.0, unreleased)
+<a id="raw-framing-and-diagnostic-errors-v110-unreleased"></a>
+
+## Raw framing and diagnostic errors (v1.1.0)
 
 Local results, 2026-10-29: Go 1.26.10, linux/amd64 WSL2, Ryzen 7 6800H,
 three 200 ms runs per case, -cpu=1, no CPU affinity. Command:
@@ -300,7 +306,9 @@ workloads were also run once for 100 ms each as a smoke check, recorded separate
 in [smoke output](framing-codec-smoke-go1.26.10-linux-amd64.txt).
 
 
-## Heartbeat paths (v1.1.0, unreleased)
+<a id="heartbeat-paths-v110-unreleased"></a>
+
+## Heartbeat paths (v1.1.0)
 
 Local Go 1.26.10 results, 2026-10-29, linux/amd64 WSL2, Ryzen 7 6800H.
 Three 200 ms runs per case, -cpu=1, no CPU affinity. Command:
@@ -342,7 +350,9 @@ unpaired samples do not establish a throughput improvement or regression. The
 new cancellation branch adds no buffer copies or new allocation sites.
 
 
-## Receipt helpers (v1.1.0, unreleased)
+<a id="receipt-helpers-v110-unreleased"></a>
+
+## Receipt helpers (v1.1.0)
 
 Local Go 1.26.10 results, 2026-10-29, linux/amd64 WSL2, Ryzen 7 6800H.
 Three 200 ms runs, -cpu=1, no CPU affinity; timing noise is visible in the raw

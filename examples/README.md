@@ -66,7 +66,9 @@ discarded; the examples' application logs still print their normal output.
 The [logging contract](../docs/logging.md) explains event fields and handler
 requirements. This option does not enable periodic enquire_link.
 
-### Active enquire_link (v1.1.0, unreleased)
+<a id="active-enquire_link-v110-unreleased"></a>
+
+### Active enquire_link (v1.1.0)
 
 Both examples accept `-enquire-link-interval` (default `0`, disabled) and
 `-enquire-link-timeout` (default `0`, Session RequestTimeout). Both endpoints
@@ -146,7 +148,7 @@ in a separate temporary module. Its recorded scope is 3.4 UDH, not all features
 demonstrated by these examples. See [local validation](../docs/local-validation.md).
 
 
-## Raw framing and explicit decode policy (v1.1.0, unreleased)
+## Raw framing and explicit decode policy (v1.1.0)
 
 ```sh
 go run ./examples/framing
@@ -158,7 +160,7 @@ chooses to continue to the next valid frame. It is not an automatic bad-frame
 recovery or proxy policy. See the [framing contract](../docs/framing.md).
 
 
-## Delivery receipts (v1.1.0, unreleased)
+## Delivery receipts (v1.1.0)
 
 `examples/receipts` runs a Client and Server over net.Pipe. The server constructs
 an explicitly supplied synthetic EXPIRED report; it does not derive delivery

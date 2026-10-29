@@ -1,6 +1,6 @@
 # Optional enquire_link scheduling
 
-Implemented locally for **v1.1.0 (unreleased)**, on Go 1.26. The same Session
+Available in **v1.1.0**, on Go 1.26. The same Session
 runtime supports SMPP 3.3, 3.4 and 5.0, on both Client and Server connections.
 
 ```go
@@ -95,7 +95,7 @@ local admission/queue pressure emits a Debug enquire_link_skipped event. A probe
 deadline is a terminal session_closed event with reason enquire_link_timeout.
 Other failures retain their existing safe categories. No PDU contents are logged.
 
-The [client/server examples](../examples/README.md#active-enquire_link-v110-unreleased)
+The [client/server examples](../examples/README.md#active-enquire_link-v110)
 provide flags for scheduling and an explicit client idle period. Neither logging
 nor automatic responses enable initiation by themselves. See the
 [validation record](v1.1.0-keepalive-validation.md) for independent byte fixtures,

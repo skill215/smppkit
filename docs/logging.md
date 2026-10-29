@@ -1,4 +1,4 @@
-# Optional structured logging (v1.1.0, unreleased)
+# Optional structured logging (v1.1.0)
 
 `smpp.Config.Logger` accepts a standard-library `*slog.Logger`. It is shared by
 `NewSession`, `ClientConfig.Session`, and `ServerConfig.Session`; Client/Server

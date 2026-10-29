@@ -1,22 +1,22 @@
 # Implementation support matrix
 
-Status: v1.0.0 SMS support plus the unreleased v1.1.0 candidate; S5 recheck
-completed 2026-10-29. See the [release record](v1.1.0-release.md).
+Version scope: **v1.1.0 SMS support**, reviewed 2026-10-29. Publication state
+and submitted-revision CI are tracked in the [release record](v1.1.0-release.md).
 This inventory distinguishes command
 layouts from endpoint support. “Implemented” is not a full conformance claim;
 semantic restrictions and unvalidated areas below still apply.
 
-The unreleased v1.1.0 checkout adds optional [slog diagnostics](logging.md) to
+Version 1.1.0 adds optional [slog diagnostics](logging.md) to
 Session and Client/Server setup, defaulting to discard across all profiles.
 It also protects high-level text operations from UDH national-language declarations:
 Prepare rejects IE 0x24/0x25 before encoding; requested Receive decoding returns
 `ErrUnsupportedNationalLanguage` in DecodeError while retaining raw evidence.
 Raw-only reception, receipt handling and the Codec remain unchanged. See the
 [v1.1.0 design](v1.1.0-design.md) and [framing contract](framing.md). Raw framing
-and classified errors are locally implemented. Optional [receipt helpers](receipts.md)
+and classified errors are implemented. Optional [receipt helpers](receipts.md)
 now parse separate text/TLV evidence and build owned DeliverSM/DataSM reports.
 Command, TLV, wire and ACK support are unchanged. Optional
-[active enquire_link](keepalive.md) is now locally implemented for all
+[active enquire_link](keepalive.md) is implemented for all
 three versions on both endpoints, disabled by default. Automatic replies remain
 independent of scheduling.
 

@@ -1,6 +1,6 @@
 # Delivery-receipt helpers
 
-Implemented locally for **v1.1.0 (unreleased)**, Go 1.26. `message.ParseReceipt`
+Available in **v1.1.0**, Go 1.26. `message.ParseReceipt`
 and `message.BuildReceipt` are bounded, stateless helpers. They do not alter the
 versioned Codec, shared Session, reassembly or existing ACK behavior.
 
@@ -196,6 +196,6 @@ exclude arbitrary message content. Raw evidence must be handled separately.
 
 [Independent wire samples](wire-samples.md#v110-receipt-fixtures),
 [validation](v1.1.0-receipts-validation.md), and
-[benchmarks](benchmarks/README.md#receipt-helpers-v110-unreleased) record local
+[benchmarks](benchmarks/README.md#receipt-helpers-v110) record local
 evidence and scope. No persistence, callbacks, routing, delivery aggregation,
 automatic reports, retries or external interconnection requirement is added.

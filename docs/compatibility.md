@@ -4,7 +4,7 @@ Version 1.0 policy, 2026-10-28. The six public packages have a stable API
 starting with v1.0.0. The candidate review snapshot remains the API baseline;
 subsequent changes follow the compatibility rules below.
 
-The unreleased v1.1.0 checkout adds `Config.Logger *slog.Logger` and
+Version 1.1.0 adds `Config.Logger *slog.Logger` and
 `message.ErrUnsupportedNationalLanguage`, plus codec.ReadFrame/ParseHeader/WriteFrame,
 FrameHeader, DecodeError and DecodeErrorKind to the public declarations. Omitting
 Logger preserves silent library logging; configured synchronous handlers have
@@ -15,9 +15,9 @@ UDH language-table declarations now prevent high-level text encoding/decoding;
 raw Codec data and raw-only receipt/message reception are preserved. This corrects
 silent decoding within the already unsupported national-table scope. All table
 IDs and custom text codecs are covered; no header-aware Encoding contract exists.
-See the [v1.1.0 design](v1.1.0-design.md) for exact behavior and planned APIs.
+See the [v1.1.0 design](v1.1.0-design.md) for the approved scope and contracts.
 The historical v1.0 API snapshot is not rewritten for these additions. The
-[development API snapshot](api-v1.1.0.txt) records the current additive surface.
+[v1.1.0 API snapshot](api-v1.1.0.txt) records the additive surface.
 
 Decode/read errors now have an outer DecodeError with explicit safe context.
 Existing error causes remain accessible via errors.Is/As; direct concrete-type

@@ -1,6 +1,6 @@
-# Raw framing and decode diagnostics (v1.1.0, unreleased)
+# Raw framing and decode diagnostics (v1.1.0)
 
-These APIs are implemented locally in `codec`, using the same bounded framing
+These APIs are implemented in `codec`, using the same bounded framing
 primitive as Codec.Read and ReadBind. They do not own a connection or replace
 strict protocol decoding. Go 1.26 remains the minimum.
 
