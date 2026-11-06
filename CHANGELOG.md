@@ -1,11 +1,12 @@
 # Changelog
 
-## 1.2.0 — release candidate (unreleased)
+## 1.2.0
 
-Notes finalized 2026-11-06 (Asia/Shanghai). F1/F2 and local review are complete;
-candidate commit/push and CI verification are authorized. No tag, formal release
-or publication date is implied. See the [release notes](docs/releases/v1.2.0.md)
-and [publication checkpoint](docs/v1.2.0-release.md).
+Publication authorized 2026-11-06 (Asia/Shanghai), subject to successful main/tag
+CI and the release gate. Actual publication time and verified CI links are in
+[GitHub Releases](https://github.com/skill215/smppkit/releases/tag/v1.2.0).
+See the [release notes](docs/releases/v1.2.0.md) and
+[publication checkpoint](docs/v1.2.0-release.md).
 
 - Add `codec.SemanticError`, `SemanticRule` and stable rule constants for existing
   built-in semantic checks. Include repeated-item indices and numeric TLV tags;

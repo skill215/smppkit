@@ -6,7 +6,7 @@ database or AI service is needed. Their default transport is plain loopback TCP.
 
 ## Semantic diagnostics (v1.2.0 development)
 
-From this unreleased source checkout, run `go run ./examples/diagnostics`.
+From a v1.2.0 or newer source checkout, run `go run ./examples/diagnostics`.
 The [example](diagnostics/main.go) uses Go 1.26 errors.AsType to inspect a synthetic
 invalid TON and prints `field=source_addr_ton rule=value validation=true`.
 No network connection is made. It demonstrates safe identifiers rather than

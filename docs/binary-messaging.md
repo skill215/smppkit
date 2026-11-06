@@ -1,6 +1,6 @@
 # Binary messaging (v1.2.0 development)
 
-Implemented locally, **unreleased**. Requires Go 1.26. The existing Codec,
+Added in **v1.2.0**. Requires Go 1.26. The existing Codec,
 Session, Plan, References, SendResult and Receiver remain the shared foundation.
 There is no separate binary transport, reference allocator or receive cache.
 

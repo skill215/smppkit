@@ -15,7 +15,7 @@ outcomes and bounded resources. One shared Session and versioned Codec support
 [Quick start](#quick-start) · [Go API](#go-api) · [Protocol support](#protocol-support) ·
 [Examples](#examples) · [Benchmarks](#benchmarks) · [Documentation](#documentation)
 
-**v1.2.0 release candidate — not yet tagged or published.** Go 1.26 remains the minimum.
+**v1.2.0 — semantic diagnostics and binary multipart sending.** Go 1.26 remains the minimum.
 
 - **Stable semantic diagnostics:** inspect field/rule identifiers, destination
   indices and TLV tags without parsing error strings.
@@ -23,8 +23,9 @@ outcomes and bounded resources. One shared Session and versioned Codec support
   bounded segmentation, shared reference leases and per-segment outcomes.
 
 See the [v1.2.0 release notes](docs/releases/v1.2.0.md) and
-[publication checkpoint](docs/v1.2.0-release.md). The installation command below
-uses the released **v1.1.0** baseline; candidate APIs require this source revision.
+[publication checkpoint](docs/v1.2.0-release.md). Publication is authorized and
+requires successful main/tag CI; actual availability is recorded in
+[GitHub Releases](https://github.com/skill215/smppkit/releases/tag/v1.2.0).
 
 v1.1.0's optional [slog diagnostics](docs/logging.md),
 [active enquire_link](docs/keepalive.md), [raw framing](docs/framing.md) and
@@ -54,13 +55,12 @@ Requires **Go 1.26 or newer** (`go 1.26.0` in `go.mod`). The root package is nam
 `smpp`, although the module is named `smppkit`.
 
 ```sh
-go get github.com/skill215/smppkit@v1.1.0
+go get github.com/skill215/smppkit@v1.2.0
 ```
 
-This installs the released v1.1.0 baseline. To evaluate the v1.2.0 candidate,
-use the source checkout below. `@v1.2.0` requires a later authorized tag; see
-the [publication checkpoint](docs/v1.2.0-release.md) and
-[GitHub Releases](https://github.com/skill215/smppkit/releases) for availability.
+The versioned command requires the v1.2.0 tag. See
+[GitHub Releases](https://github.com/skill215/smppkit/releases/tag/v1.2.0)
+for publication status and verified CI links.
 
 ### Run a local server and client
 
@@ -145,7 +145,7 @@ See the [server example](examples/server/main.go) and [ACK contract](docs/decisi
 `Shutdown(ctx)` exchanges unbind and closes; `Close()` aborts and `Wait()` joins
 Session goroutines. Applications still own their workers and processing lifecycle.
 
-### Binary messages (v1.2.0 development, unreleased)
+### Binary messages (v1.2.0)
 
 `message.PrepareBytes` prepares raw octets without charset conversion.
 `Session.SendBinary` sends them with the same per-segment results and reference
@@ -358,7 +358,7 @@ Parsing includes owned evidence copies and diagnostics. Construction includes
 standard Codec preflight and its temporary wire buffer. These are stateless
 helper costs; B/op is not a copy counter. [All 11 cases, scope and raw output](docs/benchmarks/README.md#receipt-helpers-v110).
 
-### Semantic diagnostics (v1.2.0 development, unreleased)
+### Semantic diagnostics (v1.2.0)
 
 The new diagnostic benchmarks separate validation, error construction, inspection
 and formatting. Go 1.26.10 local measurements: valid contextual checks and
@@ -369,7 +369,7 @@ Run `go test ./codec -run='^$' -bench=BenchmarkSemanticDiagnostics -benchmem`.
 See [all nine cases, methodology and raw results](docs/benchmarks/README.md#semantic-diagnostics-v120-development).
 These are local measurements; B/op does not count copied bytes.
 
-### Binary messaging (v1.2.0 development, unreleased)
+### Binary messaging (v1.2.0)
 
 Local Go 1.26.10/linux-amd64 medians, three 200 ms runs with cpu=1:
 
@@ -395,8 +395,8 @@ including payload limits, output-budget rejection and multipart reference costs.
 | Field validation and data_sm context | [Field semantics](docs/field-semantics.md) · [Direction](docs/data-direction.md) · [Transactions](docs/data-transaction.md) |
 | Cancellation, shutdown and local resources | [Session lifecycle](docs/session-lifecycle.md) · [Local validation](docs/local-validation.md) |
 | v1.1.0 scope, increments and implementation status | [Design](docs/v1.1.0-design.md) · [Roadmap](docs/roadmap/v1.1.0.md) |
-| v1.2.0 candidate scope and publication status | [Release notes](docs/releases/v1.2.0.md) · [Checkpoint](docs/v1.2.0-release.md) · [Design](docs/v1.2.0-design.md) · [Roadmap](docs/roadmap/v1.2.0.md) |
-| Stable semantic errors and binary DCS policy (unreleased) | [Field/rule catalog](docs/semantic-diagnostics.md) · [Binary DCS](docs/binary-dcs.md) · [Example](examples/diagnostics/main.go) |
+| v1.2.0 scope and publication status | [Release notes](docs/releases/v1.2.0.md) · [Checkpoint](docs/v1.2.0-release.md) · [Design](docs/v1.2.0-design.md) · [Roadmap](docs/roadmap/v1.2.0.md) |
+| Stable semantic errors and binary DCS policy | [Field/rule catalog](docs/semantic-diagnostics.md) · [Binary DCS](docs/binary-dcs.md) · [Example](examples/diagnostics/main.go) |
 | Comparison with other Go SMPP libraries, tradeoffs and lessons | [Comparison and design inputs](docs/go-smpp-comparison.md) |
 | Raw frames, ownership and classified decode errors | [Framing](docs/framing.md) · [Runnable example](examples/framing/main.go) (v1.1.0) |
 | DLR text/TLV evidence, construction and peer conventions | [Receipt helpers](docs/receipts.md) · [Compiling example](examples/receipts/main.go) (v1.1.0) |

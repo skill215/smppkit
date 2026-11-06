@@ -1,7 +1,9 @@
 # Implementation support matrix
 
-Version scope: **v1.1.0 SMS support**, reviewed 2026-10-29. Publication state
-and submitted-revision CI are tracked in the [release record](v1.1.0-release.md).
+Version scope: **v1.2.0 SMS support**, reviewed 2026-11-06. Publication state
+and submitted-revision CI are tracked in the [release record](v1.2.0-release.md).
+v1.2.0 adds stable semantic diagnostics and binary helpers; the protocol command
+and TLV coverage below is unchanged from v1.1.0.
 This inventory distinguishes command
 layouts from endpoint support. “Implemented” is not a full conformance claim;
 semantic restrictions and unvalidated areas below still apply.
@@ -153,7 +155,7 @@ Protocol authorities: [SMPP 3.3](https://smpp.org/SMPP-v3.3.pdf) §§6–7,
 traffic. Historical commands are listed even where implementation has not
 assigned public constants for their obsolete IDs.
 
-## v1.2.0 binary helpers (unreleased)
+## v1.2.0 binary helpers
 
 The local F2 implementation adds PrepareBytes/SendBinary, using the same Codec
 and Session command/role rules above. It does not expand raw wire support.

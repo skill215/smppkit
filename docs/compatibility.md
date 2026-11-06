@@ -40,16 +40,17 @@ See [receipt contracts](receipts.md) for errors, ownership and peer boundaries.
 
 ## Stable surface
 
-Unreleased v1.2.0 F1 adds `codec.SemanticError`, `SemanticRule` and rule constants.
+v1.2.0 F1 adds `codec.SemanticError`, `SemanticRule` and rule constants.
 Field/rule identities are stable within v1, with an open set of future additions.
 Existing DecodeError kinds and historical causes are preserved. Customer TLV
 callbacks additionally retain their original error cause; safe summaries do not
 print it. See the [catalog](semantic-diagnostics.md) and separate
-[development API snapshot](api-v1.2.0.txt). F2 adds `message.Binary`,
+[v1.2.0 API snapshot](api-v1.2.0.txt). F2 adds `message.Binary`,
 `BinaryPolicy`, `PrepareBytes`, the `smpp.BinaryMessage` alias and
 `Session.SendBinary`. Existing public structs and required interface methods are
 unchanged. Byte plans use Encoding="binary" and the [binary contract](binary-messaging.md);
-text preparation semantics remain unchanged. Both features are local and unreleased.
+text preparation semantics remain unchanged. Publication status is tracked in the
+[v1.2.0 release record](v1.2.0-release.md).
 
 The module is `github.com/skill215/smppkit`. Its root package identifier is
 `smpp`; the other public packages are `codec`, `pdu`, `tlv`, `textcodec`, and

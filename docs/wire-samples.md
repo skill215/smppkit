@@ -551,7 +551,9 @@ asserted against decoded literals and direct typed evidence. Session examples
 are additional checks, not the only correctness argument. No private traffic is
 used, and no interpretation of gateway-specific internal status bytes is imported.
 
-## v1.2.0 semantic diagnostic samples (unreleased)
+<a id="v120-semantic-diagnostic-samples-unreleased"></a>
+
+## v1.2.0 semantic diagnostic samples
 
 The following complete frames are literal independent inputs in
 [semantic_error_test.go](../codec/semantic_error_test.go). Neither frame bodies
@@ -576,7 +578,9 @@ and verify that truncated structures do not acquire fabricated semantic rules.
 These samples establish diagnostics, not peer interoperability or new DCS support.
 See the [field/rule catalog](semantic-diagnostics.md).
 
-## v1.2.0 binary message samples (unreleased)
+<a id="v120-binary-message-samples-unreleased"></a>
+
+## v1.2.0 binary message samples
 
 `TestBinaryIndependentWireSamples` uses the following complete hand-authored
 submit_sm frames in both 3.4 and 5.0. Source/destination/service fields are empty,

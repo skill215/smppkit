@@ -1,7 +1,7 @@
 # v1.2.0 binary DCS policy
 
 Finalized for F2 implementation: 2026-11-06 (Asia/Shanghai).
-**Implemented locally for v1.2.0, unreleased.** This table defines the
+**Implemented for v1.2.0.** This table defines the
 [PrepareBytes/SendBinary](binary-messaging.md) high-level policy;
 it does not narrow the existing Codec's accepted data_coding values.
 
