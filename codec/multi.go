@@ -2,13 +2,12 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-11-06
 
 package codec
 
 import (
 	"encoding/binary"
-	"fmt"
 
 	"github.com/skill215/smppkit/internal/wire"
 	"github.com/skill215/smppkit/pdu"
@@ -33,28 +32,28 @@ func multiFields(b *pdu.SubmitMulti) pdu.SMFields {
 }
 func (c *Codec) validateMulti(b *pdu.SubmitMulti) error {
 	if len(b.Destinations) < 1 || len(b.Destinations) > c.destinationLimit() {
-		return fmt.Errorf("%w: number_of_dests", ErrValidation)
+		return invalidField("number_of_dests", RuleCount)
 	}
-	for _, d := range b.Destinations {
+	for i, d := range b.Destinations {
 		switch d.Kind {
 		case pdu.SMEAddress:
 			if d.ListName != "" {
-				return fmt.Errorf("%w: inactive distribution-list arm", ErrValidation)
+				return locateSemantic(invalidField("dl_name", RuleUnused), "dest_address.dl_name", i)
 			}
 		case pdu.DistributionList:
 			if d.Address != (pdu.Address{}) {
-				return fmt.Errorf("%w: inactive SME address arm", ErrValidation)
+				return locateSemantic(invalidField("address", RuleUnused), "dest_address.address", i)
 			}
 		default:
-			return fmt.Errorf("%w: dest_flag", ErrValidation)
+			return locateSemantic(invalidField("dest_flag", RuleValue), "dest_address.dest_flag", i)
 		}
 	}
 	if b.ReplaceIfPresent > 1 {
-		return fmt.Errorf("%w: replace_if_present_flag", ErrValidation)
+		return invalidField("replace_if_present_flag", RuleValue)
 	}
 	// 3.4 reserves this field; 3.3 permits replacement for one explicit SME only.
 	if b.ReplaceIfPresent != 0 && (c.version == pdu.V34 || c.version == pdu.V33 && (len(b.Destinations) != 1 || b.Destinations[0].Kind != pdu.SMEAddress)) {
-		return fmt.Errorf("%w: multi-destination replacement", ErrValidation)
+		return invalidField("replace_if_present_flag", RuleDependency)
 	}
 	return c.validateSM(multiFields(b), pdu.SubmitMultiID)
 }
@@ -65,7 +64,7 @@ func (c *Codec) readMulti(r *wire.Reader) *pdu.SubmitMulti {
 		return b
 	}
 	if n < 1 || n > c.destinationLimit() {
-		r.Fail("number_of_dests", "outside version bound")
+		failSemantic(r, "number_of_dests", RuleCount, "outside version bound")
 		return b
 	}
 	// Counts are one octet. Stop on the first bad element; never walk a claimed
@@ -78,8 +77,9 @@ func (c *Codec) readMulti(r *wire.Reader) *pdu.SubmitMulti {
 		case pdu.DistributionList:
 			d.ListName = r.C(21, "dl_name")
 		default:
-			r.Fail("dest_flag", "unknown destination kind")
+			failSemantic(r, "dest_flag", RuleValue, "unknown destination kind")
 		}
+		r.Err = locateDestination(r.Err, "dest_address", i)
 		b.Destinations = append(b.Destinations, d)
 	}
 	var fields pdu.SMFields
@@ -101,10 +101,11 @@ func (c *Codec) writeMulti(w *wire.Writer, b *pdu.SubmitMulti) {
 	w.C(b.ServiceType, 6, "service_type")
 	c.writeAddr(w, b.Source, 21, "source_addr")
 	w.U8(byte(len(b.Destinations)))
-	for _, d := range b.Destinations {
+	for i, d := range b.Destinations {
 		w.U8(byte(d.Kind))
 		if d.Kind == pdu.SMEAddress {
 			c.writeAddr(w, d.Address, 21, "destination_addr")
+			w.Err = locateDestination(w.Err, "dest_address", i)
 		} else {
 			w.C(d.ListName, 21, "dl_name")
 		}
@@ -116,6 +117,7 @@ func (c *Codec) readMultiResp(r *wire.Reader) *pdu.SubmitMultiResp {
 	n := int(r.U8("no_unsuccess"))
 	for i := 0; i < n && r.Err == nil; i++ {
 		failure := pdu.UnsuccessfulSME{Address: c.readAddr(r, 21, "unsuccess_sme.address")}
+		r.Err = locateDestination(r.Err, "unsuccess_sme", i)
 		status := r.Bytes(4, "error_status_code")
 		if len(status) == 4 {
 			failure.Status = pdu.Status(binary.BigEndian.Uint32(status))
@@ -127,16 +129,29 @@ func (c *Codec) readMultiResp(r *wire.Reader) *pdu.SubmitMultiResp {
 }
 func (c *Codec) writeMultiResp(w *wire.Writer, b *pdu.SubmitMultiResp) {
 	if len(b.Unsuccessful) > 255 {
-		w.Err = fmt.Errorf("%w: no_unsuccess", ErrValidation)
+		w.Err = invalidField("no_unsuccess", RuleCount)
 		return
 	}
 	w.C(b.MessageID, c.messageIDLimit(), "message_id")
 	w.U8(byte(len(b.Unsuccessful)))
-	for _, failure := range b.Unsuccessful {
+	for i, failure := range b.Unsuccessful {
 		c.writeAddr(w, failure.Address, 21, "unsuccess_sme.address")
+		w.Err = locateDestination(w.Err, "unsuccess_sme", i)
 		var status [4]byte
 		binary.BigEndian.PutUint32(status[:], uint32(failure.Status))
 		w.Bytes(status[:])
 	}
 	c.writeTLVs(w, b.Optional, pdu.SubmitMultiRespID)
+}
+
+// Only attach the index once: a sticky earlier error must not be reassigned to
+// a later destination when the writer continues walking its bounded input.
+func locateDestination(err error, collection string, index int) error {
+	if e, ok := err.(*SemanticError); ok && !e.HasIndex {
+		switch e.Field {
+		case "dest_addr_ton", "dest_addr_npi", "dest_flag":
+			return locateSemantic(err, collection+"."+e.Field, index)
+		}
+	}
+	return err
 }

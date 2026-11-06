@@ -1,0 +1,60 @@
+2026/11/06 09:27:22 Listening on 127.0.0.1:44831 (echo=true)
+$ example client -version 5.0 -wait-delivery -binary-hex <300 synthetic bytes>
+2026/11/06 09:27:22 Bound SMPP 5.0
+2026/11/06 09:27:22 part=1 outcome=4 sequence=2 bytes_written=185 message_id="61e993c46c5f57cacb55ac2b32ea0d77" error=<nil>
+2026/11/06 09:27:22 part=2 outcome=4 sequence=3 bytes_written=185 message_id="ed496fe60478fef2a3fc9b03a2ba18af" error=<nil>
+2026/11/06 09:27:22 part=3 outcome=4 sequence=4 bytes_written=86 message_id="37d6870cae36e0659a0da68cabbf5652" error=<nil>
+2026/11/06 09:27:22 All segments accepted; final delivery remains unknown.
+2026/11/06 09:27:22 Received delivery: segments=3 bytes=300 dcs=04 receipt=false decoded=false text=""
+2026/11/06 09:27:22 Unbound and closed.
+EXIT 0
+
+$ example client -version 3.4 -wait-delivery -binary-dcs 2 -binary-hex <300 synthetic bytes>
+2026/11/06 09:27:22 Bound SMPP 3.4
+2026/11/06 09:27:22 part=1 outcome=4 sequence=2 bytes_written=185 message_id="770bdc254cf42638748bf165786e9666" error=<nil>
+2026/11/06 09:27:22 part=2 outcome=4 sequence=3 bytes_written=185 message_id="3663776ae5722d09537726b9ccbadc06" error=<nil>
+2026/11/06 09:27:22 part=3 outcome=4 sequence=4 bytes_written=86 message_id="b9def51629277515ab65700d9e8d5552" error=<nil>
+2026/11/06 09:27:22 All segments accepted; final delivery remains unknown.
+2026/11/06 09:27:22 Received delivery: segments=3 bytes=300 dcs=02 receipt=false decoded=false text=""
+2026/11/06 09:27:22 Unbound and closed.
+EXIT 0
+
+$ example client -version 5.0 -wait-delivery -binary-hex=
+2026/11/06 09:27:22 Bound SMPP 5.0
+2026/11/06 09:27:22 part=1 outcome=4 sequence=2 bytes_written=45 message_id="ac073e29b0ef5ca1a9efaacee4c1d498" error=<nil>
+2026/11/06 09:27:22 All segments accepted; final delivery remains unknown.
+2026/11/06 09:27:22 Received delivery: segments=1 bytes=0 dcs=04 receipt=false decoded=false text=""
+2026/11/06 09:27:22 Unbound and closed.
+EXIT 0
+
+$ example client -version 5.0 -wait-delivery -text unchanged text path
+2026/11/06 09:27:22 Bound SMPP 5.0
+2026/11/06 09:27:22 part=1 outcome=4 sequence=2 bytes_written=64 message_id="9d7b7b003ada16241eca9b8726e870b5" error=<nil>
+2026/11/06 09:27:22 All segments accepted; final delivery remains unknown.
+2026/11/06 09:27:22 Received delivery: segments=1 bytes=19 dcs=00 receipt=false decoded=true text="unchanged text path"
+2026/11/06 09:27:22 Unbound and closed.
+EXIT 0
+
+2026/11/06 09:27:22 Complete message: segments=3 bytes=300 receipt=false decoded=false
+2026/11/06 09:27:22 Echo part=1 outcome=4 error=<nil>
+2026/11/06 09:27:22 Echo part=2 outcome=4 error=<nil>
+2026/11/06 09:27:22 Echo part=3 outcome=4 error=<nil>
+2026/11/06 09:27:22 Complete message: segments=3 bytes=300 receipt=false decoded=false
+2026/11/06 09:27:22 Echo part=1 outcome=4 error=<nil>
+2026/11/06 09:27:22 Echo part=2 outcome=4 error=<nil>
+2026/11/06 09:27:22 Echo part=3 outcome=4 error=<nil>
+2026/11/06 09:27:22 Complete message: segments=1 bytes=0 receipt=false decoded=false
+2026/11/06 09:27:22 Echo part=1 outcome=4 error=<nil>
+2026/11/06 09:27:22 Complete message: segments=1 bytes=19 receipt=false decoded=true
+2026/11/06 09:27:22 Echo part=1 outcome=4 error=<nil>
+SERVER EXIT 0
+2026/11/06 09:27:22 Listening on 127.0.0.1:45483 (echo=false)
+$ example client -version 3.3 -binary-hex 00ff80
+2026/11/06 09:27:22 Bound SMPP 3.3
+2026/11/06 09:27:22 part=1 outcome=4 sequence=2 bytes_written=48 message_id="2f2e7714" error=<nil>
+2026/11/06 09:27:22 All segments accepted; final delivery remains unknown.
+2026/11/06 09:27:22 Unbound and closed.
+EXIT 0
+
+2026/11/06 09:27:22 Complete message: segments=1 bytes=3 receipt=false decoded=false
+SERVER EXIT 0

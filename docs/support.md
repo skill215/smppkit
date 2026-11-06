@@ -152,3 +152,21 @@ Protocol authorities: [SMPP 3.3](https://smpp.org/SMPP-v3.3.pdf) §§6–7,
 §9.2.3.24. Fixtures are synthetic and authored from field layouts, not customer
 traffic. Historical commands are listed even where implementation has not
 assigned public constants for their obsolete IDs.
+
+## v1.2.0 binary helpers (unreleased)
+
+The local F2 implementation adds PrepareBytes/SendBinary, using the same Codec
+and Session command/role rules above. It does not expand raw wire support.
+
+| High-level capability | 3.3 | 3.4 | 5.0 |
+| --- | --- | --- | --- |
+| Binary DCS | 0x04 | 0x02 / 0x04 | 0x02 / 0x04 |
+| Header-free single part | Yes | Yes | Yes |
+| Binary UDH8 / UDH16 multipart | No | Yes | Yes |
+| Binary SAR / message_payload | No | Requires negotiated TLVs | Requires negotiated TLVs |
+| Additional application-port UDH | No | UDH modes | UDH modes |
+| Raw receive/reassembly | Existing Receiver | Existing Receiver | Existing Receiver |
+
+See [binary limits and outcomes](binary-messaging.md), the [DCS policy](binary-dcs.md)
+and [F2 validation](v1.2.0-f2-validation.md). No persistence, retry engine,
+automatic reconnect or missing-bind-version exception is introduced.

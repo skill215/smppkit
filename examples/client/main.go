@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Example program generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-29
+// SPDX-AI-Date: 2026-11-06
 
 // Connect, submit text, optionally receive one delivery, then unbind.
 // See examples/README.md for a matching local server and multipart commands.
@@ -10,6 +10,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"flag"
 	"fmt"
@@ -40,6 +41,8 @@ func run() error {
 	version := flag.String("version", "5.0", "SMPP version: 3.3, 3.4 or 5.0")
 	from := flag.String("from", "example", "source address")
 	to := flag.String("to", "12345", "destination address")
+	binaryHex := flag.String("binary-hex", "", "send raw hex octets instead of text, including an empty value")
+	binaryDCS := flag.Uint("binary-dcs", 4, "explicit binary DCS: 4 (all versions), or 2 (3.4/5.0)")
 	text := flag.String("text", "Hello from smppkit", "message text; long text is automatically segmented")
 	waitDelivery := flag.Bool("wait-delivery", false, "receive one complete deliver_sm message before unbind (3.4/5.0)")
 	timeout := flag.Duration("timeout", 30*time.Second, "overall bind/send/receive deadline")
@@ -48,6 +51,23 @@ func run() error {
 	enquireTimeout := flag.Duration("enquire-link-timeout", 0, "automatic probe deadline; 0 uses Session RequestTimeout")
 	idle := flag.Duration("idle", 0, "remain bound after sending/receiving, within the overall timeout")
 	flag.Parse()
+	binaryMode := false
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == "binary-hex" {
+			binaryMode = true
+		}
+	})
+	var binaryData []byte
+	if binaryMode {
+		if len(*binaryHex) > 128<<10 || *binaryDCS > 255 {
+			return errors.New("binary input or DCS exceeds limit")
+		}
+		var err error
+		binaryData, err = hex.DecodeString(*binaryHex)
+		if err != nil {
+			return fmt.Errorf("binary hex: %w", err)
+		}
+	}
 	password := os.Getenv("SMPP_PASSWORD")
 	if password == "" || len(password) > 8 {
 		return errors.New("set SMPP_PASSWORD to 1..8 ASCII octets")
@@ -119,9 +139,16 @@ func run() error {
 			<-receiveDone
 		}()
 	}
-	result, err := s.SendText(ctx, smpp.TextMessage{
-		Source: pdu.Address{Value: *from}, Destination: pdu.Address{TON: 1, NPI: 1, Value: *to}, Text: *text,
-	}, message.GSMText())
+	var result smpp.SendResult
+	if binaryMode {
+		result, err = s.SendBinary(ctx, smpp.BinaryMessage{
+			Source: pdu.Address{Value: *from}, Destination: pdu.Address{TON: 1, NPI: 1, Value: *to}, Data: binaryData, DataCoding: byte(*binaryDCS),
+		}, message.BinaryPolicy{})
+	} else {
+		result, err = s.SendText(ctx, smpp.TextMessage{
+			Source: pdu.Address{Value: *from}, Destination: pdu.Address{TON: 1, NPI: 1, Value: *to}, Text: *text,
+		}, message.GSMText())
+	}
 	for _, part := range result.Segments {
 		log.Printf("part=%d outcome=%d sequence=%d bytes_written=%d message_id=%q error=%v", part.Number, part.Result.Outcome, part.Result.Sequence, part.Result.BytesWritten, part.MessageID, part.Err)
 	}
@@ -200,7 +227,9 @@ func readDeliveries(ctx context.Context, s *smpp.Session, receiver *message.Rece
 		if err != nil {
 			return err
 		}
-		log.Printf("Received delivery: segments=%d bytes=%d receipt=%t text=%q", len(msg.Segments), len(msg.Payload), msg.Receipt, msg.Text)
+		log.Printf("Received delivery: segments=%d bytes=%d dcs=%02x receipt=%t decoded=%t text=%q", len(msg.Segments), len(msg.Payload), msg.DataCoding, msg.Receipt, msg.Decoded, msg.Text)
+		// Binary consumers use msg.Payload directly; no text decoder is selected
+		// for DCS 2/4. This demo reports size without logging raw binary content.
 		// An echoed deliver_sm is an incoming message, not a delivery receipt.
 		if deliveries != nil {
 			select {

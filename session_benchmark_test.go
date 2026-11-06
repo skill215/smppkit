@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Benchmark code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-29
+// SPDX-AI-Date: 2026-11-06
 
 package smpp
 
@@ -14,6 +14,7 @@ import (
 	"net"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/skill215/smppkit/message"
 	"github.com/skill215/smppkit/pdu"
@@ -122,6 +123,57 @@ func BenchmarkSessionSendText(b *testing.B) {
 				}
 			}
 			benchmarkSendResult = result
+		})
+	}
+}
+
+// This measures in-memory submission, not TCP/TLS or network TPS. Multipart
+// creates a fresh application-owned reference domain per operation, including
+// its allocation cost, so iterations cannot exhaust a long-lived lease space.
+// Real applications share domains across sends and retain leases until expiry.
+func BenchmarkSessionSendBinary(b *testing.B) {
+	for _, tc := range []struct {
+		name string
+		size int
+		mode message.Mode
+	}{
+		{"Single140", 140, message.UDH16},
+		{"Payload1024", 1024, message.Payload},
+		{"UDH16_1024NewDomain", 1024, message.UDH16},
+	} {
+		b.Run(tc.name, func(b *testing.B) {
+			s := benchmarkSessions(b)
+			msg := BinaryMessage{Data: make([]byte, tc.size), DataCoding: 4}
+			policy := message.BinaryPolicy{Mode: tc.mode}
+			ctx := b.Context()
+			plan, err := message.PrepareBytes(pdu.V50, msg, policy)
+			if err != nil {
+				b.Fatal(err)
+			}
+			var result SendResult
+			b.ReportAllocs()
+			b.SetBytes(int64(tc.size))
+			for b.Loop() {
+				if plan.Multipart() {
+					refs, e := message.NewReferences(16, 1, time.Hour)
+					if e != nil {
+						b.Fatal(e)
+					}
+					result, err = s.SendBinary(ctx, msg, policy, refs)
+				} else {
+					result, err = s.SendBinary(ctx, msg, policy)
+				}
+				if err != nil || len(result.Segments) != plan.Count() {
+					b.Fatal(result, err)
+				}
+				for _, part := range result.Segments {
+					if part.MessageID != "bench" {
+						b.Fatal(part)
+					}
+				}
+			}
+			benchmarkSendResult = result
+			b.ReportMetric(float64(plan.Count()), "segments/op")
 		})
 	}
 }

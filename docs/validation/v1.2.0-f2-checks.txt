@@ -1,0 +1,57 @@
+$ go version
+go version go1.26.10 linux/amd64
+EXIT 0
+
+$ go build ./...
+EXIT 0
+
+$ go vet ./...
+EXIT 0
+
+$ go test -race -count=1 -timeout=90s ./...
+ok  	github.com/skill215/smppkit	2.091s
+ok  	github.com/skill215/smppkit/codec	1.221s
+?   	github.com/skill215/smppkit/examples/binary	[no test files]
+ok  	github.com/skill215/smppkit/examples/client	1.018s
+?   	github.com/skill215/smppkit/examples/codec	[no test files]
+?   	github.com/skill215/smppkit/examples/custom-tlv	[no test files]
+?   	github.com/skill215/smppkit/examples/data-direction	[no test files]
+?   	github.com/skill215/smppkit/examples/data-transaction	[no test files]
+?   	github.com/skill215/smppkit/examples/diagnostics	[no test files]
+?   	github.com/skill215/smppkit/examples/framing	[no test files]
+?   	github.com/skill215/smppkit/examples/logging	[no test files]
+?   	github.com/skill215/smppkit/examples/multipart	[no test files]
+?   	github.com/skill215/smppkit/examples/notifications	[no test files]
+?   	github.com/skill215/smppkit/examples/private-command	[no test files]
+ok  	github.com/skill215/smppkit/examples/receipts	1.023s
+?   	github.com/skill215/smppkit/examples/server	[no test files]
+?   	github.com/skill215/smppkit/examples/submit-multi	[no test files]
+ok  	github.com/skill215/smppkit/internal/wire	1.018s
+ok  	github.com/skill215/smppkit/message	1.096s
+?   	github.com/skill215/smppkit/pdu	[no test files]
+ok  	github.com/skill215/smppkit/textcodec	1.017s
+ok  	github.com/skill215/smppkit/tlv	1.016s
+EXIT 0
+
+$ go run ./examples/binary
+encoding=binary dcs=04 requests=3 reference_bits=16
+part=1 bytes=133
+part=2 bytes=133
+part=3 bytes=34
+EXIT 0
+
+$ go run ./examples/diagnostics
+field=source_addr_ton rule=value validation=true
+EXIT 0
+
+$ python3 .github/scripts/test_release.py
+test_failed_main_or_tag_ci_still_blocks_publication (__main__.ReleaseGateTests.test_failed_main_or_tag_ci_still_blocks_publication) ... ok
+test_missing_invalid_or_unreadable_refs_block_publication (__main__.ReleaseGateTests.test_missing_invalid_or_unreadable_refs_block_publication) ... ok
+test_rv25_refs_changed_during_ci_block_publication (__main__.ReleaseGateTests.test_rv25_refs_changed_during_ci_block_publication) ... ok
+test_verified_lightweight_and_annotated_tags_publish (__main__.ReleaseGateTests.test_verified_lightweight_and_annotated_tags_publish) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 4.930s
+
+OK
+EXIT 0

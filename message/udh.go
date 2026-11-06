@@ -2,14 +2,14 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-29
+// SPDX-AI-Date: 2026-11-06
 
 package message
 
 import "errors"
 
 // ErrUnsupportedNationalLanguage reports an unsupported UDH language-table
-// declaration (IE 0x24 or 0x25). Prepare rejects these before encoding. Receive
+// declaration (IE 0x24 or 0x25). Prepare and PrepareBytes reject these. Receive
 // reports this in Message.DecodeError only when text decoding was requested;
 // raw payload and per-segment provenance remain available. This also applies
 // to custom encoders and explicit default-table declarations. Raw Codec

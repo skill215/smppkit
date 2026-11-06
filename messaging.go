@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-11-06
 
 package smpp
 
@@ -21,10 +21,13 @@ import (
 // TextMessage is the transport-independent logical text input.
 type TextMessage = message.Text
 
+// BinaryMessage is the transport-independent logical octet input.
+type BinaryMessage = message.Binary
+
 // SegmentResult preserves one planned part, including parts never attempted.
 // Number is one-based; MessageID is the peer's opaque acceptance identifier.
 // Err is set only for an attempted Request that failed. NotAttempted parts have
-// zero sequence/byte counts and nil Err; the enclosing SendText error explains
+// zero sequence/byte counts and nil Err; the enclosing send error explains
 // why scheduling stopped. If preparation fails, there is no segment plan.
 type SegmentResult struct {
 	Number    int
@@ -80,6 +83,29 @@ func (s *Session) SendText(ctx context.Context, msg TextMessage, policy message.
 	if e != nil {
 		return result, e
 	}
+	return s.sendPlan(ctx, result, plan, references)
+}
+
+// SendBinary prepares raw octets with an explicit DCS and sends through the same
+// sequential Request path as SendText. It performs no text conversion or retry.
+// References, preflight, partial results and uncertain outcomes follow SendText's
+// contract. Encoding in the result is "binary"; success is not final delivery.
+func (s *Session) SendBinary(ctx context.Context, msg BinaryMessage, policy message.BinaryPolicy, references ...*message.References) (SendResult, error) {
+	result := SendResult{ID: localID()}
+	if len(references) > 1 {
+		return result, message.ErrMetadata
+	}
+	plan, err := message.PrepareBytes(s.codec.Version(), msg, policy)
+	if err != nil {
+		return result, err
+	}
+	return s.sendPlan(ctx, result, plan, references)
+}
+
+// sendPlan is shared by text and binary senders. A prepared Plan contains no
+// reference lease and is not itself evidence of command/peer admissibility.
+func (s *Session) sendPlan(ctx context.Context, result SendResult, plan *message.Plan, references []*message.References) (SendResult, error) {
+	var e error
 	result.Encoding = plan.Encoding()
 	result.Mode = plan.Mode()
 	result.Segments = make([]SegmentResult, plan.Count())

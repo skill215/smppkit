@@ -1,5 +1,9 @@
 # Mandatory field semantics
 
+v1.2.0 development adds [stable field/rule diagnostics](semantic-diagnostics.md)
+to existing semantic checks without changing accepted values. Structural errors
+keep their existing diagnostics; the catalog documents coverage and exclusions.
+
 Implementation preview, 2026-10-27. These checks apply to the implemented
 standard commands on **both encode and decode**, including standalone Codec
 use. Session uses the same Codec; no second protocol stack or public validation

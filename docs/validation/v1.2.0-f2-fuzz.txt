@@ -1,0 +1,77 @@
+$ go test ./message -run=^$ -fuzz=^FuzzPrepareBytes$ -fuzztime=1000000x -parallel=2 -timeout=9m
+fuzz: elapsed: 0s, gathering baseline coverage: 0/6 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 6/6 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 139426 (46475/sec), new interesting: 17 (total: 23)
+fuzz: elapsed: 6s, execs: 279238 (46591/sec), new interesting: 21 (total: 27)
+fuzz: elapsed: 9s, execs: 428716 (49834/sec), new interesting: 36 (total: 42)
+fuzz: elapsed: 12s, execs: 503970 (25085/sec), new interesting: 38 (total: 44)
+fuzz: elapsed: 15s, execs: 503970 (0/sec), new interesting: 38 (total: 44)
+fuzz: elapsed: 18s, execs: 562505 (19522/sec), new interesting: 39 (total: 45)
+fuzz: elapsed: 21s, execs: 598742 (12080/sec), new interesting: 40 (total: 46)
+fuzz: elapsed: 24s, execs: 852639 (84616/sec), new interesting: 40 (total: 46)
+fuzz: elapsed: 27s, execs: 885804 (11051/sec), new interesting: 41 (total: 47)
+fuzz: elapsed: 30s, execs: 943479 (19235/sec), new interesting: 43 (total: 49)
+fuzz: elapsed: 33s, execs: 1000000 (19029/sec), new interesting: 46 (total: 52)
+PASS
+ok  	github.com/skill215/smppkit/message	32.976s
+EXIT 0
+
+$ go test ./message -run=^$ -fuzz=^FuzzPrepareVersionEncoding$ -fuzztime=1000000x -parallel=2 -timeout=9m
+fuzz: elapsed: 0s, gathering baseline coverage: 0/256 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 256/256 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 125599 (41858/sec), new interesting: 20 (total: 276)
+fuzz: elapsed: 6s, execs: 298865 (57747/sec), new interesting: 26 (total: 282)
+fuzz: elapsed: 9s, execs: 443409 (48195/sec), new interesting: 29 (total: 285)
+fuzz: elapsed: 12s, execs: 443409 (0/sec), new interesting: 29 (total: 285)
+fuzz: elapsed: 15s, execs: 443409 (0/sec), new interesting: 29 (total: 285)
+fuzz: elapsed: 18s, execs: 443409 (0/sec), new interesting: 29 (total: 285)
+fuzz: elapsed: 21s, execs: 594822 (50492/sec), new interesting: 30 (total: 286)
+fuzz: elapsed: 24s, execs: 761910 (55687/sec), new interesting: 32 (total: 288)
+fuzz: elapsed: 27s, execs: 761910 (0/sec), new interesting: 32 (total: 288)
+fuzz: elapsed: 30s, execs: 761910 (0/sec), new interesting: 32 (total: 288)
+fuzz: elapsed: 32s, execs: 1000000 (122247/sec), new interesting: 32 (total: 288)
+PASS
+ok  	github.com/skill215/smppkit/message	31.960s
+EXIT 0
+
+$ go test ./message -run=^$ -fuzz=^FuzzUDH$ -fuzztime=1000000x -parallel=2 -timeout=9m
+fuzz: elapsed: 0s, gathering baseline coverage: 0/2 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 2/2 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 187658 (62541/sec), new interesting: 13 (total: 15)
+fuzz: elapsed: 6s, execs: 387042 (66459/sec), new interesting: 14 (total: 16)
+fuzz: elapsed: 9s, execs: 574458 (62484/sec), new interesting: 14 (total: 16)
+fuzz: elapsed: 12s, execs: 765831 (63771/sec), new interesting: 15 (total: 17)
+fuzz: elapsed: 15s, execs: 954009 (62732/sec), new interesting: 15 (total: 17)
+fuzz: elapsed: 16s, execs: 1000000 (56679/sec), new interesting: 16 (total: 18)
+PASS
+ok  	github.com/skill215/smppkit/message	15.818s
+EXIT 0
+
+$ go test ./message -run=^$ -fuzz=^FuzzAdditionalUDH$ -fuzztime=1000000x -parallel=2 -timeout=9m
+fuzz: elapsed: 0s, gathering baseline coverage: 0/3 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 3/3 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 185623 (61864/sec), new interesting: 6 (total: 9)
+fuzz: elapsed: 6s, execs: 359913 (58100/sec), new interesting: 6 (total: 9)
+fuzz: elapsed: 9s, execs: 530761 (56939/sec), new interesting: 6 (total: 9)
+fuzz: elapsed: 12s, execs: 699656 (56314/sec), new interesting: 6 (total: 9)
+fuzz: elapsed: 15s, execs: 789783 (30034/sec), new interesting: 6 (total: 9)
+fuzz: elapsed: 18s, execs: 875529 (28585/sec), new interesting: 6 (total: 9)
+fuzz: elapsed: 21s, execs: 964790 (29753/sec), new interesting: 6 (total: 9)
+fuzz: elapsed: 22s, execs: 1000000 (30609/sec), new interesting: 6 (total: 9)
+PASS
+ok  	github.com/skill215/smppkit/message	22.156s
+EXIT 0
+
+$ go test ./message -run=^$ -fuzz=^FuzzNationalLanguageProtection$ -fuzztime=1000000x -parallel=2 -timeout=9m
+fuzz: elapsed: 0s, gathering baseline coverage: 0/5 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 5/5 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 146921 (48973/sec), new interesting: 28 (total: 33)
+fuzz: elapsed: 6s, execs: 309912 (54321/sec), new interesting: 32 (total: 37)
+fuzz: elapsed: 9s, execs: 470105 (53396/sec), new interesting: 33 (total: 38)
+fuzz: elapsed: 12s, execs: 632336 (54083/sec), new interesting: 33 (total: 38)
+fuzz: elapsed: 15s, execs: 794410 (54022/sec), new interesting: 33 (total: 38)
+fuzz: elapsed: 18s, execs: 935436 (47000/sec), new interesting: 33 (total: 38)
+fuzz: elapsed: 19s, execs: 1000000 (82910/sec), new interesting: 35 (total: 40)
+PASS
+ok  	github.com/skill215/smppkit/message	18.785s
+EXIT 0

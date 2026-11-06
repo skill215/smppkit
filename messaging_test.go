@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Test code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-11-06
 
 package smpp
 
@@ -62,53 +62,60 @@ func TestWindowOneCompleteTextBothDirections(t *testing.T) {
 	<-reverseDone
 }
 func TestMultipartPreservesPartialResults(t *testing.T) {
-	client, server := sessionPair(t, Config{})
-	ctx, cancel := context.WithTimeout(t.Context(), time.Second)
-	defer cancel()
-	done := make(chan error, 1)
-	go func() {
-		for i := range 2 {
-			in, e := server.Receive(ctx)
-			if e != nil {
-				done <- e
-				return
+	for _, sender := range multipartTestSenders() {
+		t.Run(sender.name, func(t *testing.T) {
+
+			client, server := sessionPair(t, Config{})
+			ctx, cancel := context.WithTimeout(t.Context(), time.Second)
+			defer cancel()
+			done := make(chan error, 1)
+			go func() {
+				for i := range 2 {
+					in, e := server.Receive(ctx)
+					if e != nil {
+						done <- e
+						return
+					}
+					status := pdu.OK
+					var response pdu.Body = &pdu.SubmitSMResp{MessageResponseFields: pdu.MessageResponseFields{MessageID: "first-accepted"}}
+					if i == 1 {
+						status = pdu.Throttled
+						response = &pdu.Omitted{ID: pdu.SubmitSMRespID}
+					}
+					if e = in.Respond(ctx, status, response); e != nil {
+						done <- e
+						return
+					}
+				}
+				done <- nil
+			}()
+			result, e := sender.send(client, ctx)
+			if _, ok := errors.AsType[*PeerError](e); !ok || len(result.Segments) != 3 || result.Segments[0].MessageID != "first-accepted" || result.Segments[1].Result.Outcome != ResponseReceived || result.Segments[2].Result.Outcome != NotAttempted {
+				t.Fatal(result, e)
 			}
-			status := pdu.OK
-			var response pdu.Body = &pdu.SubmitSMResp{MessageResponseFields: pdu.MessageResponseFields{MessageID: "first-accepted"}}
-			if i == 1 {
-				status = pdu.Throttled
-				response = &pdu.Omitted{ID: pdu.SubmitSMRespID}
+			if e = <-done; e != nil {
+				t.Fatal(e)
 			}
-			if e = in.Respond(ctx, status, response); e != nil {
-				done <- e
-				return
+			accepted, rejected, unsent := result.Segments[0], result.Segments[1], result.Segments[2]
+			if accepted.Result.Outcome != ResponseReceived || accepted.Err != nil || accepted.Result.BytesWritten == 0 || accepted.Result.Sequence != 2 {
+				t.Fatalf("accepted result lost: %+v", accepted)
 			}
-		}
-		done <- nil
-	}()
-	result, e := client.SendText(ctx, TextMessage{Text: strings.Repeat("A", 400)}, message.GSMText())
-	if _, ok := errors.AsType[*PeerError](e); !ok || len(result.Segments) != 3 || result.Segments[0].MessageID != "first-accepted" || result.Segments[1].Result.Outcome != ResponseReceived || result.Segments[2].Result.Outcome != NotAttempted {
-		t.Fatal(result, e)
-	}
-	if e = <-done; e != nil {
-		t.Fatal(e)
-	}
-	accepted, rejected, unsent := result.Segments[0], result.Segments[1], result.Segments[2]
-	if accepted.Result.Outcome != ResponseReceived || accepted.Err != nil || accepted.Result.BytesWritten == 0 || accepted.Result.Sequence != 2 {
-		t.Fatalf("accepted result lost: %+v", accepted)
-	}
-	if peerErr, ok := errors.AsType[*PeerError](rejected.Err); !ok || peerErr.Status != pdu.Throttled || rejected.Result.Response.Status != pdu.Throttled || rejected.Result.BytesWritten == 0 || rejected.Result.Sequence != 3 {
-		t.Fatalf("rejection lost: %+v", rejected)
-	}
-	if unsent.Result.Sequence != 0 || unsent.Result.BytesWritten != 0 || unsent.Err != nil || unsent.MessageID != "" {
-		t.Fatalf("unsent result acquired progress: %+v", unsent)
-	}
-	client.mu.Lock()
-	defer client.mu.Unlock()
-	if client.seq != 3 || len(client.pending) != 0 || len(client.requests) != 0 {
-		t.Fatal("rejected send retried or scheduled another part")
+			if peerErr, ok := errors.AsType[*PeerError](rejected.Err); !ok || peerErr.Status != pdu.Throttled || rejected.Result.Response.Status != pdu.Throttled || rejected.Result.BytesWritten == 0 || rejected.Result.Sequence != 3 {
+				t.Fatalf("rejection lost: %+v", rejected)
+			}
+			if unsent.Result.Sequence != 0 || unsent.Result.BytesWritten != 0 || unsent.Err != nil || unsent.MessageID != "" {
+				t.Fatalf("unsent result acquired progress: %+v", unsent)
+			}
+			client.mu.Lock()
+			defer client.mu.Unlock()
+			if client.seq != 3 || len(client.pending) != 0 || len(client.requests) != 0 {
+				t.Fatal("rejected send retried or scheduled another part")
+			}
+
+		})
 	}
 }
+
 func TestLateInvalidCharacterWritesNoSegment(t *testing.T) {
 	client, server := sessionPair(t, Config{})
 	_, e := client.SendText(t.Context(), TextMessage{Text: strings.Repeat("A", 1000) + "中"}, message.Policy{Encoding: textcodec.GSM7})

@@ -15,17 +15,20 @@ outcomes and bounded resources. One shared Session and versioned Codec support
 [Quick start](#quick-start) · [Go API](#go-api) · [Protocol support](#protocol-support) ·
 [Examples](#examples) · [Benchmarks](#benchmarks) · [Documentation](#documentation)
 
-**v1.1.0** adds optional diagnostics, keepalive and bounded protocol utilities:
+**v1.2.0 release candidate — not yet tagged or published.** Go 1.26 remains the minimum.
 
-- Optional [slog diagnostics](docs/logging.md), with discard as the default.
-- [Active enquire_link](docs/keepalive.md), disabled by default on both endpoints.
-- [Raw framing and classified decode errors](docs/framing.md) for standalone tools.
-- [DLR parsing and construction](docs/receipts.md), with explicit dialects and separate evidence.
-- [UDH national-language protection](docs/v1.1.0-design.md#u1-national-language-declarations-and-text-safety)
-  to prevent unsupported text decoding.
+- **Stable semantic diagnostics:** inspect field/rule identifiers, destination
+  indices and TLV tags without parsing error strings.
+- **Binary multipart sending:** prepare raw bytes and call `SendBinary` with
+  bounded segmentation, shared reference leases and per-segment outcomes.
 
-See the [release notes](docs/releases/v1.1.0.md) and
-[submission/publication gates](docs/v1.1.0-release.md). Go 1.26 remains the minimum.
+See the [v1.2.0 release notes](docs/releases/v1.2.0.md) and
+[publication checkpoint](docs/v1.2.0-release.md). The installation command below
+uses the released **v1.1.0** baseline; candidate APIs require this source revision.
+
+v1.1.0's optional [slog diagnostics](docs/logging.md),
+[active enquire_link](docs/keepalive.md), [raw framing](docs/framing.md) and
+[DLR helpers](docs/receipts.md) remain available with their existing defaults.
 
 ## What it provides
 
@@ -54,9 +57,10 @@ Requires **Go 1.26 or newer** (`go 1.26.0` in `go.mod`). The root package is nam
 go get github.com/skill215/smppkit@v1.1.0
 ```
 
-Versioned installation requires the corresponding Git tag. Before publication,
-use the source checkout below; see the [publication record](docs/v1.1.0-release.md)
-and [GitHub Releases](https://github.com/skill215/smppkit/releases) for availability.
+This installs the released v1.1.0 baseline. To evaluate the v1.2.0 candidate,
+use the source checkout below. `@v1.2.0` requires a later authorized tag; see
+the [publication checkpoint](docs/v1.2.0-release.md) and
+[GitHub Releases](https://github.com/skill215/smppkit/releases) for availability.
 
 ### Run a local server and client
 
@@ -140,6 +144,23 @@ See the [server example](examples/server/main.go) and [ACK contract](docs/decisi
 
 `Shutdown(ctx)` exchanges unbind and closes; `Close()` aborts and `Wait()` joins
 Session goroutines. Applications still own their workers and processing lifecycle.
+
+### Binary messages (v1.2.0 development, unreleased)
+
+`message.PrepareBytes` prepares raw octets without charset conversion.
+`Session.SendBinary` sends them with the same per-segment results and reference
+leases as SendText. Use `smpp.BinaryMessage{Data: data, DataCoding: 4}` with
+`message.BinaryPolicy{Mode: message.UDH16}`; DCS must be explicit.
+
+3.3 supports a TLV-free single part with DCS `0x04`. In 3.4/5.0, DCS `0x02` and
+`0x04` support UDH8/UDH16/SAR/Payload under the peer's negotiated policy. Input,
+segment count and repeated output metadata are bounded. Receive through the
+existing Receiver and consume `Message.Payload` as bytes.
+
+See the [binary contract and limits](docs/binary-messaging.md),
+[preparation example](examples/binary/main.go) and
+[client/server commands](examples/README.md#binary-submit-and-echo-v120-development).
+These APIs require this development checkout; they are not in v1.1.0.
 
 ### Optional diagnostics (v1.1.0)
 
@@ -337,6 +358,33 @@ Parsing includes owned evidence copies and diagnostics. Construction includes
 standard Codec preflight and its temporary wire buffer. These are stateless
 helper costs; B/op is not a copy counter. [All 11 cases, scope and raw output](docs/benchmarks/README.md#receipt-helpers-v110).
 
+### Semantic diagnostics (v1.2.0 development, unreleased)
+
+The new diagnostic benchmarks separate validation, error construction, inspection
+and formatting. Go 1.26.10 local measurements: valid contextual checks and
+`errors.AsType` inspection allocate **0 B/op, 0 allocs/op**; a contextual failure
+allocates **64 B/op, 1 alloc/op**. Full Codec paths still allocate and copy.
+
+Run `go test ./codec -run='^$' -bench=BenchmarkSemanticDiagnostics -benchmem`.
+See [all nine cases, methodology and raw results](docs/benchmarks/README.md#semantic-diagnostics-v120-development).
+These are local measurements; B/op does not count copied bytes.
+
+### Binary messaging (v1.2.0 development, unreleased)
+
+Local Go 1.26.10/linux-amd64 medians, three 200 ms runs with cpu=1:
+
+| Operation | ns/op | B/op | allocs/op |
+| --- | ---: | ---: | ---: |
+| Prepare 140 bytes | 164.1 | 408 | 3 |
+| Prepare 1024 bytes, UDH16 | 262.5 | 1456 | 3 |
+| Materialize 1024 bytes, UDH16 | 822.8 | 2656 | 25 |
+| Send 140 bytes, net.Pipe | 11429 | 4344 | 57 |
+
+Preparation snapshots input; materialization and sending make owned copies.
+These are local operations, not network TPS or zero-copy claims. See
+[all 14 new cases, copy boundaries and commands](docs/benchmarks/README.md#binary-messaging-v120-development),
+including payload limits, output-budget rejection and multipart reference costs.
+
 ## Documentation
 
 | Read about | Guide |
@@ -347,6 +395,9 @@ helper costs; B/op is not a copy counter. [All 11 cases, scope and raw output](d
 | Field validation and data_sm context | [Field semantics](docs/field-semantics.md) · [Direction](docs/data-direction.md) · [Transactions](docs/data-transaction.md) |
 | Cancellation, shutdown and local resources | [Session lifecycle](docs/session-lifecycle.md) · [Local validation](docs/local-validation.md) |
 | v1.1.0 scope, increments and implementation status | [Design](docs/v1.1.0-design.md) · [Roadmap](docs/roadmap/v1.1.0.md) |
+| v1.2.0 candidate scope and publication status | [Release notes](docs/releases/v1.2.0.md) · [Checkpoint](docs/v1.2.0-release.md) · [Design](docs/v1.2.0-design.md) · [Roadmap](docs/roadmap/v1.2.0.md) |
+| Stable semantic errors and binary DCS policy (unreleased) | [Field/rule catalog](docs/semantic-diagnostics.md) · [Binary DCS](docs/binary-dcs.md) · [Example](examples/diagnostics/main.go) |
+| Comparison with other Go SMPP libraries, tradeoffs and lessons | [Comparison and design inputs](docs/go-smpp-comparison.md) |
 | Raw frames, ownership and classified decode errors | [Framing](docs/framing.md) · [Runnable example](examples/framing/main.go) (v1.1.0) |
 | DLR text/TLV evidence, construction and peer conventions | [Receipt helpers](docs/receipts.md) · [Compiling example](examples/receipts/main.go) (v1.1.0) |
 | Active enquiries, window pressure and probe deadlines | [Keepalive](docs/keepalive.md) (v1.1.0) |
@@ -362,8 +413,9 @@ go test -race -count=1 -timeout=90s ./...
 ```
 
 The current [CI configuration](.github/workflows/ci.yml) covers the Go 1.26/1.27
-matrix and all 14 fuzz targets. Go 1.26 runs each target for **1,000,000
-executions**; Go 1.27 retains a five-second budget per target. The count budget
+matrix and 15 fuzz targets (including the new development FuzzPrepareBytes).
+Go 1.26 runs each target for **1,000,000 executions**; Go 1.27 retains a
+five-second budget per target. The count budget
 avoids a Go 1.26 fuzz shutdown race without ignoring failures or retrying tests.
 See the [diagnosis and CI policy](docs/v1.1.0-ci-fuzz.md).
 Tests include independent protocol bytes and raw TCP peers, beyond shared-Codec

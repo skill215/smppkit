@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-29
+// SPDX-AI-Date: 2026-11-06
 
 package codec
 
@@ -57,5 +57,5 @@ func decodeBind(b []byte, limit int) (packet pdu.PDU, version pdu.Version, err e
 	case *pdu.BindReceiver, *pdu.BindTransmitter, *pdu.BindTransceiver:
 		return p, v, nil
 	}
-	return p, v, ErrValidation
+	return p, v, invalidField("command_id", RuleCommand)
 }

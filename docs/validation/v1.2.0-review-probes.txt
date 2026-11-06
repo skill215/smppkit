@@ -1,0 +1,80 @@
+v1.2.0 prerelease review exploratory probes — 2026-11-06
+Go 1.26.10 linux/amd64; GOTOOLCHAIN=local; GOPROXY=off.
+These are audit probes, not additions to the default test suite or exhaustive proofs.
+Production code was not changed during review.
+
+1. Deterministic decode comparison
+Baseline HEAD and local v1.1.0 tag: 3d46fc2bbfb8de184f9071aa18c4180e66d2dcd2.
+A git archive of HEAD was extracted to a temporary directory (no checkout/reset).
+The same Go program below was run from that directory and from the current tree.
+Each tree processed 100000 mutations per version, 300000 total.
+Compared: acceptance, successful encode/byte roundtrip, DecodeError.Kind,
+ErrValidation/ErrUnsupported membership, and historical FieldError field/offset/reason.
+Result: zero differing output lines.
+Both output SHA256: 835efb98dc17334c50bcf0528b28e5c81f038f47ea5dac7fdf877b7e379e8098
+Limits: finite synthetic templates/mutations, no extension callbacks, not a protocol
+conformance proof. Existing semantic tests cover callback causes and safe summaries.
+
+To reproduce, save the first program as a temporary .go file and run go run with
+that absolute path from each source tree under the same Go environment; compare
+stdout. Run the second program from the current source tree.
+
+--- BEGIN decode comparison Go program ---
+package main
+import("bytes";"encoding/binary";"encoding/hex";"errors";"fmt";"math/rand/v2";"strings";"github.com/skill215/smppkit/codec";"github.com/skill215/smppkit/pdu")
+func main(){
+ samples:=[]string{
+ "00000010 00000015 00000000 00000001",
+ "00000021 00000004 00000000 00000007 0000000000000000000000000000040000",
+ "00000021 00000005 00000000 00000007 0000000000000000000000000000040000",
+ "00000024 00000103 00000000 00000007 00000000000000000000 0427000102 0427000102",
+ "00000026 00000021 00000000 00000007 00 000000 02 01000000 01000000 000000000000040000",
+ "00000019 80000021 00000000 00000007 00 01 00000000000000",
+ "00000017 00000002 00000000 00000007 00000050000000",
+ "00000014 80000003 00000000 00000007 00000200",
+ "0000001a 00000007 00000000 00000007 00000000000000000000",
+ }
+ rng:=rand.New(rand.NewPCG(0x120,0x126))
+ for _,version:=range []pdu.Version{pdu.V33,pdu.V34,pdu.V50}{
+ c,_:=codec.New(codec.Config{Version:version})
+ for i:=0;i<100000;i++ {
+  base,_:=hex.DecodeString(strings.ReplaceAll(samples[i%len(samples)]," ",""));raw:=bytes.Clone(base)
+  switch i%5 {case 0:case 1:raw=raw[:rng.IntN(len(raw)+1)];case 2:raw=append(raw,byte(rng.Uint32()),byte(rng.Uint32()),byte(rng.Uint32()));default:for j:=0;j<1+rng.IntN(3);j++{raw[rng.IntN(len(raw))]=byte(rng.Uint32())}}
+  if len(raw)>=4 {binary.BigEndian.PutUint32(raw,uint32(len(raw)))}
+  p,err:=c.Decode(raw)
+  if err==nil{encoded,e:=c.Append(nil,p);fmt.Printf("%x %d OK %t %t\n",version,i,e==nil,bytes.Equal(raw,encoded));continue}
+  de,_:=errors.AsType[*codec.DecodeError](err);fe,hasField:=errors.AsType[*codec.FieldError](err)
+  field:="";offset:=0;reason:="";if hasField{field,offset,reason=fe.Field,fe.Offset,fe.Reason}
+  fmt.Printf("%x %d ERR kind=%d validation=%t unsupported=%t field=%s offset=%d reason=%s\n",version,i,de.Kind,errors.Is(err,codec.ErrValidation),errors.Is(err,codec.ErrUnsupported),field,offset,reason)
+ }
+ }
+}
+--- END decode comparison Go program ---
+
+2. Binary metadata/output accounting sweep
+Result: PASS, 28622 accepted version/mode/radio/length/UDH/port combinations.
+Each accepted plan reconstructed all bytes, admitted its exact accounted output
+budget, and rejected a budget one byte smaller with ErrCapacity.
+The output accounting was calculated from actual materialized fields, not the
+planner's internal count/header calculation. The sweep deliberately does not use
+its own acceptance oracle; existing DCS/boundary tests and FuzzPrepareBytes cover
+acceptance. Nonaccepted sweep inputs were not counted as evidence of correctness.
+
+--- BEGIN binary accounting Go program ---
+package main
+import("bytes";"errors";"fmt";"github.com/skill215/smppkit/message";"github.com/skill215/smppkit/pdu";"github.com/skill215/smppkit/tlv")
+func main(){checked:=0
+for _,v:=range []pdu.Version{pdu.V33,pdu.V34,pdu.V50}{for _,mode:=range []message.Mode{message.UDH8,message.UDH16,message.SAR,message.Payload}{for radio:=1;radio<=140;radio++{for _,n:=range []int{0,1,radio-1,radio,radio+1,2*radio,300}{for _,extra:=range []int{-1,0,1,4,6,120,248}{for _,port:=range []bool{false,true}{
+ data:=bytes.Repeat([]byte{255},n);msg:=message.Binary{Data:data,DataCoding:4,Source:pdu.Address{Value:"S"},Destination:pdu.Address{Value:"D"},ServiceType:"svc",Optional:tlv.Fields{{Tag:0x1400,Value:[]byte{1,2,3}}}}
+ if v==pdu.V33{msg.Optional=nil};if port{msg.Optional=append(msg.Optional,tlv.Uint16(tlv.SourcePort,42))}
+ policy:=message.BinaryPolicy{Mode:mode,PayloadOctets:radio};if extra>=0{policy.AdditionalUDH=[]message.InformationElement{{ID:0x70,Data:make([]byte,extra)}}}
+ plan,err:=message.PrepareBytes(v,msg,policy);if err!=nil{continue};parts,err:=plan.Materialize(42);if err!=nil{panic(err)}
+ accounted:=0;var got []byte
+ for _,part:=range parts{accounted+=256+len(part.Source.Value)+len(part.Destination.Value)+len(part.ServiceType)+len(part.ShortMessage);for _,f:=range part.Optional{accounted+=32+len(f.Value)};seg,e:=message.ParseSegment(part);if e!=nil{panic(e)};got=append(got,seg.Payload...)}
+ if !bytes.Equal(got,data){panic("payload changed")}
+ policy.MaxOutputBytes=accounted;if _,err=message.PrepareBytes(v,msg,policy);err!=nil{panic(fmt.Sprintf("exact account failed: v=%x mode=%d radio=%d n=%d extra=%d port=%t bytes=%d err=%v",v,mode,radio,n,extra,port,accounted,err))}
+ policy.MaxOutputBytes--;if _,err=message.PrepareBytes(v,msg,policy);!errors.Is(err,message.ErrCapacity){panic("underbudget accepted")};checked++
+}}}}}}
+fmt.Printf("PASS: %d accepted version/mode/radio/length/UDH/port cases; raw reconstruction and exact/one-less output accounting\n",checked)
+}
+--- END binary accounting Go program ---

@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.2.0 — release candidate (unreleased)
+
+Notes finalized 2026-11-06 (Asia/Shanghai). F1/F2 and local review are complete;
+candidate commit/push and CI verification are authorized. No tag, formal release
+or publication date is implied. See the [release notes](docs/releases/v1.2.0.md)
+and [publication checkpoint](docs/v1.2.0-release.md).
+
+- Add `codec.SemanticError`, `SemanticRule` and stable rule constants for existing
+  built-in semantic checks. Include repeated-item indices and numeric TLV tags;
+  preserve existing sentinels, historical FieldError causes and DecodeError kinds.
+- Retain customer TLV callback causes alongside ErrValidation. Safe diagnostic
+  summaries exclude arbitrary callback text and input values.
+- Add independent byte regressions, shared-Codec concurrency tests, diagnostic
+  benchmarks and a runnable inspection example. See the [catalog](docs/semantic-diagnostics.md)
+  and [local validation](docs/v1.2.0-f1-validation.md).
+- Add `message.Binary`, `BinaryPolicy`, `PrepareBytes`, `smpp.BinaryMessage` and
+  `Session.SendBinary`, reusing Plan materialization, reference leases and the
+  sequential SendText path. Follow the [binary DCS policy](docs/binary-dcs.md),
+  snapshot octets, and bound input, repeated metadata and materialized output.
+- Add independent UDH8/UDH16/SAR/Payload fixtures, binary boundary/concurrency
+  tests, allocation benchmarks, preparation and client/server examples, and a
+  native fuzz target with an acceptance oracle. See the [binary contract](docs/binary-messaging.md)
+  and [F2 validation](docs/v1.2.0-f2-validation.md). Go 1.26 remains required.
+
 ## 1.1.0
 
 Release notes finalized 2026-10-29; planned publication date **2026-10-29**

@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Test code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-11-06
 
 package smpp
 
@@ -151,78 +151,84 @@ func TestAdmitMessageCrossSessionNamespace(t *testing.T) {
 // the next transport write fails or is cancelled without a response. No Codec
 // is used to construct the peer response or inspect outgoing headers.
 func TestSendTextTransportOutcomes(t *testing.T) {
-	for _, tc := range []struct {
-		name    string
-		written int // -1 means the complete frame
-		outcome Outcome
-	}{{"zero", 0, NotWritten}, {"partial", 7, PartlyWritten}, {"written-no-response", -1, Written}} {
-		t.Run(tc.name, func(t *testing.T) {
-			a, peer := net.Pipe()
-			defer peer.Close()
-			ctx, cancel := context.WithTimeout(t.Context(), 3*time.Second)
-			defer cancel()
-			failure := errors.New("injected second segment write failure")
-			first := make(chan struct{})
-			var frames [][]byte // accessed by the writer, then after Session.Wait
-			conn := &faultConn{Conn: a, write: func(frame []byte) (int, error) {
-				frames = append(frames, append([]byte(nil), frame...))
-				if len(frames) == 1 {
-					close(first)
-					return len(frame), nil
-				}
-				if tc.written < 0 {
-					cancel()
-					return len(frame), nil
-				}
-				return tc.written, failure
-			}}
-			s, err := newSession(conn, testCodec(t), Config{}, false, Bound, Transceiver)
-			if err != nil {
-				t.Fatal(err)
+	for _, sender := range multipartTestSenders() {
+		t.Run(sender.name, func(t *testing.T) {
+
+			for _, tc := range []struct {
+				name    string
+				written int // -1 means the complete frame
+				outcome Outcome
+			}{{"zero", 0, NotWritten}, {"partial", 7, PartlyWritten}, {"written-no-response", -1, Written}} {
+				t.Run(tc.name, func(t *testing.T) {
+					a, peer := net.Pipe()
+					defer peer.Close()
+					ctx, cancel := context.WithTimeout(t.Context(), 3*time.Second)
+					defer cancel()
+					failure := errors.New("injected second segment write failure")
+					first := make(chan struct{})
+					var frames [][]byte // accessed by the writer, then after Session.Wait
+					conn := &faultConn{Conn: a, write: func(frame []byte) (int, error) {
+						frames = append(frames, append([]byte(nil), frame...))
+						if len(frames) == 1 {
+							close(first)
+							return len(frame), nil
+						}
+						if tc.written < 0 {
+							cancel()
+							return len(frame), nil
+						}
+						return tc.written, failure
+					}}
+					s, err := newSession(conn, testCodec(t), Config{}, false, Bound, Transceiver)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer func() { s.Close(); s.Wait() }()
+					ackDone := make(chan error, 1)
+					go func() {
+						select {
+						case <-first:
+							_, err := peer.Write([]byte{0, 0, 0, 19, 0x80, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 'o', 'k', 0})
+							ackDone <- err
+						case <-ctx.Done():
+							ackDone <- ctx.Err()
+						}
+					}()
+					got, err := sender.send(s, ctx)
+					s.Close()
+					s.Wait()
+					if ackErr := <-ackDone; ackErr != nil {
+						t.Fatal(ackErr)
+					}
+					wantErr := failure
+					if tc.written < 0 {
+						wantErr = context.Canceled
+					}
+					if !errors.Is(err, wantErr) || len(got.Segments) != 3 || len(frames) != 2 {
+						t.Fatalf("result=%+v writes=%d error=%v", got, len(frames), err)
+					}
+					for i, frame := range frames {
+						if len(frame) < 16 || int(binary.BigEndian.Uint32(frame)) != len(frame) || binary.BigEndian.Uint32(frame[4:]) != 4 || binary.BigEndian.Uint32(frame[12:]) != uint32(i+1) {
+							t.Fatalf("unexpected outgoing submit header: %x", frame)
+						}
+					}
+					accepted, failed, unsent := got.Segments[0], got.Segments[1], got.Segments[2]
+					if accepted.Number != 1 || accepted.Err != nil || accepted.MessageID != "ok" || accepted.Result.Outcome != ResponseReceived || accepted.Result.BytesWritten != len(frames[0]) || accepted.Result.Sequence != 1 {
+						t.Fatalf("lost accepted part: %+v", accepted)
+					}
+					n := tc.written
+					if n < 0 {
+						n = len(frames[1])
+					}
+					if failed.Number != 2 || !errors.Is(failed.Err, wantErr) || failed.MessageID != "" || failed.Result.Outcome != tc.outcome || failed.Result.Sequence != 2 || failed.Result.BytesWritten != n || failed.Result.Response.Body != nil {
+						t.Fatalf("incorrect uncertainty: %+v", failed)
+					}
+					if unsent.Number != 3 || unsent.Err != nil || unsent.MessageID != "" || unsent.Result.Outcome != NotAttempted || unsent.Result.Sequence != 0 || unsent.Result.BytesWritten != 0 || unsent.Result.Response.Body != nil {
+						t.Fatalf("unscheduled part acquired an outcome: %+v", unsent)
+					}
+				})
 			}
-			defer func() { s.Close(); s.Wait() }()
-			ackDone := make(chan error, 1)
-			go func() {
-				select {
-				case <-first:
-					_, err := peer.Write([]byte{0, 0, 0, 19, 0x80, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 'o', 'k', 0})
-					ackDone <- err
-				case <-ctx.Done():
-					ackDone <- ctx.Err()
-				}
-			}()
-			got, err := s.SendText(ctx, TextMessage{Text: strings.Repeat("A", 400)}, message.GSMText())
-			s.Close()
-			s.Wait()
-			if ackErr := <-ackDone; ackErr != nil {
-				t.Fatal(ackErr)
-			}
-			wantErr := failure
-			if tc.written < 0 {
-				wantErr = context.Canceled
-			}
-			if !errors.Is(err, wantErr) || len(got.Segments) != 3 || len(frames) != 2 {
-				t.Fatalf("result=%+v writes=%d error=%v", got, len(frames), err)
-			}
-			for i, frame := range frames {
-				if len(frame) < 16 || int(binary.BigEndian.Uint32(frame)) != len(frame) || binary.BigEndian.Uint32(frame[4:]) != 4 || binary.BigEndian.Uint32(frame[12:]) != uint32(i+1) {
-					t.Fatalf("unexpected outgoing submit header: %x", frame)
-				}
-			}
-			accepted, failed, unsent := got.Segments[0], got.Segments[1], got.Segments[2]
-			if accepted.Number != 1 || accepted.Err != nil || accepted.MessageID != "ok" || accepted.Result.Outcome != ResponseReceived || accepted.Result.BytesWritten != len(frames[0]) || accepted.Result.Sequence != 1 {
-				t.Fatalf("lost accepted part: %+v", accepted)
-			}
-			n := tc.written
-			if n < 0 {
-				n = len(frames[1])
-			}
-			if failed.Number != 2 || !errors.Is(failed.Err, wantErr) || failed.MessageID != "" || failed.Result.Outcome != tc.outcome || failed.Result.Sequence != 2 || failed.Result.BytesWritten != n || failed.Result.Response.Body != nil {
-				t.Fatalf("incorrect uncertainty: %+v", failed)
-			}
-			if unsent.Number != 3 || unsent.Err != nil || unsent.MessageID != "" || unsent.Result.Outcome != NotAttempted || unsent.Result.Sequence != 0 || unsent.Result.BytesWritten != 0 || unsent.Result.Response.Body != nil {
-				t.Fatalf("unscheduled part acquired an outcome: %+v", unsent)
-			}
+
 		})
 	}
 }

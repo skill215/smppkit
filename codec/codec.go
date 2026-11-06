@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-29
+// SPDX-AI-Date: 2026-11-06
 
 package codec
 
@@ -59,13 +59,13 @@ func (c *Codec) decode(src []byte) (pdu.PDU, error) {
 		return p, e
 	}
 	if standard(id) && !c.supported(id) {
-		return p, fmt.Errorf("%w: command 0x%08x", ErrUnsupported, id)
+		return p, unsupportedField("command_id", RuleCommand)
 	}
 	b := append([]byte(nil), src[16:]...)
 	if !standard(id) {
 		if ext, ok := c.commands[id]; ok {
 			if ext == nil {
-				return p, ErrUnsupported
+				return p, unsupportedField("command_id", RuleVersion)
 			}
 			body, e := ext.DecodeBody(b)
 			if e != nil {
@@ -103,8 +103,11 @@ func nilBody(b pdu.Body) bool {
 	return v.Kind() == reflect.Pointer && v.IsNil()
 }
 func header(id pdu.CommandID, seq uint32, status pdu.Status) error {
-	if seq > 0x7fffffff || (seq == 0 && id != pdu.GenericNACKID) || (!id.IsResponse() && status != pdu.OK) || (id == pdu.GenericNACKID && status == pdu.OK) {
-		return fmt.Errorf("%w: header", ErrValidation)
+	if seq > 0x7fffffff || (seq == 0 && id != pdu.GenericNACKID) {
+		return invalidField("sequence_number", RuleValue)
+	}
+	if (!id.IsResponse() && status != pdu.OK) || (id == pdu.GenericNACKID && status == pdu.OK) {
+		return invalidField("command_status", RuleStatus)
 	}
 	return nil
 }
@@ -121,24 +124,24 @@ func hasResponseBody(id pdu.CommandID) bool {
 func (c *Codec) Append(dst []byte, p pdu.PDU) ([]byte, error) {
 	original := dst
 	if nilBody(p.Body) {
-		return original, fmt.Errorf("%w: nil body", ErrValidation)
+		return original, invalidField("body", RuleBody)
 	}
 	id := p.Body.CommandID()
 	if e := header(id, p.Sequence, p.Status); e != nil {
 		return original, e
 	}
 	if standard(id) && !c.supported(id) {
-		return original, fmt.Errorf("%w: command 0x%08x", ErrUnsupported, id)
+		return original, unsupportedField("command_id", RuleCommand)
 	}
 	w := wire.Writer{Data: make([]byte, 16), Limit: c.max}
 	if omitted, ok := p.Body.(*pdu.Omitted); ok {
 		if omitted == nil || !hasResponseBody(id) || p.Status == pdu.OK || c.version == pdu.V33 {
-			return original, ErrValidation
+			return original, invalidField("body", RuleBody)
 		}
 	} else if !standard(id) {
 		if ext, ok := c.commands[id]; ok {
 			if ext == nil {
-				return original, ErrUnsupported
+				return original, unsupportedField("command_id", RuleVersion)
 			}
 			b, e := ext.AppendBody(nil, p.Body)
 			if e != nil {
@@ -148,7 +151,7 @@ func (c *Codec) Append(dst []byte, p pdu.PDU) ([]byte, error) {
 		} else if raw, ok := p.Body.(*pdu.Opaque); ok {
 			w.Bytes(raw.Data)
 		} else {
-			return original, ErrValidation
+			return original, invalidField("body", RuleBody)
 		}
 	} else {
 		if e := c.validateResponseSemantics(p); e != nil {
@@ -186,8 +189,8 @@ func (c *Codec) addressLimit(id pdu.CommandID) int {
 
 func (c *Codec) readAddr(r *wire.Reader, max int, field string) pdu.Address {
 	a := pdu.Address{TON: r.U8(field + ".ton"), NPI: r.U8(field + ".npi"), Value: r.C(max, field)}
-	if r.Err == nil && !c.validAddressType(a.TON, a.NPI) {
-		r.Err = invalidField(field + ".ton/npi")
+	if r.Err == nil {
+		r.Err = c.addressError(a, field)
 	}
 	return a
 }
@@ -195,8 +198,8 @@ func (c *Codec) writeAddr(w *wire.Writer, a pdu.Address, max int, field string) 
 	if w.Err != nil {
 		return
 	}
-	if !c.validAddressType(a.TON, a.NPI) {
-		w.Err = invalidField(field + ".ton/npi")
+	if err := c.addressError(a, field); err != nil {
+		w.Err = err
 		return
 	}
 	w.U8(a.TON)
@@ -209,17 +212,17 @@ func (c *Codec) readBind(r *wire.Reader) pdu.BindFields {
 	b.AddrTON = r.U8("addr_ton")
 	b.AddrNPI = r.U8("addr_npi")
 	b.AddressRange = r.C(41, "address_range")
-	if r.Err == nil && !c.validAddressType(b.AddrTON, b.AddrNPI) {
-		r.Err = invalidField("addr_ton/addr_npi")
+	if r.Err == nil {
+		r.Err = c.addressType(b.AddrTON, b.AddrNPI, "addr_ton", "addr_npi")
 	}
 	if b.InterfaceVersion != c.version {
-		r.Fail("interface_version", "profile mismatch")
+		failSemantic(r, "interface_version", RuleProfile, "profile mismatch")
 	}
 	return b
 }
 func (c *Codec) writeBind(w *wire.Writer, b pdu.BindFields) {
-	if !c.validAddressType(b.AddrTON, b.AddrNPI) {
-		w.Err = invalidField("addr_ton/addr_npi")
+	if err := c.addressType(b.AddrTON, b.AddrNPI, "addr_ton", "addr_npi"); err != nil {
+		w.Err = err
 		return
 	}
 	w.C(b.SystemID, 16, "system_id")
@@ -230,7 +233,7 @@ func (c *Codec) writeBind(w *wire.Writer, b pdu.BindFields) {
 	w.U8(b.AddrNPI)
 	w.C(b.AddressRange, 41, "address_range")
 	if b.InterfaceVersion != c.version {
-		w.Err = fmt.Errorf("%w: interface_version profile mismatch", ErrValidation)
+		w.Err = invalidField("interface_version", RuleProfile)
 	}
 }
 func (c *Codec) readSM(r *wire.Reader, id pdu.CommandID) pdu.SMFields {
@@ -290,32 +293,44 @@ func (c *Codec) validateSM(b pdu.SMFields, id pdu.CommandID) error {
 		return e
 	}
 	if b.PriorityFlag > 3 || c.version == pdu.V33 && b.PriorityFlag > 1 {
-		return invalidField("priority_flag")
+		return invalidField("priority_flag", RuleValue)
 	}
 	if b.ReplaceIfPresent > 1 {
-		return invalidField("replace_if_present_flag")
+		return invalidField("replace_if_present_flag", RuleValue)
 	}
 	if !c.validDefaultMessageID(b.DefaultMessageID) {
-		return invalidField("sm_default_msg_id")
+		return invalidField("sm_default_msg_id", RuleValue)
 	}
 	if !c.validTime(b.ScheduleDeliveryTime, false) {
-		return invalidField("schedule_delivery_time")
+		return invalidField("schedule_delivery_time", RuleTime)
 	}
 	if !c.validTime(b.ValidityPeriod, false) {
-		return invalidField("validity_period")
+		return invalidField("validity_period", RuleTime)
 	}
 	if len(b.ShortMessage) > max {
-		return fmt.Errorf("%w: short_message exceeds version bound", ErrValidation)
+		return invalidField("short_message", RuleLength)
 	}
 	if _, ok := b.Optional.First(tlv.MessagePayload); ok && len(b.ShortMessage) != 0 {
-		return fmt.Errorf("%w: payload and short_message conflict", ErrValidation)
+		return invalidField("short_message", RuleConflict)
 	}
 	if err := validateUDHI(b.ESMClass, b.Optional); err != nil {
 		return err
 	}
-	if c.version == pdu.V34 && id == pdu.DeliverSMID && (b.ScheduleDeliveryTime != "" || b.ValidityPeriod != "" || b.ReplaceIfPresent != 0 || b.DefaultMessageID != 0) {
-		return fmt.Errorf("%w: unused deliver_sm fields", ErrValidation)
+	if c.version == pdu.V34 && id == pdu.DeliverSMID {
+		if b.ScheduleDeliveryTime != "" {
+			return invalidField("schedule_delivery_time", RuleUnused)
+		}
+		if b.ValidityPeriod != "" {
+			return invalidField("validity_period", RuleUnused)
+		}
+		if b.ReplaceIfPresent != 0 {
+			return invalidField("replace_if_present_flag", RuleUnused)
+		}
+		if b.DefaultMessageID != 0 {
+			return invalidField("sm_default_msg_id", RuleUnused)
+		}
 	}
+
 	return nil
 }
 
@@ -324,10 +339,10 @@ func validateUDHI(esm byte, fields tlv.Fields) error {
 	if esm&0x40 == 0 {
 		return nil
 	}
-	for _, f := range fields {
+	for i, f := range fields {
 		switch f.Tag {
 		case tlv.SARMsgRefNum, tlv.SARTotalSegments, tlv.SARSegmentSeqnum, tlv.SourcePort, tlv.DestinationPort:
-			return fmt.Errorf("%w: SAR or port TLV with UDHI", ErrValidation)
+			return invalidTLV(f.Tag, i, RuleConflict)
 		}
 	}
 	return nil

@@ -1,0 +1,40 @@
+2026-11-06 Asia/Shanghai: F1 final local checks
+GOTOOLCHAIN=local; GOPROXY=off; writable caches under /tmp; loopback sockets permitted.
+
+$ go version
+go version go1.26.10 linux/amd64
+exit=0
+
+$ go build ./...
+exit=0
+
+$ go vet ./...
+exit=0
+
+$ go test -race -count=1 -timeout=90s ./...
+ok  	github.com/skill215/smppkit	2.104s
+ok  	github.com/skill215/smppkit/codec	1.283s
+ok  	github.com/skill215/smppkit/examples/client	1.022s
+?   	github.com/skill215/smppkit/examples/codec	[no test files]
+?   	github.com/skill215/smppkit/examples/custom-tlv	[no test files]
+?   	github.com/skill215/smppkit/examples/data-direction	[no test files]
+?   	github.com/skill215/smppkit/examples/data-transaction	[no test files]
+?   	github.com/skill215/smppkit/examples/diagnostics	[no test files]
+?   	github.com/skill215/smppkit/examples/framing	[no test files]
+?   	github.com/skill215/smppkit/examples/logging	[no test files]
+?   	github.com/skill215/smppkit/examples/multipart	[no test files]
+?   	github.com/skill215/smppkit/examples/notifications	[no test files]
+?   	github.com/skill215/smppkit/examples/private-command	[no test files]
+ok  	github.com/skill215/smppkit/examples/receipts	1.025s
+?   	github.com/skill215/smppkit/examples/server	[no test files]
+?   	github.com/skill215/smppkit/examples/submit-multi	[no test files]
+ok  	github.com/skill215/smppkit/internal/wire	1.020s
+ok  	github.com/skill215/smppkit/message	1.121s
+?   	github.com/skill215/smppkit/pdu	[no test files]
+ok  	github.com/skill215/smppkit/textcodec	1.020s
+ok  	github.com/skill215/smppkit/tlv	1.020s
+exit=0
+
+$ go run ./examples/diagnostics
+field=source_addr_ton rule=value validation=true
+exit=0

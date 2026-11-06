@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Test code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-11-06
 
 package codec_test
 
@@ -157,6 +157,9 @@ func frame(id pdu.CommandID) []byte {
 	return []byte{0, 0, 0, 16, byte(id >> 24), byte(id >> 16), byte(id >> 8), byte(id), 0, 0, 0, 0, 0, 0, 0, 1}
 }
 func FuzzDecode(f *testing.F) {
+	for _, sample := range []string{diagnosticTONHex, diagnosticDCSHex, diagnosticTLVHex} {
+		f.Add(unhex(f, sample))
+	}
 	for _, tc := range rv20Frames {
 		f.Add(unhex(f, tc.hex))
 	}
@@ -191,6 +194,7 @@ func FuzzDecode(f *testing.F) {
 		for _, v := range []pdu.Version{pdu.V33, pdu.V34, pdu.V50} {
 			c := newCodec(t, v)
 			p, e := c.Decode(b)
+			assertSemanticSnapshot(t, e)
 			if e == nil {
 				got, e := c.Append(nil, p)
 				if e != nil || !bytes.Equal(got, b) {

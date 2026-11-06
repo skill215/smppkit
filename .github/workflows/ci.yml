@@ -58,6 +58,8 @@ jobs:
         timeout-minutes: 10
       - run: go test ./message -run='^$' -fuzz=FuzzReceipt -fuzztime="$FUZZ_BUDGET" -parallel=2 -timeout=9m
         timeout-minutes: 10
+      - run: go test ./message -run='^$' -fuzz=FuzzPrepareBytes -fuzztime="$FUZZ_BUDGET" -parallel=2 -timeout=9m
+        timeout-minutes: 10
       - run: go test ./message -run='^$' -fuzz=FuzzPrepareVersionEncoding -fuzztime="$FUZZ_BUDGET" -parallel=2 -timeout=9m
         timeout-minutes: 10
       - run: go test ./textcodec -run='^$' -fuzz=FuzzCharsets -fuzztime="$FUZZ_BUDGET" -parallel=2 -timeout=9m

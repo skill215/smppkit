@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Example program generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-29
+// SPDX-AI-Date: 2026-11-06
 
 // Run a bounded in-memory SMSC demo. Optional echo sends deliver_sm messages;
 // it is not routing, a delivery receipt, or a promise of handset delivery.
@@ -38,7 +38,7 @@ func main() {
 func run() error {
 	address := flag.String("address", "127.0.0.1:2775", "listen address; port 0 selects a free port")
 	system := flag.String("system-id", "demo", "accepted ESME system ID")
-	echo := flag.Bool("echo", false, "echo decoded submissions as deliver_sm; requires a 3.4/5.0 transceiver bind")
+	echo := flag.Bool("echo", false, "echo text/binary submissions as deliver_sm; requires a 3.4/5.0 transceiver bind")
 	diagnostics := flag.Bool("diagnostics", false, "enable structured library diagnostics on stderr")
 	enquireInterval := flag.Duration("enquire-link-interval", 0, "active probe interval after bind; 0 disables scheduling")
 	enquireTimeout := flag.Duration("enquire-link-timeout", 0, "automatic probe deadline; 0 uses Session RequestTimeout")
@@ -135,10 +135,18 @@ func handleSession(ctx context.Context, s *smpp.Session, echo bool) {
 			if msg.DecodeError != nil {
 				log.Printf("Decode: %v", msg.DecodeError)
 			}
-			if echo && msg.Decoded && !msg.Receipt {
+			binary := msg.DataCoding == 4 || s.Codec().Version() != pdu.V33 && msg.DataCoding == 2
+			if echo && (msg.Decoded || binary) && !msg.Receipt {
 				// This application choice runs outside Session's reader. The peer must
 				// keep its receiver active while waiting for submission responses.
-				result, err := s.SendText(receiveCtx, smpp.TextMessage{Source: msg.Destination, Destination: msg.Source, Text: msg.Text}, message.GSMText())
+				// A binary echo preserves octets and DCS, not application-port or
+				// vendor metadata. It is a new message with its own reference lease.
+				var result smpp.SendResult
+				if binary {
+					result, err = s.SendBinary(receiveCtx, smpp.BinaryMessage{Source: msg.Destination, Destination: msg.Source, Data: msg.Payload, DataCoding: msg.DataCoding}, message.BinaryPolicy{})
+				} else {
+					result, err = s.SendText(receiveCtx, smpp.TextMessage{Source: msg.Destination, Destination: msg.Source, Text: msg.Text}, message.GSMText())
+				}
 				for _, part := range result.Segments {
 					log.Printf("Echo part=%d outcome=%d error=%v", part.Number, part.Result.Outcome, part.Err)
 				}

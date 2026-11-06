@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-11-06
 
 package codec
 
@@ -25,7 +25,7 @@ func (c *Codec) ValidateDataResponse(response pdu.PDU, requestESMClass byte, dir
 		return err
 	}
 	if nilBody(response.Body) {
-		return invalidField("data_sm response body")
+		return invalidField("body", RuleBody)
 	}
 	if _, ok := response.Body.(*pdu.GenericNACK); ok {
 		return nil // ordinary Codec owns the nonzero-status requirement
@@ -33,7 +33,7 @@ func (c *Codec) ValidateDataResponse(response pdu.PDU, requestESMClass byte, dir
 	switch response.Body.(type) {
 	case *pdu.DataSMResp, *pdu.Omitted:
 	default:
-		return invalidField("data_sm response body")
+		return invalidField("body", RuleBody)
 	}
 	if err := c.ValidateDataDirection(response.Body, direction); err != nil {
 		return err
@@ -43,7 +43,7 @@ func (c *Codec) ValidateDataResponse(response pdu.PDU, requestESMClass byte, dir
 		return nil
 	}
 	mode := requestESMClass & 3
-	for _, field := range body.Optional {
+	for i, field := range body.Optional {
 		transactionOnly := false
 		switch field.Tag {
 		case tlv.DPFResult, tlv.DeliveryFailureReason, tlv.NetworkErrorCode:
@@ -54,13 +54,13 @@ func (c *Codec) ValidateDataResponse(response pdu.PDU, requestESMClass byte, dir
 		// Zero cannot be resolved without peer configuration. Congestion and
 		// unknown/customer parameters have no inferred transaction restriction.
 		if transactionOnly && (mode == 1 || mode == 3) {
-			return invalidField("data_sm_resp TLV requires transaction mode")
+			return invalidTLV(field.Tag, i, RuleMode)
 		}
 		// Only explicit transaction submission makes OK a synchronous delivery
 		// outcome. Do not infer delivery success from a generic accepted submit.
 		// Both editions explicitly exclude failure_reason on successful delivery.
 		if mode == 2 && response.Status == pdu.OK && field.Tag == tlv.DeliveryFailureReason {
-			return invalidField("data_sm_resp failure reason on successful transaction")
+			return invalidTLV(field.Tag, i, RuleStatus)
 		}
 	}
 	return nil

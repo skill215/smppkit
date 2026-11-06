@@ -2,13 +2,13 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-29
+// SPDX-AI-Date: 2026-11-06
 
 package codec
 
 import (
 	"encoding/binary"
-	"fmt"
+	"errors"
 	"slices"
 
 	"github.com/skill215/smppkit/internal/wire"
@@ -80,17 +80,17 @@ func (c *Codec) validateTLVs(f tlv.Fields, id pdu.CommandID) error {
 		return nil
 	}
 	if c.version == pdu.V33 {
-		return fmt.Errorf("%w: TLVs forbidden in 3.3", ErrValidation)
+		return invalidField("optional", RuleVersion)
 	}
 
 	command := tlvCommand(id)
 	if command == 0 || c.version == pdu.V34 && (command == submitResponseTLV || command == multiResponseTLV || command == deliverResponseTLV || command == otherResponseTLV) {
-		return fmt.Errorf("%w: command has no TLV section", ErrValidation)
+		return invalidField("optional", RuleCommand)
 	}
 	counts := make(map[uint16]int)
-	for _, field := range f {
+	for i, field := range f {
 		if len(field.Value) > 65535 {
-			return fmt.Errorf("%w: TLV length", ErrValidation)
+			return invalidTLV(field.Tag, i, RuleLength)
 		}
 		counts[field.Tag]++
 		if def, ok := standardTLVs[field.Tag]; ok {
@@ -104,24 +104,50 @@ func (c *Codec) validateTLVs(f tlv.Fields, id pdu.CommandID) error {
 					max = 4
 				}
 			}
-			if allowed&command == 0 || len(field.Value) < min || len(field.Value) > max || !def.repeat && counts[field.Tag] > 1 {
-				return fmt.Errorf("%w: standard TLV 0x%04x bounds, version, applicability or cardinality", ErrValidation, field.Tag)
+			if allowed == 0 {
+				return invalidTLV(field.Tag, i, RuleVersion)
 			}
+			if allowed&command == 0 {
+				return invalidTLV(field.Tag, i, RuleCommand)
+			}
+			if len(field.Value) < min || len(field.Value) > max {
+				return invalidTLV(field.Tag, i, RuleLength)
+			}
+			if !def.repeat && counts[field.Tag] > 1 {
+				return invalidTLV(field.Tag, i, RuleCardinality)
+			}
+
 			if !validStandardValue(field.Tag, field.Value, c.version) {
-				return fmt.Errorf("%w: standard TLV 0x%04x value", ErrValidation, field.Tag)
+				return invalidTLV(field.Tag, i, RuleValue)
 			}
 		} else if field.Tag >= 0x0600 && field.Tag <= 0x060a {
 			// Broadcast has its own future command scope; it is never an opaque way
 			// to inject broadcast-only parameters into an SMS operation.
-			return fmt.Errorf("%w: broadcast TLV in SMS command", ErrValidation)
+			return invalidTLV(field.Tag, i, RuleCommand)
 		} else if def, ok := c.tlvs[field.Tag]; ok {
-			if !slices.Contains(def.Versions, c.version) || len(field.Value) < def.MinLength || len(field.Value) > def.MaxLength || !slices.Contains(def.Commands, id) || !def.Repeatable && counts[field.Tag] > 1 {
-				return fmt.Errorf("%w: customer TLV 0x%04x bounds, version, applicability or cardinality", ErrValidation, field.Tag)
+			if !slices.Contains(def.Versions, c.version) {
+				return invalidTLV(field.Tag, i, RuleVersion)
 			}
+			if len(field.Value) < def.MinLength || len(field.Value) > def.MaxLength {
+				return invalidTLV(field.Tag, i, RuleLength)
+			}
+			if !slices.Contains(def.Commands, id) {
+				return invalidTLV(field.Tag, i, RuleCommand)
+			}
+			if !def.Repeatable && counts[field.Tag] > 1 {
+				return invalidTLV(field.Tag, i, RuleCardinality)
+			}
+
 			// A validator may rely on its declared width, but must remain concurrency
 			// safe and must not retain or mutate these borrowed bytes.
-			if def.Validate != nil && def.Validate(field.Value) != nil {
-				return fmt.Errorf("%w: customer tag 0x%04x", ErrValidation, field.Tag)
+			if def.Validate != nil {
+				if cause := def.Validate(field.Value); cause != nil {
+					e := invalidTLV(field.Tag, i, RuleExtension)
+					// Preserve validation identity and the original callback cause without
+					// ever including its potentially sensitive text in the safe summary.
+					e.cause = errors.Join(ErrValidation, cause)
+					return e
+				}
 			}
 		}
 		// Unknown tags are preserved, including duplicates, without invented rules.
@@ -164,21 +190,48 @@ func validateTLVDependencies(f tlv.Fields, counts map[uint16]int) error {
 		total, ht := f.First(tlv.SARTotalSegments)
 		part, hp := f.First(tlv.SARSegmentSeqnum)
 		if counts[tlv.SARMsgRefNum] != 1 || !ht || !hp || total[0] == 0 || part[0] == 0 || part[0] > total[0] {
-			return fmt.Errorf("%w: incomplete or invalid SAR", ErrValidation)
+			return sarDependency(f, counts, ht, hp)
 		}
 	}
 	for _, tag := range []uint16{tlv.CallbackNumATag, tlv.CallbackNumPresInd} {
 		if counts[tag] > 0 && counts[tag] != counts[tlv.CallbackNum] {
-			return fmt.Errorf("%w: callback occurrence association", ErrValidation)
+			return tlvDependency(f, tag)
 		}
 	}
 	for _, pair := range [][2]uint16{{tlv.SourceNetworkID, tlv.SourceNodeID}, {tlv.DestNetworkID, tlv.DestNodeID}} {
 		if counts[pair[0]] != 0 && counts[pair[1]] == 0 {
-			return fmt.Errorf("%w: network ID requires node ID", ErrValidation)
+			return tlvDependency(f, pair[0])
 		}
 	}
 	if v, ok := f.First(tlv.DestAddrNPResolution); ok && v[0] == 2 && (counts[tlv.DestAddrNPInformation] == 0 || counts[tlv.DestAddrNPCountry] == 0) {
-		return fmt.Errorf("%w: ported address requires NP information and country", ErrValidation)
+		return tlvDependency(f, tlv.DestAddrNPResolution)
 	}
 	return nil
+}
+
+// Dependencies name a stable trigger; missing SAR members name the absent tag.
+// Index is into the original ordered Optional slice, not the per-tag count.
+func tlvDependency(f tlv.Fields, tag uint16) *SemanticError {
+	for i, field := range f {
+		if field.Tag == tag {
+			return invalidTLV(tag, i, RuleDependency)
+		}
+	}
+	return invalidTLV(tag, -1, RuleDependency)
+}
+
+func sarDependency(f tlv.Fields, counts map[uint16]int, total, part bool) *SemanticError {
+	if counts[tlv.SARMsgRefNum] != 1 {
+		return tlvDependency(f, tlv.SARMsgRefNum)
+	}
+	if !total {
+		return tlvDependency(f, tlv.SARTotalSegments)
+	}
+	if !part {
+		return tlvDependency(f, tlv.SARSegmentSeqnum)
+	}
+	if v, _ := f.First(tlv.SARTotalSegments); v[0] == 0 {
+		return tlvDependency(f, tlv.SARTotalSegments)
+	}
+	return tlvDependency(f, tlv.SARSegmentSeqnum)
 }

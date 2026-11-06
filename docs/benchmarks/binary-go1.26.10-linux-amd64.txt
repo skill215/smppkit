@@ -1,0 +1,83 @@
+$ go test ./message -run=^$ -bench=^Benchmark(BinaryPlan|BinaryOutputRejection|MessagePlan)$ -benchmem -benchtime=200ms -count=3 -cpu=1
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit/message
+cpu: AMD Ryzen 7 6800H with Radeon Graphics
+BenchmarkMessagePlan/UDH8/Prepare         	   22540	     10605 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH8/Prepare         	   23398	     10205 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH8/Prepare         	   22465	     10566 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH8/Materialize     	  390812	       541.2 ns/op	         5.000 segments/op	    1664 B/op	      16 allocs/op
+BenchmarkMessagePlan/UDH8/Materialize     	  458894	       527.2 ns/op	         5.000 segments/op	    1664 B/op	      16 allocs/op
+BenchmarkMessagePlan/UDH8/Materialize     	  457224	       664.6 ns/op	         5.000 segments/op	    1664 B/op	      16 allocs/op
+BenchmarkMessagePlan/UDH16/Prepare        	   23365	     10253 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH16/Prepare        	   23403	     10318 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH16/Prepare        	   23235	     11636 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/UDH16/Materialize    	  433692	       549.8 ns/op	         5.000 segments/op	    1664 B/op	      16 allocs/op
+BenchmarkMessagePlan/UDH16/Materialize    	  447222	       536.6 ns/op	         5.000 segments/op	    1664 B/op	      16 allocs/op
+BenchmarkMessagePlan/UDH16/Materialize    	  480982	       548.6 ns/op	         5.000 segments/op	    1664 B/op	      16 allocs/op
+BenchmarkMessagePlan/SAR/Prepare          	   23202	     10248 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/SAR/Prepare          	   23386	     10702 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/SAR/Prepare          	   21500	     11141 ns/op	         5.000 segments/op	    7608 B/op	      13 allocs/op
+BenchmarkMessagePlan/SAR/Materialize      	  281461	       832.7 ns/op	         5.000 segments/op	    2068 B/op	      26 allocs/op
+BenchmarkMessagePlan/SAR/Materialize      	  266119	       812.9 ns/op	         5.000 segments/op	    2068 B/op	      26 allocs/op
+BenchmarkMessagePlan/SAR/Materialize      	  296986	       768.6 ns/op	         5.000 segments/op	    2068 B/op	      26 allocs/op
+BenchmarkBinaryPlan/Single140/Prepare     	 1565378	       150.2 ns/op	 931.82 MB/s	         1.000 segments/op	     408 B/op	       3 allocs/op
+BenchmarkBinaryPlan/Single140/Prepare     	 1448019	       164.1 ns/op	 853.36 MB/s	         1.000 segments/op	     408 B/op	       3 allocs/op
+BenchmarkBinaryPlan/Single140/Prepare     	 1486688	       174.3 ns/op	 803.24 MB/s	         1.000 segments/op	     408 B/op	       3 allocs/op
+BenchmarkBinaryPlan/Single140/Materialize 	 1700808	       166.2 ns/op	 842.60 MB/s	         1.000 segments/op	     304 B/op	       2 allocs/op
+BenchmarkBinaryPlan/Single140/Materialize 	 1000000	       271.3 ns/op	 515.99 MB/s	         1.000 segments/op	     304 B/op	       2 allocs/op
+BenchmarkBinaryPlan/Single140/Materialize 	 1321521	       191.4 ns/op	 731.50 MB/s	         1.000 segments/op	     304 B/op	       2 allocs/op
+BenchmarkBinaryPlan/UDH8_1024/Prepare     	  474174	       487.0 ns/op	2102.60 MB/s	         8.000 segments/op	    1456 B/op	       3 allocs/op
+BenchmarkBinaryPlan/UDH8_1024/Prepare     	  476690	       424.4 ns/op	2412.77 MB/s	         8.000 segments/op	    1456 B/op	       3 allocs/op
+BenchmarkBinaryPlan/UDH8_1024/Prepare     	  668742	       333.4 ns/op	3071.53 MB/s	         8.000 segments/op	    1456 B/op	       3 allocs/op
+BenchmarkBinaryPlan/UDH8_1024/Materialize 	  274224	       907.2 ns/op	1128.80 MB/s	         8.000 segments/op	    2640 B/op	      25 allocs/op
+BenchmarkBinaryPlan/UDH8_1024/Materialize 	  281346	      1009 ns/op	1015.35 MB/s	         8.000 segments/op	    2640 B/op	      25 allocs/op
+BenchmarkBinaryPlan/UDH8_1024/Materialize 	  278061	       911.3 ns/op	1123.72 MB/s	         8.000 segments/op	    2640 B/op	      25 allocs/op
+BenchmarkBinaryPlan/UDH16_1024/Prepare    	  792538	       305.1 ns/op	3356.35 MB/s	         8.000 segments/op	    1456 B/op	       3 allocs/op
+BenchmarkBinaryPlan/UDH16_1024/Prepare    	  881425	       259.7 ns/op	3942.37 MB/s	         8.000 segments/op	    1456 B/op	       3 allocs/op
+BenchmarkBinaryPlan/UDH16_1024/Prepare    	  857650	       262.5 ns/op	3901.63 MB/s	         8.000 segments/op	    1456 B/op	       3 allocs/op
+BenchmarkBinaryPlan/UDH16_1024/Materialize         	  306861	       802.5 ns/op	1275.95 MB/s	         8.000 segments/op	    2656 B/op	      25 allocs/op
+BenchmarkBinaryPlan/UDH16_1024/Materialize         	  301227	       914.4 ns/op	1119.80 MB/s	         8.000 segments/op	    2656 B/op	      25 allocs/op
+BenchmarkBinaryPlan/UDH16_1024/Materialize         	  268333	       822.8 ns/op	1244.58 MB/s	         8.000 segments/op	    2656 B/op	      25 allocs/op
+BenchmarkBinaryPlan/SAR1024/Prepare                	  872899	       276.9 ns/op	3698.37 MB/s	         8.000 segments/op	    1456 B/op	       3 allocs/op
+BenchmarkBinaryPlan/SAR1024/Prepare                	  586290	       341.7 ns/op	2996.82 MB/s	         8.000 segments/op	    1456 B/op	       3 allocs/op
+BenchmarkBinaryPlan/SAR1024/Prepare                	  943210	       293.5 ns/op	3488.83 MB/s	         8.000 segments/op	    1456 B/op	       3 allocs/op
+BenchmarkBinaryPlan/SAR1024/Materialize            	  216874	      1151 ns/op	 889.74 MB/s	         8.000 segments/op	    3312 B/op	      41 allocs/op
+BenchmarkBinaryPlan/SAR1024/Materialize            	  195132	      1196 ns/op	 855.99 MB/s	         8.000 segments/op	    3312 B/op	      41 allocs/op
+BenchmarkBinaryPlan/SAR1024/Materialize            	  214718	      1165 ns/op	 878.85 MB/s	         8.000 segments/op	    3312 B/op	      41 allocs/op
+BenchmarkBinaryPlan/Payload65535/Prepare           	   56492	      4196 ns/op	15617.19 MB/s	         1.000 segments/op	   65800 B/op	       3 allocs/op
+BenchmarkBinaryPlan/Payload65535/Prepare           	   56073	      4242 ns/op	15448.72 MB/s	         1.000 segments/op	   65800 B/op	       3 allocs/op
+BenchmarkBinaryPlan/Payload65535/Prepare           	   56263	      4331 ns/op	15130.11 MB/s	         1.000 segments/op	   65800 B/op	       3 allocs/op
+BenchmarkBinaryPlan/Payload65535/Materialize       	   57805	      4190 ns/op	15642.23 MB/s	         1.000 segments/op	   65728 B/op	       3 allocs/op
+BenchmarkBinaryPlan/Payload65535/Materialize       	   57000	      4167 ns/op	15725.70 MB/s	         1.000 segments/op	   65728 B/op	       3 allocs/op
+BenchmarkBinaryPlan/Payload65535/Materialize       	   56403	      4516 ns/op	14511.78 MB/s	         1.000 segments/op	   65728 B/op	       3 allocs/op
+BenchmarkBinaryOutputRejection                     	 5750760	        39.95 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBinaryOutputRejection                     	 5618398	        39.96 ns/op	       0 B/op	       0 allocs/op
+BenchmarkBinaryOutputRejection                     	 5733057	        37.24 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/skill215/smppkit/message	12.394s
+EXIT 0
+
+$ go test . -run=^$ -bench=^BenchmarkSessionSend(Text|Binary)$ -benchmem -benchtime=200ms -count=3 -cpu=1
+goos: linux
+goarch: amd64
+pkg: github.com/skill215/smppkit
+cpu: AMD Ryzen 7 6800H with Radeon Graphics
+BenchmarkSessionSendText/GSM7Single         	   15522	     15299 ns/op	    5640 B/op	      59 allocs/op
+BenchmarkSessionSendText/GSM7Single         	   16312	     14691 ns/op	    5640 B/op	      59 allocs/op
+BenchmarkSessionSendText/GSM7Single         	   16214	     14484 ns/op	    5640 B/op	      59 allocs/op
+BenchmarkSessionSendText/UCS2FallbackSingle 	   17443	     13655 ns/op	    6040 B/op	      63 allocs/op
+BenchmarkSessionSendText/UCS2FallbackSingle 	   18093	     15092 ns/op	    6040 B/op	      63 allocs/op
+BenchmarkSessionSendText/UCS2FallbackSingle 	   15188	     16416 ns/op	    6040 B/op	      63 allocs/op
+BenchmarkSessionSendBinary/Single140        	   19606	     12002 ns/op	  11.66 MB/s	         1.000 segments/op	    4344 B/op	      57 allocs/op
+BenchmarkSessionSendBinary/Single140        	   20144	     11429 ns/op	  12.25 MB/s	         1.000 segments/op	    4344 B/op	      57 allocs/op
+BenchmarkSessionSendBinary/Single140        	   21583	     11027 ns/op	  12.70 MB/s	         1.000 segments/op	    4344 B/op	      57 allocs/op
+BenchmarkSessionSendBinary/Payload1024      	   18826	     12655 ns/op	  80.92 MB/s	         1.000 segments/op	   12040 B/op	      59 allocs/op
+BenchmarkSessionSendBinary/Payload1024      	   18661	     13071 ns/op	  78.34 MB/s	         1.000 segments/op	   12040 B/op	      59 allocs/op
+BenchmarkSessionSendBinary/Payload1024      	   18459	     12816 ns/op	  79.90 MB/s	         1.000 segments/op	   12040 B/op	      59 allocs/op
+BenchmarkSessionSendBinary/UDH16_1024NewDomain         	    2882	     80597 ns/op	  12.71 MB/s	         8.000 segments/op	   37265 B/op	     467 allocs/op
+BenchmarkSessionSendBinary/UDH16_1024NewDomain         	    3031	     81100 ns/op	  12.63 MB/s	         8.000 segments/op	   37264 B/op	     467 allocs/op
+BenchmarkSessionSendBinary/UDH16_1024NewDomain         	    3126	     81473 ns/op	  12.57 MB/s	         8.000 segments/op	   37264 B/op	     467 allocs/op
+PASS
+ok  	github.com/skill215/smppkit	3.641s
+EXIT 0

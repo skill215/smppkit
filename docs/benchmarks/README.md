@@ -395,3 +395,105 @@ Constructors copy values into new PDUs and allocate the preflight wire buffer.
 B/op measures allocations, not the number of copied bytes. No zero-copy claim or
 instrumented copy count is made. These are stateless helper costs, excluding
 Session, sockets, ACKs, persistence, tracking and delivery TPS.
+
+## Semantic diagnostics (v1.2.0 development)
+
+Measured 2026-11-06 with Go 1.26.10, linux/amd64 WSL, AMD Ryzen 7 6800H,
+`-cpu=1`, three 200 ms runs. No CPU affinity was set. These are local observations,
+not cross-library or network TPS claims. Source:
+[semantic_benchmark_test.go](../../codec/semantic_benchmark_test.go).
+
+```sh
+go test ./codec -run='^$' \
+  -bench='^Benchmark(SemanticDiagnostics|CodecEncode|CodecDecode|CodecCopy)$' \
+  -benchmem -benchtime=200ms -count=3 -cpu=1
+```
+
+| Diagnostic workload | Median ns/op | B/op | allocs/op |
+| --- | ---: | ---: | ---: |
+| DecodeValid140 | 351.6 | 400 | 6 |
+| DecodeInvalidTON | 384.3 | 392 | 8 |
+| DecodeDuplicateTLV | 577.2 | 448 | 11 |
+| AppendValid140Reuse | 271.6 | 288 | 4 |
+| AppendInvalidTON | 157.2 | 112 | 3 |
+| ContextValid | 6.424 | 0 | 0 |
+| ContextDatagramFailure | 35.21 | 64 | 1 |
+| InspectAsType | 7.146 | 0 | 0 |
+| Format | 361.5 | 128 | 3 |
+
+Codecs, independent wire inputs and reusable destination buffers are prepared
+outside b.Loop. Valid140 uses empty addresses and 140 synthetic payload bytes,
+so it is not the same fixture as the older addressed SubmitSM/V50/140 case.
+Invalid TON and duplicate TLV use the literal diagnostic samples. Decode includes
+owned frame-body data and typed results even on the paths that later fail.
+AppendInvalidTON includes writer setup before the field check; it does not
+measure construction of SemanticError alone.
+
+ContextValid/ContextDatagramFailure use ValidateDataDirection without serialization
+or callbacks. InspectAsType traverses a prebuilt DecodeError chain; Format calls
+SemanticError.Error on a prebuilt error. Those costs are deliberately separate
+from error construction. Valid context checks allocate no diagnostic objects.
+No payload copying is added by the diagnostic metadata itself; existing Codec
+ownership and encode copying remain. B/op and allocs/op do not count copies.
+
+[Raw output](semantic-go1.26.10-linux-amd64.txt) contains **42 cases x 3 runs**:
+nine new diagnostics and 33 existing Codec encode/decode/copy cases. All observed
+B/op and allocs/op values for each diagnostic case were stable across the three
+runs. No zero-allocation full Session or zero-copy claim follows from the isolated
+zero-allocation rows.
+
+## Binary messaging (v1.2.0 development)
+
+Measured on 2026-11-06 with Go 1.26.10, linux/amd64 under WSL, AMD Ryzen 7
+6800H. GOTOOLCHAIN=local. Fuzz and full race checks had finished before this
+measurement. Each case used 200 ms, three runs and cpu=1. These medians describe
+this local checkout, not a performance guarantee or a comparison with v1.1.0.
+[Raw output](binary-go1.26.10-linux-amd64.txt) retains all runs.
+
+| Case | ns/op (median) | B/op (median) | allocs/op |
+| --- | ---: | ---: | ---: |
+| `BinaryPlan/Single140/Prepare` | 164.1 | 408 | 3 |
+| `BinaryPlan/Single140/Materialize` | 191.4 | 304 | 2 |
+| `BinaryPlan/UDH8_1024/Prepare` | 424.4 | 1456 | 3 |
+| `BinaryPlan/UDH8_1024/Materialize` | 911.3 | 2640 | 25 |
+| `BinaryPlan/UDH16_1024/Prepare` | 262.5 | 1456 | 3 |
+| `BinaryPlan/UDH16_1024/Materialize` | 822.8 | 2656 | 25 |
+| `BinaryPlan/SAR1024/Prepare` | 293.5 | 1456 | 3 |
+| `BinaryPlan/SAR1024/Materialize` | 1165 | 3312 | 41 |
+| `BinaryPlan/Payload65535/Prepare` | 4242 | 65800 | 3 |
+| `BinaryPlan/Payload65535/Materialize` | 4190 | 65728 | 3 |
+| `BinaryOutputRejection` | 39.95 | 0 | 0 |
+| `SessionSendBinary/Single140` | 11429 | 4344 | 57 |
+| `SessionSendBinary/Payload1024` | 12816 | 12040 | 59 |
+| `SessionSendBinary/UDH16_1024NewDomain` | 81100 | 37264 | 467 |
+
+All new cases use explicit DCS 4 and synthetic octets, with inputs and fixtures
+constructed outside timing. Prepare snapshots bytes and metadata; Materialize
+starts from an existing Plan and returns independent fields. The 1024-byte UDH
+and SAR cases each produce eight parts. The maximum Payload case only measures
+planning/materialization, not sending through the default 64 KiB Codec frame cap.
+
+BinaryOutputRejection uses a 32 KiB payload with a 4096-byte customer TLV that
+would be repeated into hundreds of parts; it measures rejecting the accounted
+output budget before cloning. Its zero allocations are not a claim that valid
+preparation or arbitrary rejected input always allocates zero bytes.
+
+Session cases use two pre-bound endpoints over net.Pipe with window=1, including
+both endpoints' processing, preflight and Request. Setup/bind/teardown and TCP/TLS
+are excluded. The multipart case includes constructing one new application-owned
+reference domain per operation, preventing benchmark iteration count from
+exhausting retained leases. It does not model a long-lived domain's occupancy.
+One B/op of variation in that case is visible in the raw record. Production
+applications must share domains and retain leases; no early release was added.
+
+The six existing MessagePlan text cases and two SendText cases were rerun in the
+same campaign: 22 cases total, three measurements each. Binary has no charset
+boundary table and snapshots Data once; materialization and Session still copy.
+B/op reports allocated bytes, not bytes copied, peak memory or network TPS.
+
+```sh
+go test ./message -run='^$' -bench='^Benchmark(BinaryPlan|BinaryOutputRejection|MessagePlan)$' \
+  -benchmem -benchtime=200ms -count=3 -cpu=1
+go test . -run='^$' -bench='^BenchmarkSessionSend(Text|Binary)$' \
+  -benchmem -benchtime=200ms -count=3 -cpu=1
+```

@@ -4,6 +4,14 @@ Requires Go 1.26 or newer. Run commands from the repository root. The client and
 server are separate programs using the public smppkit API; no external SMSC,
 database or AI service is needed. Their default transport is plain loopback TCP.
 
+## Semantic diagnostics (v1.2.0 development)
+
+From this unreleased source checkout, run `go run ./examples/diagnostics`.
+The [example](diagnostics/main.go) uses Go 1.26 errors.AsType to inspect a synthetic
+invalid TON and prints `field=source_addr_ton rule=value validation=true`.
+No network connection is made. It demonstrates safe identifiers rather than
+logging arbitrary causes. See the [catalog](../docs/semantic-diagnostics.md).
+
 ## Submit and receive complete messages
 
 Terminal 1:
@@ -57,6 +65,34 @@ prints incoming text, so use synthetic messages.
 The policy is explicit: unpacked GSM7 with strict UCS-2 fallback, 140-octet radio
 budget and UDH16 concatenation. For example, `-text '你好，SMPP'` selects UCS-2.
 No request is automatically retried after a rejection or uncertain outcome.
+
+## Binary submit and echo (v1.2.0 development)
+
+From the development checkout, `go run ./examples/binary` prepares a 300-byte
+message without transport: three UDH16 parts of 133, 133 and 34 payload bytes.
+
+For a local send/receive demo, start the server with `SMPP_PASSWORD=demo123` and
+`go run ./examples/server -echo`. In another terminal with the same environment:
+
+```sh
+go run ./examples/client -version 5.0 -wait-delivery \
+  -binary-hex "$(python3 -c 'print("00ff80" * 100)')" -binary-dcs 4
+```
+
+`-binary-hex` selects raw input instead of `-text`; `-binary-hex=` sends empty
+bytes. The demo's explicit default DCS is 4; the library itself has no DCS
+default. DCS 2 is also accepted with 3.4/5.0. Client/server use UDH16 with the
+140-octet budget and print segment outcomes, lengths and DCS. The Receiver has
+no decoder for those values: application code consumes Message.Payload directly.
+Raw binary contents are not logged. The server echoes payload and DCS as a new
+deliver_sm message; it does not preserve application-port/vendor metadata or
+construct a receipt. ACK means memory admission only.
+
+For 3.3, start the server without `-echo` and send a single part without
+`-wait-delivery`: `go run ./examples/client -version 3.3 -binary-hex 00ff80`.
+The library rejects 3.3 multipart, headers and TLVs. See the
+[binary contract](../docs/binary-messaging.md) for other modes, resource limits
+and reference sharing across connections.
 
 ## Version and error paths
 

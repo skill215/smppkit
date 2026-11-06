@@ -2,13 +2,11 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-11-06
 
 package codec
 
 import (
-	"fmt"
-
 	"github.com/skill215/smppkit/pdu"
 	"github.com/skill215/smppkit/tlv"
 )
@@ -31,11 +29,14 @@ const (
 // For a response with original-request mode context, use ValidateDataResponse.
 // This method is read-only, concurrency safe and never invokes user callbacks.
 func (c *Codec) ValidateDataDirection(body pdu.Body, direction DataDirection) error {
-	if nilBody(body) || direction != DataSubmission && direction != DataDelivery {
-		return invalidField("data_sm direction or body")
+	if nilBody(body) {
+		return invalidField("body", RuleBody)
+	}
+	if direction != DataSubmission && direction != DataDelivery {
+		return invalidField("data_direction", RuleValue)
 	}
 	if c.version == pdu.V33 {
-		return ErrUnsupported
+		return unsupportedField("command_id", RuleVersion)
 	}
 	var fields tlv.Fields
 	response := false
@@ -46,29 +47,32 @@ func (c *Codec) ValidateDataDirection(body pdu.Body, direction DataDirection) er
 		// 5.0 §4.2.10.3). Delivery mode bits do not identify the original
 		// submission mode, and mode zero leaves the MC's default unspecified.
 		if direction == DataSubmission && b.ESMClass&3 == 1 && b.RegisteredDelivery != 0 {
-			return invalidField("data_sm.registered_delivery in datagram mode")
+			return invalidField("registered_delivery", RuleMode)
 		}
 		// 3.4 §5.2.12 has distinct ESME->SMSC and SMSC->ESME type tables.
 		// 5.0 §4.7.12 explicitly permits receipt/intermediate types on submission.
-		if !c.validESMClass(b.ESMClass, pdu.DataSMID) || c.version == pdu.V34 && direction == DataSubmission && !c.validESMClass(b.ESMClass, pdu.SubmitSMID) {
-			return invalidField("data_sm.esm_class direction")
+		if !c.validESMClass(b.ESMClass, pdu.DataSMID) {
+			return invalidField("esm_class", RuleValue)
+		}
+		if c.version == pdu.V34 && direction == DataSubmission && !c.validESMClass(b.ESMClass, pdu.SubmitSMID) {
+			return invalidField("esm_class", RuleDirection)
 		}
 	case *pdu.DataSMResp:
 		fields, response = b.Optional, true
 	case *pdu.Omitted:
 		if b.ID != pdu.DataSMRespID {
-			return invalidField("data_sm response body")
+			return invalidField("body", RuleBody)
 		}
 		return nil // status/omission legality still belongs to Append/Decode
 	default:
-		return invalidField("data_sm direction body")
+		return invalidField("body", RuleBody)
 	}
 	// Even standalone contextual checks have a finite scan bound. Full frame
 	// accounting (including value bytes) remains the normal Codec's job.
 	if len(fields) > c.max/4 {
-		return invalidField("data_sm optional field count")
+		return invalidField("optional", RuleCount)
 	}
-	for _, field := range fields {
+	for i, field := range fields {
 		allowed := true
 		if c.version == pdu.V50 {
 			// Reuse the standard submission/delivery tables rather than copying a
@@ -100,7 +104,7 @@ func (c *Codec) ValidateDataDirection(body pdu.Body, direction DataDirection) er
 			}
 		}
 		if !allowed {
-			return fmt.Errorf("%w: data_sm TLV 0x%04x direction", ErrValidation, field.Tag)
+			return invalidTLV(field.Tag, i, RuleDirection)
 		}
 	}
 	return nil

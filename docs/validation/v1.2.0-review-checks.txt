@@ -1,0 +1,39 @@
+$ go version
+go version go1.26.10 linux/amd64
+EXIT 0
+
+$ git rev-parse HEAD v1.1.0^{commit}
+3d46fc2bbfb8de184f9071aa18c4180e66d2dcd2
+3d46fc2bbfb8de184f9071aa18c4180e66d2dcd2
+EXIT 0
+
+$ go build ./...
+EXIT 0
+
+$ go vet ./...
+EXIT 0
+
+$ go test -race -count=1 -timeout=90s ./...
+ok  	github.com/skill215/smppkit	2.070s
+ok  	github.com/skill215/smppkit/codec	1.226s
+?   	github.com/skill215/smppkit/examples/binary	[no test files]
+ok  	github.com/skill215/smppkit/examples/client	1.019s
+?   	github.com/skill215/smppkit/examples/codec	[no test files]
+?   	github.com/skill215/smppkit/examples/custom-tlv	[no test files]
+?   	github.com/skill215/smppkit/examples/data-direction	[no test files]
+?   	github.com/skill215/smppkit/examples/data-transaction	[no test files]
+?   	github.com/skill215/smppkit/examples/diagnostics	[no test files]
+?   	github.com/skill215/smppkit/examples/framing	[no test files]
+?   	github.com/skill215/smppkit/examples/logging	[no test files]
+?   	github.com/skill215/smppkit/examples/multipart	[no test files]
+?   	github.com/skill215/smppkit/examples/notifications	[no test files]
+?   	github.com/skill215/smppkit/examples/private-command	[no test files]
+ok  	github.com/skill215/smppkit/examples/receipts	1.022s
+?   	github.com/skill215/smppkit/examples/server	[no test files]
+?   	github.com/skill215/smppkit/examples/submit-multi	[no test files]
+ok  	github.com/skill215/smppkit/internal/wire	1.014s
+ok  	github.com/skill215/smppkit/message	1.098s
+?   	github.com/skill215/smppkit/pdu	[no test files]
+ok  	github.com/skill215/smppkit/textcodec	1.015s
+ok  	github.com/skill215/smppkit/tlv	1.017s
+EXIT 0

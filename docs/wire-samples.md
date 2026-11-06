@@ -550,3 +550,51 @@ output must match the independent frames; parser expectations are independently
 asserted against decoded literals and direct typed evidence. Session examples
 are additional checks, not the only correctness argument. No private traffic is
 used, and no interpretation of gateway-specific internal status bytes is imported.
+
+## v1.2.0 semantic diagnostic samples (unreleased)
+
+The following complete frames are literal independent inputs in
+[semantic_error_test.go](../codec/semantic_error_test.go). Neither frame bodies
+nor expected failures are derived from Codec.Append. The test suite also uses
+the existing independent header builder for additional boundary cases.
+
+| Frame | Expected diagnostic | Prior cause/classification retained |
+| --- | --- | --- |
+| `00000021 00000004 00000000 00000007 0007000000000000000000000000000000` | source_addr_ton / value; body offset 1 contains 7 | ErrValidation; DecodeSemantic |
+| `00000021 00000004 00000000 00000007 00000000000000000000000000000b0000` | data_coding / value in 3.4/5.0; body offset 14 contains 11 | ErrValidation; DecodeSemantic |
+| `00000024 00000103 00000000 00000007 00000000000000000000 0427000102 0427000102` | optional / cardinality, Tag=0x0427, Index=1 | ErrValidation; DecodeTLV |
+
+The first two use the minimal 17-octet submit_sm body: empty C-octet fields,
+zero flags/length except for the isolated invalid field. The last uses the
+minimal 10-octet data_sm body followed by two message_state TLVs, each with
+one byte of value. Index is the position in the entire optional-field slice.
+An unknown preceding tag shifts that index; it does not change per-tag rules.
+
+Tests additionally preserve the exact historical FieldError field/offset/reason
+for bind profile mismatch, invalid submit_multi count/flag and replace_sm length,
+and verify that truncated structures do not acquire fabricated semantic rules.
+These samples establish diagnostics, not peer interoperability or new DCS support.
+See the [field/rule catalog](semantic-diagnostics.md).
+
+## v1.2.0 binary message samples (unreleased)
+
+`TestBinaryIndependentWireSamples` uses the following complete hand-authored
+submit_sm frames in both 3.4 and 5.0. Source/destination/service fields are empty,
+sequence is 1, DCS is 4. Logical bytes are `00 ff 80 01 02 03 04 05 06`; a small
+8-octet radio budget makes header accounting independently visible. Spaces only
+separate fields; they are not encoded. No Codec constructs expected bytes.
+
+| Mode | Requests | Complete first request, hexadecimal |
+| --- | --- | --- |
+| UDH8 | 5 | `00000029 00000004 00000000 00000001 00 000000 000000 40 00 00 00 00 00 00 04 00 08 0500032a050100ff` |
+| UDH16 | 9 | `00000029 00000004 00000000 00000001 00 000000 000000 40 00 00 00 00 00 00 04 00 08 060804002a090100` |
+| SAR | 9 | `00000032 00000004 00000000 00000001 00 000000 000000 00 00 00 00 00 00 00 04 00 01 00 020c0002002a 020e000109 020f000101` |
+| Payload | 1 | `0000002e 00000004 00000000 00000001 00 000000 000000 00 00 00 00 00 00 00 04 00 00 04240009 00ff80010203040506` |
+
+UDH8 uses reference 0x2a and carries two payload octets after its six-byte header.
+UDH16 uses reference 0x002a and carries one after its seven-byte header. SAR sends
+one payload octet plus its three ordered TLVs; the seven radio-header octets
+are budgeted at the SMSC, not encoded as UDH. Payload carries all nine bytes in
+one TLV. These synthetic limits illustrate budgeting, not ordinary radio sizes.
+Other regressions cover all DCS assignments, default 140-octet boundaries, ports,
+metadata amplification, ownership, raw reassembly and unchanged Codec acceptance.

@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-11-06
 
 // Package codec implements bounded, version-specific SMPP encoding independent
 // of transport or session ownership. Codecs are immutable and safe to share.
@@ -50,6 +50,8 @@ type TLVDefinition struct {
 	// Validate runs after declared bounds, version, command and cardinality checks.
 	// It must be concurrency safe and must not retain or mutate its input.
 	// It runs synchronously, including on Session's reader; return promptly.
+	// Rejections retain ErrValidation and the original callback cause beneath
+	// SemanticError (RuleExtension). Its safe summary does not print that cause.
 	Validate func([]byte) error
 }
 
@@ -77,7 +79,7 @@ type Codec struct {
 // remain shared and must satisfy their concurrency and input-ownership contracts.
 func New(cfg Config) (*Codec, error) {
 	if !cfg.Version.Valid() {
-		return nil, fmt.Errorf("%w: interface_version", ErrUnsupported)
+		return nil, unsupportedField("interface_version", RuleVersion)
 	}
 	if cfg.MaxFrame == 0 {
 		cfg.MaxFrame = 64 << 10

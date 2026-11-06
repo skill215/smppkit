@@ -2,12 +2,11 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-28
+// SPDX-AI-Date: 2026-11-06
 
 package codec
 
 import (
-	"fmt"
 	"github.com/skill215/smppkit/internal/wire"
 	"github.com/skill215/smppkit/pdu"
 )
@@ -80,7 +79,7 @@ func (c *Codec) decodeBody(id pdu.CommandID, b []byte) (pdu.Body, error) {
 		v.ShortMessage = r.Bytes(int(n), "short_message")
 		max := c.shortMessageLimit()
 		if int(n) > max {
-			r.Fail("short_message", "exceeds version bound")
+			failSemantic(r, "short_message", RuleLength, "exceeds version bound")
 		}
 		if r.Err == nil {
 			r.Err = c.validateReplacement(v)
@@ -178,7 +177,7 @@ func (c *Codec) encodeBody(w *wire.Writer, body pdu.Body) {
 		}
 		max := c.shortMessageLimit()
 		if len(b.ShortMessage) > max {
-			w.Err = fmt.Errorf("%w: short_message bound", ErrValidation)
+			w.Err = invalidField("short_message", RuleLength)
 			return
 		}
 		w.C(b.MessageID, c.messageIDLimit(), "message_id")
@@ -213,6 +212,6 @@ func (c *Codec) encodeBody(w *wire.Writer, body pdu.Body) {
 		c.writeAddr(w, b.ESME, c.addressLimit(id), "esme_addr")
 		c.writeTLVs(w, b.Optional, id)
 	default:
-		w.Err = fmt.Errorf("%w: expected concrete standard body", ErrValidation)
+		w.Err = invalidField("body", RuleBody)
 	}
 }

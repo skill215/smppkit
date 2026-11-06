@@ -1,0 +1,125 @@
+2026-11-06 Asia/Shanghai: F1 local codec fuzz verification
+Go 1.26.10; native execution budget; per-target external 10-minute cap.
+
+$ timeout 600s go test ./codec -run=^$ -fuzz=^FuzzDecode$ -fuzztime=1000000x -parallel=2 -timeout=9m
+fuzz: elapsed: 0s, gathering baseline coverage: 0/26 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 26/26 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 169291 (56411/sec), new interesting: 65 (total: 91)
+fuzz: elapsed: 6s, execs: 349756 (60169/sec), new interesting: 111 (total: 137)
+fuzz: elapsed: 9s, execs: 522966 (57738/sec), new interesting: 130 (total: 156)
+fuzz: elapsed: 12s, execs: 689085 (55377/sec), new interesting: 138 (total: 164)
+fuzz: elapsed: 15s, execs: 853325 (54738/sec), new interesting: 170 (total: 196)
+fuzz: elapsed: 18s, execs: 1000000 (51045/sec), new interesting: 178 (total: 204)
+PASS
+ok  	github.com/skill215/smppkit/codec	17.883s
+exit=0
+
+$ timeout 600s go test ./codec -run=^$ -fuzz=^FuzzEncodeSM$ -fuzztime=1000000x -parallel=2 -timeout=9m
+fuzz: elapsed: 0s, gathering baseline coverage: 0/2 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 2/2 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 147648 (49214/sec), new interesting: 11 (total: 13)
+fuzz: elapsed: 6s, execs: 306995 (53108/sec), new interesting: 12 (total: 14)
+fuzz: elapsed: 9s, execs: 424738 (39255/sec), new interesting: 12 (total: 14)
+fuzz: elapsed: 12s, execs: 572495 (49247/sec), new interesting: 12 (total: 14)
+fuzz: elapsed: 15s, execs: 717634 (48370/sec), new interesting: 12 (total: 14)
+fuzz: elapsed: 18s, execs: 833212 (38529/sec), new interesting: 12 (total: 14)
+fuzz: elapsed: 21s, execs: 966157 (44311/sec), new interesting: 12 (total: 14)
+fuzz: elapsed: 22s, execs: 1000000 (38304/sec), new interesting: 12 (total: 14)
+PASS
+ok  	github.com/skill215/smppkit/codec	21.890s
+exit=0
+
+$ timeout 600s go test ./codec -run=^$ -fuzz=^FuzzSubmitMulti$ -fuzztime=1000000x -parallel=2 -timeout=9m
+fuzz: elapsed: 0s, gathering baseline coverage: 0/2 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 2/2 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 54834 (18275/sec), new interesting: 34 (total: 36)
+fuzz: elapsed: 6s, execs: 181951 (42377/sec), new interesting: 35 (total: 37)
+fuzz: elapsed: 9s, execs: 255164 (24403/sec), new interesting: 37 (total: 39)
+fuzz: elapsed: 12s, execs: 271155 (5331/sec), new interesting: 37 (total: 39)
+fuzz: elapsed: 15s, execs: 313838 (14223/sec), new interesting: 37 (total: 39)
+fuzz: elapsed: 18s, execs: 401515 (29227/sec), new interesting: 38 (total: 40)
+fuzz: elapsed: 21s, execs: 444713 (14402/sec), new interesting: 38 (total: 40)
+fuzz: elapsed: 24s, execs: 494971 (16750/sec), new interesting: 38 (total: 40)
+fuzz: elapsed: 27s, execs: 537921 (14318/sec), new interesting: 38 (total: 40)
+fuzz: elapsed: 30s, execs: 580495 (14194/sec), new interesting: 38 (total: 40)
+fuzz: elapsed: 33s, execs: 637509 (19002/sec), new interesting: 38 (total: 40)
+fuzz: elapsed: 36s, execs: 709894 (24130/sec), new interesting: 38 (total: 40)
+fuzz: elapsed: 39s, execs: 783030 (24375/sec), new interesting: 38 (total: 40)
+fuzz: elapsed: 42s, execs: 857356 (24778/sec), new interesting: 38 (total: 40)
+fuzz: elapsed: 45s, execs: 924693 (22442/sec), new interesting: 38 (total: 40)
+fuzz: elapsed: 48s, execs: 970076 (15132/sec), new interesting: 38 (total: 40)
+fuzz: elapsed: 50s, execs: 1000000 (15058/sec), new interesting: 38 (total: 40)
+PASS
+ok  	github.com/skill215/smppkit/codec	49.994s
+exit=0
+
+$ timeout 600s go test ./codec -run=^$ -fuzz=^FuzzStandardTLVSection$ -fuzztime=1000000x -parallel=2 -timeout=9m
+fuzz: elapsed: 0s, gathering baseline coverage: 0/46 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 46/46 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 141009 (46995/sec), new interesting: 65 (total: 111)
+fuzz: elapsed: 6s, execs: 285219 (48074/sec), new interesting: 75 (total: 121)
+fuzz: elapsed: 9s, execs: 407326 (40694/sec), new interesting: 80 (total: 126)
+fuzz: elapsed: 12s, execs: 483202 (25292/sec), new interesting: 83 (total: 129)
+fuzz: elapsed: 15s, execs: 558977 (25264/sec), new interesting: 83 (total: 129)
+fuzz: elapsed: 18s, execs: 621159 (20724/sec), new interesting: 84 (total: 130)
+fuzz: elapsed: 21s, execs: 986683 (121849/sec), new interesting: 93 (total: 139)
+fuzz: elapsed: 22s, execs: 1000000 (23671/sec), new interesting: 94 (total: 140)
+PASS
+ok  	github.com/skill215/smppkit/codec	21.569s
+exit=0
+
+$ timeout 600s go test ./codec -run=^$ -fuzz=^FuzzSemanticTimes$ -fuzztime=1000000x -parallel=2 -timeout=9m
+fuzz: elapsed: 0s, gathering baseline coverage: 0/5 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 5/5 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 124985 (41601/sec), new interesting: 39 (total: 44)
+fuzz: elapsed: 6s, execs: 250973 (42051/sec), new interesting: 40 (total: 45)
+fuzz: elapsed: 9s, execs: 382139 (43719/sec), new interesting: 42 (total: 47)
+fuzz: elapsed: 12s, execs: 518418 (45421/sec), new interesting: 46 (total: 51)
+fuzz: elapsed: 15s, execs: 648632 (43411/sec), new interesting: 49 (total: 54)
+fuzz: elapsed: 18s, execs: 783143 (44833/sec), new interesting: 52 (total: 57)
+fuzz: elapsed: 21s, execs: 913402 (43428/sec), new interesting: 53 (total: 58)
+fuzz: elapsed: 24s, execs: 1000000 (30923/sec), new interesting: 53 (total: 58)
+PASS
+ok  	github.com/skill215/smppkit/codec	23.810s
+exit=0
+
+$ timeout 600s go test ./codec -run=^$ -fuzz=^FuzzDataDirection$ -fuzztime=1000000x -parallel=2 -timeout=9m
+fuzz: elapsed: 0s, gathering baseline coverage: 0/3 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 3/3 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 153236 (51072/sec), new interesting: 64 (total: 67)
+fuzz: elapsed: 6s, execs: 294329 (47033/sec), new interesting: 90 (total: 93)
+fuzz: elapsed: 9s, execs: 430059 (45237/sec), new interesting: 102 (total: 105)
+fuzz: elapsed: 12s, execs: 578956 (49643/sec), new interesting: 117 (total: 120)
+fuzz: elapsed: 15s, execs: 757260 (59426/sec), new interesting: 120 (total: 123)
+fuzz: elapsed: 18s, execs: 932147 (58295/sec), new interesting: 124 (total: 127)
+fuzz: elapsed: 19s, execs: 1000000 (60525/sec), new interesting: 127 (total: 130)
+PASS
+ok  	github.com/skill215/smppkit/codec	19.133s
+exit=0
+
+$ timeout 600s go test ./codec -run=^$ -fuzz=^FuzzDataResponse$ -fuzztime=1000000x -parallel=2 -timeout=9m
+fuzz: elapsed: 0s, gathering baseline coverage: 0/3 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 3/3 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 180353 (60109/sec), new interesting: 61 (total: 64)
+fuzz: elapsed: 6s, execs: 364277 (61310/sec), new interesting: 84 (total: 87)
+fuzz: elapsed: 9s, execs: 544859 (60198/sec), new interesting: 103 (total: 106)
+fuzz: elapsed: 12s, execs: 713348 (56149/sec), new interesting: 110 (total: 113)
+fuzz: elapsed: 15s, execs: 837379 (41342/sec), new interesting: 113 (total: 116)
+fuzz: elapsed: 18s, execs: 927847 (30157/sec), new interesting: 120 (total: 123)
+fuzz: elapsed: 20s, execs: 1000000 (33440/sec), new interesting: 121 (total: 124)
+PASS
+ok  	github.com/skill215/smppkit/codec	20.165s
+exit=0
+
+$ timeout 600s go test ./codec -run=^$ -fuzz=^FuzzRawFrame$ -fuzztime=1000000x -parallel=2 -timeout=9m
+fuzz: elapsed: 0s, gathering baseline coverage: 0/5 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 5/5 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 184952 (61630/sec), new interesting: 51 (total: 56)
+fuzz: elapsed: 6s, execs: 416958 (77346/sec), new interesting: 71 (total: 76)
+fuzz: elapsed: 9s, execs: 608819 (63950/sec), new interesting: 74 (total: 79)
+fuzz: elapsed: 12s, execs: 814483 (68556/sec), new interesting: 75 (total: 80)
+fuzz: elapsed: 15s, execs: 990060 (58529/sec), new interesting: 82 (total: 87)
+fuzz: elapsed: 15s, execs: 1000000 (36219/sec), new interesting: 82 (total: 87)
+PASS
+ok  	github.com/skill215/smppkit/codec	15.282s
+exit=0

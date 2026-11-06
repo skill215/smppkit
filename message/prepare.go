@@ -2,10 +2,10 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-29
+// SPDX-AI-Date: 2026-11-06
 
-// Package message prepares text, assembles received segments, and optionally
-// parses or constructs receipt evidence without owning a transport. Submission
+// Package message prepares text and binary messages, assembles received segments,
+// and parses or constructs receipt evidence without owning a transport. Submission
 // acceptance, later receipt content and receipt ACKs are distinct outcomes.
 package message
 
@@ -35,8 +35,8 @@ const (
 )
 
 // InformationElement is an additional UDH element without IE length or UDHL.
-// Prepare supplies lengths, rejects caller-supplied concatenation elements and
-// validates application ports. National-language declarations (0x24/0x25) are
+// Prepare and PrepareBytes supply lengths, reject caller-supplied concatenation
+// elements and validate application ports. National-language declarations (0x24/0x25) are
 // rejected with ErrUnsupportedNationalLanguage; other contents remain opaque.
 type InformationElement struct {
 	ID   uint8
@@ -118,13 +118,14 @@ type Plan struct {
 	multipart  bool
 }
 
-// Encoding reports the selected encoding name, including any fallback.
+// Encoding reports the selected text encoding (including fallback), or "binary"
+// for a byte plan that performs no character conversion.
 func (p *Plan) Encoding() string { return p.encoding }
 
 // DataCoding reports the frozen DCS used by Materialize.
 func (p *Plan) DataCoding() uint8 { return p.template.DataCoding }
 
-// Mode reports the chosen policy, even when the text fits one segment.
+// Mode reports the chosen policy, even when the message fits one segment.
 func (p *Plan) Mode() Mode { return p.mode }
 
 // Count is the number of requests; an empty message still produces one.
@@ -183,22 +184,9 @@ func Prepare(version pdu.Version, msg Text, policy Policy) (*Plan, error) {
 	if len(msg.Text) > policy.MaxInputBytes {
 		return nil, ErrCapacity
 	}
-	portElements := 0
-	seenPorts := map[uint16]bool{}
-	for _, x := range msg.Optional {
-		switch x.Tag {
-		case tlv.SARMsgRefNum, tlv.SARTotalSegments, tlv.SARSegmentSeqnum, tlv.MessagePayload:
-			return nil, ErrMetadata
-		case tlv.SourcePort, tlv.DestinationPort:
-			if len(x.Value) != 2 || seenPorts[x.Tag] {
-				return nil, ErrMetadata
-			}
-			seenPorts[x.Tag] = true
-			portElements = 6
-		}
-	}
-	if version == pdu.V33 && (len(msg.Optional) > 0 || policy.Mode == SAR || policy.Mode == Payload) {
-		return nil, ErrMetadata
+	portElements, e := prepareOptional(version, policy.Mode, msg.Optional)
+	if e != nil {
+		return nil, e
 	}
 	enc := policy.Encoding
 	encoded, e := enc.Encode(msg.Text)
@@ -390,4 +378,27 @@ func prepareUDH(elements []InformationElement) ([]byte, error) {
 		out = append(out, ie.Data...)
 	}
 	return out, nil
+}
+
+// prepareOptional applies planner metadata conflicts shared by text and binary.
+// Command-specific and registered TLV semantics remain the Codec's responsibility.
+func prepareOptional(version pdu.Version, mode Mode, fields tlv.Fields) (int, error) {
+	portElements := 0
+	seenPorts := map[uint16]bool{}
+	for _, x := range fields {
+		switch x.Tag {
+		case tlv.SARMsgRefNum, tlv.SARTotalSegments, tlv.SARSegmentSeqnum, tlv.MessagePayload:
+			return 0, ErrMetadata
+		case tlv.SourcePort, tlv.DestinationPort:
+			if len(x.Value) != 2 || seenPorts[x.Tag] {
+				return 0, ErrMetadata
+			}
+			seenPorts[x.Tag] = true
+			portElements = 6
+		}
+	}
+	if version == pdu.V33 && (len(fields) > 0 || mode == SAR || mode == Payload) {
+		return 0, ErrMetadata
+	}
+	return portElements, nil
 }

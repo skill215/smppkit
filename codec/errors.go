@@ -2,7 +2,7 @@
 // SPDX-AI-Model: GPT-6.0 Astra
 // SPDX-AI-Provider: OpenAI
 // SPDX-AI-Scope: Library code generated and revised with Codex under maintainer direction.
-// SPDX-AI-Date: 2026-10-29
+// SPDX-AI-Date: 2026-11-06
 
 package codec
 
@@ -38,7 +38,9 @@ type FrameHeader struct {
 }
 
 // DecodeError is returned by Decode, Read, ReadBind, ReadFrame and ParseHeader.
-// Unwrap preserves existing sentinels, FieldError and transport/extension causes.
+// Unwrap preserves sentinels, FieldError, SemanticError and transport/extension
+// causes. A SemanticError can wrap a historical FieldError; that retains the
+// historical DecodeMandatory classification, not necessarily DecodeSemantic.
 // Error prints only safe numeric context, never the cause's arbitrary text.
 // The cause can still contain application/transport data; do not log it blindly.
 // Fields are diagnostic snapshots; a failed PDU is not usable protocol input.
